@@ -1,0 +1,16 @@
+[
+  { "id": "bell", "name": "Звонок", "price": 0, "owned_by_default": true },
+  { "id": "plate", "name": "Тарелка", "price": 0, "owned_by_default": true },
+  { "id": "cup", "name": "Чашка", "price": 0, "owned_by_default": true },
+  { "id": "work_surface", "name": "Рабочая поверхность", "price": 0, "owned_by_default": true },
+  { "id": "stove", "name": "Плита", "price": 0, "owned_by_default": true },
+  { "id": "pan", "name": "Сковорода", "price": 0, "owned_by_default": true },
+  { "id": "bowl", "name": "Миска", "price": 0, "owned_by_default": true },
+  { "id": "kettle", "name": "Чайник", "price": 40, "owned_by_default": false },
+  { "id": "toaster", "name": "Тостер", "price": 60, "owned_by_default": false },
+  { "id": "rice_cooker", "name": "Рисоварка", "price": 90, "owned_by_default": false },
+  { "id": "knife", "name": "Нож и доска", "price": 35, "owned_by_default": false },
+  { "id": "pot", "name": "Кастрюля", "price": 50, "owned_by_default": false },
+  { "id": "blender", "name": "Блендер", "price": 110, "owned_by_default": false },
+  { "id": "oven", "name": "Духовка", "price": 150, "owned_by_default": false }
+]
