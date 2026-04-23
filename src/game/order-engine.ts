@@ -186,6 +186,28 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
   reset: () => set({ progress: null, active_minigame: null }),
 }));
 
+/**
+ * Step is "owned" by a particular piece of equipment for click-to-trigger.
+ * Maps minigame kind / step.type → set of valid equipment ids.
+ */
+const HEAT_EQUIPMENT = new Set(["stove", "oven", "toaster", "kettle", "rice_cooker"]);
+
+function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
+  if (step.requires.includes(equipment_id)) return true;
+  if (step.minigame === "mix" && equipment_id === "bowl") return true;
+  if (step.minigame === "window" && HEAT_EQUIPMENT.has(equipment_id)) {
+    const heatInStep = step.requires.find((r) => HEAT_EQUIPMENT.has(r));
+    if (!heatInStep) return equipment_id === "stove";
+    return heatInStep === equipment_id;
+  }
+  if (
+    (step.minigame === "chop_stub" || step.minigame === "roll_stub") &&
+    equipment_id === "work_surface"
+  )
+    return true;
+  return false;
+}
+
 function bumpError(
   set: (s: Partial<OrderEngineState>) => void,
   get: () => OrderEngineState,
