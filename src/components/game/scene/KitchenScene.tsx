@@ -9,6 +9,7 @@ import { TableSurface, WORK_SURFACE_POS } from "./Table";
 import { TableSlots } from "./TableSlots";
 import { Bell, Bowl, Cup, Plate, Stove, WorkSurfaceMarker } from "./KitchenObjects";
 import { Hand, type HandTarget } from "./Hand";
+import { useActivePick } from "@/game/active-pick";
 
 interface KitchenSceneProps {
   onHoverLabel: (label: string | null) => void;
