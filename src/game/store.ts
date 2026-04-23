@@ -247,7 +247,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   cancelOverflow: () => set({ pending_overflow: null }),
 
-
+  buyEquipment: (id, price) => {
     const s = get();
     if (s.equipment_owned.includes(id)) return false;
     if (s.money < price) return false;
