@@ -1,7 +1,7 @@
 // Объекты кухни: плита, миска, тарелка, чашка, звонок. Все интерактивные.
 
 import { ThreeEvent } from "@react-three/fiber";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SCENE_COLORS } from "./colors";
 
 interface ClickableProps {
@@ -12,8 +12,13 @@ interface ClickableProps {
   children: React.ReactNode;
 }
 
+const CLICK_GUARD_MS = 150;
+
 function Clickable({ position, onClick, onHover, label, children }: ClickableProps) {
   const [hovered, setHovered] = useState(false);
+  const lastFireRef = useRef(0);
+  const downAtRef = useRef<number | null>(null);
+
   return (
     <group
       position={position}
@@ -29,8 +34,18 @@ function Clickable({ position, onClick, onHover, label, children }: ClickablePro
         onHover?.(null);
         document.body.style.cursor = "default";
       }}
-      onClick={(e: ThreeEvent<MouseEvent>) => {
+      onPointerDown={(e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
+        downAtRef.current = performance.now();
+      }}
+      onPointerUp={(e: ThreeEvent<PointerEvent>) => {
+        e.stopPropagation();
+        const down = downAtRef.current;
+        downAtRef.current = null;
+        if (down === null) return;
+        const now = performance.now();
+        if (now - lastFireRef.current < CLICK_GUARD_MS) return;
+        lastFireRef.current = now;
         onClick([position[0], position[1], position[2]]);
       }}
       scale={hovered ? 1.04 : 1}

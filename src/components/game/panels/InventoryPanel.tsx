@@ -11,8 +11,8 @@ export function InventoryPanel() {
   if (inventory.length === 0) {
     return (
       <EmptyState
-        icon="🎒"
-        title="Инвентарь пуст"
+        icon="🥬"
+        title="Продуктов пока нет"
         hint="Купите ингредиенты в магазине, чтобы начать готовить."
       />
     );
