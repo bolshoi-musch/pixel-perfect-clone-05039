@@ -104,7 +104,11 @@ export function MixMinigame({ onDone, onCancel }: Props) {
   const circleProgress = Math.min(1, stateRef.current.accumulated / (Math.PI * 2 * TARGET_CIRCLES));
 
   return (
-    <Overlay title="Перемешивай" subtitle="Веди по кругу — плавно и в одну сторону" onCancel={onCancel}>
+    <Overlay
+      title="Перемешивай"
+      subtitle="Веди по кругу — плавно и в одну сторону"
+      onCancel={onCancel}
+    >
       <div
         ref={ref}
         onPointerDown={onDown}
@@ -112,7 +116,10 @@ export function MixMinigame({ onDone, onCancel }: Props) {
         onPointerUp={onUp}
         onPointerCancel={onUp}
         className="relative mx-auto h-72 w-72 touch-none select-none rounded-full border-2 border-dashed border-border bg-card/80"
-        style={{ background: "radial-gradient(circle, color-mix(in oklab, var(--copper) 18%, var(--card)) 0%, var(--card) 70%)" }}
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in oklab, var(--copper) 18%, var(--card)) 0%, var(--card) 70%)",
+        }}
       >
         {/* center */}
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/40" />
@@ -292,15 +299,7 @@ function Overlay({
   );
 }
 
-function ProgressBar({
-  value,
-  label,
-  tone,
-}: {
-  value: number;
-  label: string;
-  tone?: "primary";
-}) {
+function ProgressBar({ value, label, tone }: { value: number; label: string; tone?: "primary" }) {
   const pct = Math.max(0, Math.min(1, value)) * 100;
   return (
     <div>

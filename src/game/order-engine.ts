@@ -40,7 +40,11 @@ interface OrderEngineState {
 
 export type StepAttempt =
   | { ok: true; opened_minigame: MinigameKind | null; step: RecipeStep }
-  | { ok: false; reason: "no_order" | "no_step" | "wrong_equipment" | "missing" | "already_done"; missing?: string[] };
+  | {
+      ok: false;
+      reason: "no_order" | "no_step" | "wrong_equipment" | "missing" | "already_done";
+      missing?: string[];
+    };
 
 export type RingResult =
   | { ok: false; reason: "no_order" | "not_finished" }
@@ -139,7 +143,7 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
     if (!p) return { ok: false, reason: "no_order" };
 
     // Auto-complete pending serve steps when bell is pressed
-    let recipe = RECIPES_BY_ID.get(p.recipe_id)!;
+    const recipe = RECIPES_BY_ID.get(p.recipe_id)!;
     while (!p.finished && p.step_index < recipe.step_ids.length) {
       const step = STEPS_BY_ID.get(recipe.step_ids[p.step_index]);
       if (!step || step.type !== "serve") break;
@@ -147,9 +151,7 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
       const game = useGame.getState();
       const owned = new Set(game.equipment_owned);
       const preparedSet = new Set(p.prepared);
-      const allOk = step.requires.every(
-        (r) => owned.has(r) || preparedSet.has(r) || r === "water",
-      );
+      const allOk = step.requires.every((r) => owned.has(r) || preparedSet.has(r) || r === "water");
       if (!allOk) break;
       completeStep(set, get, step, 0.9, 0);
       p = get().progress!;

@@ -18,10 +18,7 @@ import { MixMinigame, WindowMinigame } from "@/components/game/minigames/Minigam
 
 export const Route = createFileRoute("/play")({
   head: () => ({
-    meta: [
-      { title: "Кухня — игра" },
-      { name: "description", content: "Игровая сессия Кухни." },
-    ],
+    meta: [{ title: "Кухня — игра" }, { name: "description", content: "Игровая сессия Кухни." }],
   }),
   component: PlayPage,
 });
@@ -75,14 +72,17 @@ function PlayPage() {
     }
     if (!orderInitRef.current || completionToast) {
       // initial spawn or after a completion (delay handled in completion effect)
-      const timeout = setTimeout(() => {
-        const next = pickNextRecipe();
-        if (next) {
-          startOrder(next);
-          orderInitRef.current = true;
-          log(`Новый заказ: ${RECIPES_BY_ID.get(next)?.name}`);
-        }
-      }, completionToast ? 1800 : 200);
+      const timeout = setTimeout(
+        () => {
+          const next = pickNextRecipe();
+          if (next) {
+            startOrder(next);
+            orderInitRef.current = true;
+            log(`Новый заказ: ${RECIPES_BY_ID.get(next)?.name}`);
+          }
+        },
+        completionToast ? 1800 : 200,
+      );
       return () => clearTimeout(timeout);
     }
   }, [hydrated, currentOrderId, progress, startOrder, completionToast, log]);
@@ -157,10 +157,7 @@ function PlayPage() {
             </Link>
             <div className="hidden h-6 w-px bg-border md:block" />
             <Stat label="Деньги" value={`${money} ₽`} />
-            <Stat
-              label="Рейтинг"
-              value={avgRating > 0 ? `${avgRating.toFixed(1)} ★` : "— ★"}
-            />
+            <Stat label="Рейтинг" value={avgRating > 0 ? `${avgRating.toFixed(1)} ★` : "— ★"} />
             <button
               type="button"
               onClick={() => setPanel("order")}
@@ -172,7 +169,9 @@ function PlayPage() {
               <span
                 className={`text-sm font-semibold ${order ? "text-foreground" : "text-muted-foreground"}`}
               >
-                {order ? `${order.name} · ${(progress?.step_index ?? 0)}/${order.step_ids.length}` : "Ожидание…"}
+                {order
+                  ? `${order.name} · ${progress?.step_index ?? 0}/${order.step_ids.length}`
+                  : "Ожидание…"}
               </span>
             </button>
           </div>
@@ -257,7 +256,11 @@ function PlayPage() {
       </nav>
 
       {/* Panels */}
-      <PanelDialog open={panel === "shop"} onClose={() => setPanel(null)} title="Магазин ингредиентов">
+      <PanelDialog
+        open={panel === "shop"}
+        onClose={() => setPanel(null)}
+        title="Магазин ингредиентов"
+      >
         <ShopPanel />
       </PanelDialog>
       <PanelDialog open={panel === "inventory"} onClose={() => setPanel(null)} title="Инвентарь">
@@ -280,30 +283,16 @@ function PlayPage() {
 
       {/* Minigames */}
       {activeMinigame?.kind === "mix" && (
-        <MixMinigame
-          onDone={(q, e) => finishMinigame(q, e)}
-          onCancel={cancelMinigame}
-        />
+        <MixMinigame onDone={(q, e) => finishMinigame(q, e)} onCancel={cancelMinigame} />
       )}
       {activeMinigame?.kind === "window" && (
-        <WindowMinigame
-          onDone={(q, e) => finishMinigame(q, e)}
-          onCancel={cancelMinigame}
-        />
+        <WindowMinigame onDone={(q, e) => finishMinigame(q, e)} onCancel={cancelMinigame} />
       )}
     </div>
   );
 }
 
-function Stat({
-  label,
-  value,
-  muted,
-}: {
-  label: string;
-  value: string;
-  muted?: boolean;
-}) {
+function Stat({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
   return (
     <div className="flex flex-col">
       <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
