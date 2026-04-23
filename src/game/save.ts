@@ -33,7 +33,16 @@ export function makeInitialSave(): SaveData {
   return {
     version: SAVE_VERSION,
     money: 100,
-    inventory: [],
+    // Стартовый набор для песочницы Iteration 2 — упростит тест 3D-сцены.
+    // В Iteration 3+ заменится на покупки в магазине.
+    inventory: [
+      { ingredient_id: "egg", quality: "basic", count: 3 },
+      { ingredient_id: "bread", quality: "basic", count: 2 },
+      { ingredient_id: "tomato", quality: "basic", count: 2 },
+      { ingredient_id: "cucumber", quality: "basic", count: 1 },
+      { ingredient_id: "tea_leaves", quality: "basic", count: 2 },
+      { ingredient_id: "egg_premium", quality: "premium", count: 1 },
+    ],
     equipment_owned: [
       "bell",
       "plate",

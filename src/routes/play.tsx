@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useGame, selectAvgRating } from "@/game/store";
-import { RECIPES_BY_ID } from "@/game/data";
+import { useActivePick } from "@/game/active-pick";
+import { RECIPES_BY_ID, INGREDIENTS_BY_ID } from "@/game/data";
 import { PanelDialog } from "@/components/game/PanelDialog";
 import { ShopPanel } from "@/components/game/panels/ShopPanel";
 import { InventoryPanel } from "@/components/game/panels/InventoryPanel";
@@ -9,6 +10,9 @@ import { EquipmentPanel } from "@/components/game/panels/EquipmentPanel";
 import { ReviewsPanel } from "@/components/game/panels/ReviewsPanel";
 import { OrderPanel } from "@/components/game/panels/OrderPanel";
 import { SettingsPanel } from "@/components/game/panels/SettingsPanel";
+import { KitchenScene } from "@/components/game/scene/KitchenScene";
+import { ActionLog } from "@/components/game/ActionLog";
+import { OverflowDialog } from "@/components/game/OverflowDialog";
 
 export const Route = createFileRoute("/play")({
   head: () => ({
@@ -28,7 +32,13 @@ function PlayPage() {
   const money = useGame((s) => s.money);
   const currentOrderId = useGame((s) => s.current_order_recipe_id);
   const avgRating = useGame(selectAvgRating);
+  const log = useGame((s) => s.log);
+  const pickConsume = useActivePick((s) => s.consume);
+  const pickValue = useActivePick((s) => s.pick);
+  const setPick = useActivePick((s) => s.setPick);
+
   const [panel, setPanel] = useState<PanelKey>(null);
+  const [hoverLabel, setHoverLabel] = useState<string | null>(null);
 
   useEffect(() => {
     hydrate();
@@ -44,34 +54,33 @@ function PlayPage() {
 
   const order = currentOrderId ? RECIPES_BY_ID.get(currentOrderId) : null;
 
+  const activePickIng = pickValue
+    ? INGREDIENTS_BY_ID.get(pickValue.split("|")[0])
+    : null;
+
+  const handlePickIngredient = () => {
+    const v = pickConsume();
+    return v;
+  };
+
+  const handleBellRing = () => {
+    log("Звонок: гость скоро придёт (Iteration 3)");
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
-      {/* Сцена-плейсхолдер (Iteration 2) */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, color-mix(in oklab, var(--wood) 30%, var(--background)) 0%, color-mix(in oklab, var(--wood-dark) 40%, var(--background)) 100%)",
-        }}
-      >
-        <div className="flex h-full items-center justify-center">
-          <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 px-10 py-8 text-center backdrop-blur-sm">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              3D-сцена
-            </p>
-            <p className="mt-2 text-lg font-medium text-foreground">
-              Iteration 2 — react-three-fiber
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Здесь появится кухня от первого лица
-            </p>
-          </div>
-        </div>
+      {/* 3D-сцена */}
+      <div className="absolute inset-0">
+        <KitchenScene
+          onHoverLabel={setHoverLabel}
+          onPickIngredient={handlePickIngredient}
+          onBellRing={handleBellRing}
+        />
       </div>
 
       {/* HUD */}
-      <header className="absolute inset-x-0 top-0 z-10 px-4 pt-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/85 px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 px-4 pt-4">
+        <div className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/85 px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur">
           <div className="flex items-center gap-4">
             <Link
               to="/"
@@ -101,7 +110,38 @@ function PlayPage() {
             ⚙
           </button>
         </div>
+
+        {/* Hover label / активный pick */}
+        <div className="pointer-events-none mx-auto mt-2 flex max-w-6xl items-center justify-between gap-2">
+          <div>
+            {hoverLabel && (
+              <span className="rounded-md bg-card/85 px-3 py-1 text-xs font-medium text-foreground shadow-[var(--shadow-soft)] backdrop-blur">
+                {hoverLabel}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            {activePickIng && (
+              <button
+                type="button"
+                onClick={() => setPick(null)}
+                className="pointer-events-auto rounded-md bg-primary/15 px-3 py-1 text-xs font-medium text-primary shadow-[var(--shadow-soft)] backdrop-blur transition hover:bg-primary/25"
+                title="Снять выбор"
+              >
+                Готово к размещению: {activePickIng.name} ✕
+              </button>
+            )}
+            <ActionLog />
+          </div>
+        </div>
       </header>
+
+      {/* Подсказка управления */}
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 px-4 text-center">
+        <p className="mx-auto inline-block rounded-full bg-card/60 px-4 py-1 text-[11px] uppercase tracking-wider text-muted-foreground backdrop-blur">
+          Клик — взять/положить · Долгое нажатие — съесть (только сырое)
+        </p>
+      </div>
 
       {/* Панель действий */}
       <nav className="absolute inset-x-0 bottom-0 z-10 px-4 pb-5">
@@ -153,6 +193,9 @@ function PlayPage() {
       >
         <SettingsPanel />
       </PanelDialog>
+
+      {/* Модал переполнения стола */}
+      <OverflowDialog />
     </div>
   );
 }
