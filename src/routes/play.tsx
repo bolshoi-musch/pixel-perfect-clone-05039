@@ -112,20 +112,18 @@ function PlayPage() {
       log("Звонок: нет активного заказа");
       return;
     }
-    if (!progress.finished) {
-      log("Сначала закончи готовку");
+    const r = ringBell();
+    if (!r.ok) {
+      if (r.reason === "not_finished") log("Сначала закончи готовку");
       return;
     }
-    const r = ringBell();
-    if (r.ok) {
-      const recipe = RECIPES_BY_ID.get(r.recipe_id);
-      setCompletionToast({
-        name: recipe?.name ?? r.recipe_id,
-        stars: r.stars,
-        reward: r.reward,
-      });
-      setTimeout(() => setCompletionToast(null), 2500);
-    }
+    const recipe = RECIPES_BY_ID.get(r.recipe_id);
+    setCompletionToast({
+      name: recipe?.name ?? r.recipe_id,
+      stars: r.stars,
+      reward: r.reward,
+    });
+    setTimeout(() => setCompletionToast(null), 2500);
   };
 
   const handleObjectAction = (equipment_id: string) => {
