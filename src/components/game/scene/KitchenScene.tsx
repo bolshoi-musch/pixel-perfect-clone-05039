@@ -33,21 +33,22 @@ export function KitchenScene({ onHoverLabel, onPickIngredient, onBellRing }: Kit
     setHandTarget({ pos, holdMs, key: handKeyRef.current });
   };
 
+  const setPick = useActivePick((s) => s.setPick);
+
   const handleSlotShortClick = (index: number, worldPos: [number, number, number]) => {
     const slot = slots[index];
     fireHand(worldPos);
     if (slot.ingredient_id) {
-      // pickup в инвентарь
       pickupToInventory(index);
     } else {
-      // попытаться положить выбранный ингредиент
       const pick = onPickIngredient();
       if (!pick) {
         log("Выберите ингредиент в инвентаре");
         return;
       }
       const [id, quality] = pick.split("|") as [string, "basic" | "premium"];
-      placeFromInventory(id, quality);
+      const placed = placeFromInventory(id, quality);
+      if (placed >= 0) setPick(null);
     }
   };
 
