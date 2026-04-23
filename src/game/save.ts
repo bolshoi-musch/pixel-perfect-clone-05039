@@ -33,15 +33,11 @@ export function makeInitialSave(): SaveData {
   return {
     version: SAVE_VERSION,
     money: 100,
-    // Стартовый набор для песочницы Iteration 2 — упростит тест 3D-сцены.
-    // В Iteration 3+ заменится на покупки в магазине.
+    // Стартовый набор для онбординга: омлет (яйца) и чай (заварка + чайник).
     inventory: [
-      { ingredient_id: "egg", quality: "basic", count: 3 },
-      { ingredient_id: "bread", quality: "basic", count: 2 },
-      { ingredient_id: "tomato", quality: "basic", count: 2 },
-      { ingredient_id: "cucumber", quality: "basic", count: 1 },
-      { ingredient_id: "tea_leaves", quality: "basic", count: 2 },
+      { ingredient_id: "egg", quality: "basic", count: 4 },
       { ingredient_id: "egg_premium", quality: "premium", count: 1 },
+      { ingredient_id: "tea_leaves", quality: "basic", count: 3 },
     ],
     equipment_owned: [
       "bell",
@@ -51,6 +47,7 @@ export function makeInitialSave(): SaveData {
       "stove",
       "pan",
       "bowl",
+      "kettle",
     ],
     table_slots: Array.from({ length: 5 }, () => ({ ...EMPTY_SLOT })),
     current_order_recipe_id: null,
