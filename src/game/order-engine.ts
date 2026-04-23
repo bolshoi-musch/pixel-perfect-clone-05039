@@ -196,8 +196,9 @@ function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
   if (step.requires.includes(equipment_id)) return true;
   if (step.minigame === "mix" && equipment_id === "bowl") return true;
   if (step.minigame === "window" && HEAT_EQUIPMENT.has(equipment_id)) {
+    // For MVP, stove acts as universal heat tool (no separate kettle/oven 3D objects yet).
+    if (equipment_id === "stove") return true;
     const heatInStep = step.requires.find((r) => HEAT_EQUIPMENT.has(r));
-    if (!heatInStep) return equipment_id === "stove";
     return heatInStep === equipment_id;
   }
   if (
