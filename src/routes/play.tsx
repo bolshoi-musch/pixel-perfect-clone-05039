@@ -244,7 +244,7 @@ function PlayPage() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-border/60 bg-card/85 p-2 shadow-[var(--shadow-soft)] backdrop-blur">
           <ActionBtn icon="📋" label="Заказ" onClick={() => setPanel("order")} />
           <ActionBtn icon="🛒" label="Магазин" onClick={() => setPanel("shop")} />
-          <ActionBtn icon="🎒" label="Инвентарь" onClick={() => setPanel("inventory")} />
+          <ActionBtn icon="🥬" label="Продукты" onClick={() => setPanel("inventory")} />
           <ActionBtn icon="🔧" label="Техника" onClick={() => setPanel("equipment")} />
           <ActionBtn
             icon="⭐"
@@ -263,7 +263,7 @@ function PlayPage() {
       >
         <ShopPanel />
       </PanelDialog>
-      <PanelDialog open={panel === "inventory"} onClose={() => setPanel(null)} title="Инвентарь">
+      <PanelDialog open={panel === "inventory"} onClose={() => setPanel(null)} title="Продукты">
         <InventoryPanel />
       </PanelDialog>
       <PanelDialog open={panel === "equipment"} onClose={() => setPanel(null)} title="Техника">
