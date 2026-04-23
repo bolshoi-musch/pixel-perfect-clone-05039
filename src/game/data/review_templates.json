@@ -1,0 +1,16 @@
+[
+  { "id": "sp_slow_1", "trigger": "speed:slow", "text": "Долго ждал заказ" },
+  { "id": "sp_slow_2", "trigger": "speed:slow", "text": "Пришлось подождать" },
+  { "id": "sp_fast_1", "trigger": "speed:fast", "text": "Быстро принесли" },
+  { "id": "sp_fast_2", "trigger": "speed:fast", "text": "Молниеносно!" },
+  { "id": "ac_low_1", "trigger": "accuracy:low", "text": "Чувствуется, что повар спешил" },
+  { "id": "ac_low_2", "trigger": "accuracy:low", "text": "Что-то пошло не по рецепту" },
+  { "id": "ac_high_1", "trigger": "accuracy:high", "text": "Всё точно по рецепту" },
+  { "id": "mg_low_1", "trigger": "minigame:low", "text": "Плохо перемешано" },
+  { "id": "mg_low_2", "trigger": "minigame:low", "text": "Местами недоготовлено" },
+  { "id": "mg_high_1", "trigger": "minigame:high", "text": "Идеальная текстура" },
+  { "id": "mg_high_2", "trigger": "minigame:high", "text": "Готовка на уровне" },
+  { "id": "ig_prem_1", "trigger": "ingredient:premium", "text": "Свежие, качественные продукты" },
+  { "id": "ig_prem_2", "trigger": "ingredient:premium", "text": "Чувствуется качество ингредиентов" },
+  { "id": "ig_basic_1", "trigger": "ingredient:basic", "text": "Простые ингредиенты" }
+]

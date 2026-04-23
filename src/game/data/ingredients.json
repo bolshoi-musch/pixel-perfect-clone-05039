@@ -1,0 +1,19 @@
+[
+  { "id": "egg", "name": "Яйцо", "category": "raw", "quality": "basic", "price": 8, "edible_raw": false },
+  { "id": "egg_premium", "name": "Деревенское яйцо", "category": "raw", "quality": "premium", "price": 18, "edible_raw": false },
+  { "id": "bread", "name": "Хлеб", "category": "raw", "quality": "basic", "price": 5, "edible_raw": true },
+  { "id": "bread_premium", "name": "Зерновой хлеб", "category": "raw", "quality": "premium", "price": 12, "edible_raw": true },
+  { "id": "tea_leaves", "name": "Чайный лист", "category": "raw", "quality": "basic", "price": 4, "edible_raw": false },
+  { "id": "water", "name": "Вода", "category": "raw", "quality": "basic", "price": 1, "edible_raw": true },
+  { "id": "rice", "name": "Рис", "category": "raw", "quality": "basic", "price": 6, "edible_raw": false },
+  { "id": "tomato", "name": "Помидор", "category": "raw", "quality": "basic", "price": 7, "edible_raw": true },
+  { "id": "cucumber", "name": "Огурец", "category": "raw", "quality": "basic", "price": 6, "edible_raw": true },
+  { "id": "lettuce", "name": "Салат", "category": "raw", "quality": "basic", "price": 5, "edible_raw": true },
+  { "id": "pasta", "name": "Паста", "category": "raw", "quality": "basic", "price": 7, "edible_raw": false },
+  { "id": "cheese", "name": "Сыр", "category": "raw", "quality": "basic", "price": 10, "edible_raw": true },
+  { "id": "berries", "name": "Ягоды", "category": "raw", "quality": "basic", "price": 9, "edible_raw": true },
+  { "id": "milk", "name": "Молоко", "category": "raw", "quality": "basic", "price": 5, "edible_raw": true },
+  { "id": "flour", "name": "Мука", "category": "raw", "quality": "basic", "price": 4, "edible_raw": false },
+  { "id": "sugar", "name": "Сахар", "category": "raw", "quality": "basic", "price": 3, "edible_raw": true },
+  { "id": "butter", "name": "Масло", "category": "raw", "quality": "basic", "price": 6, "edible_raw": true }
+]

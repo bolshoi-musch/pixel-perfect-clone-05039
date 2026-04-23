@@ -1,0 +1,35 @@
+[
+  { "id": "tea_boil", "type": "heat", "requires": ["water", "kettle"], "minigame": "window", "output": "hot_water", "hints": ["Поймай момент, когда вода закипит"] },
+  { "id": "tea_pour", "type": "combine", "requires": ["hot_water", "tea_leaves", "cup"], "minigame": "hold", "output": "tea_brewed", "hints": ["Налей кипяток в чашку с заваркой"] },
+  { "id": "tea_serve", "type": "serve", "requires": ["tea_brewed"], "minigame": null, "output": "tea", "hints": ["Позвони в звонок"] },
+
+  { "id": "toast_toast", "type": "heat", "requires": ["bread", "toaster"], "minigame": "window", "output": "toast_ready", "hints": ["Не передержи в тостере"] },
+  { "id": "toast_serve", "type": "serve", "requires": ["toast_ready", "plate"], "minigame": null, "output": "toast", "hints": ["Подай на тарелке"] },
+
+  { "id": "rice_cook", "type": "heat", "requires": ["rice", "water", "rice_cooker"], "minigame": "hold", "output": "rice_cooked", "hints": ["Загрузи рис и воду"] },
+  { "id": "rice_serve", "type": "serve", "requires": ["rice_cooked", "plate"], "minigame": null, "output": "rice", "hints": ["Выложи на тарелку"] },
+
+  { "id": "omelet_crack", "type": "combine", "requires": ["egg", "bowl"], "minigame": "hold", "output": "egg_in_bowl", "hints": ["Разбей яйцо в миску"] },
+  { "id": "omelet_mix", "type": "mix", "requires": ["egg_in_bowl"], "minigame": "mix", "output": "egg_mix", "hints": ["Хорошо взбей"] },
+  { "id": "omelet_cook", "type": "heat", "requires": ["egg_mix", "pan", "stove"], "minigame": "window", "output": "omelet_cooked", "hints": ["Лови готовность"] },
+  { "id": "omelet_serve", "type": "serve", "requires": ["omelet_cooked", "plate"], "minigame": null, "output": "omelet", "hints": ["Подай омлет"] },
+
+  { "id": "salad_chop_tomato", "type": "cut", "requires": ["tomato", "knife"], "minigame": "chop_stub", "output": "tomato_chopped", "hints": ["Нарежь помидор"] },
+  { "id": "salad_chop_cucumber", "type": "cut", "requires": ["cucumber", "knife"], "minigame": "chop_stub", "output": "cucumber_chopped", "hints": ["Нарежь огурец"] },
+  { "id": "salad_mix", "type": "mix", "requires": ["tomato_chopped", "cucumber_chopped", "lettuce", "bowl"], "minigame": "mix", "output": "salad_mixed", "hints": ["Перемешай овощи"] },
+  { "id": "salad_serve", "type": "serve", "requires": ["salad_mixed", "plate"], "minigame": null, "output": "salad", "hints": ["Выложи салат"] },
+
+  { "id": "pasta_boil", "type": "heat", "requires": ["pasta", "water", "pot", "stove"], "minigame": "window", "output": "pasta_cooked", "hints": ["Свари пасту al dente"] },
+  { "id": "pasta_chop_cheese", "type": "cut", "requires": ["cheese", "knife"], "minigame": "chop_stub", "output": "cheese_grated", "hints": ["Натри сыр"] },
+  { "id": "pasta_combine", "type": "combine", "requires": ["pasta_cooked", "cheese_grated"], "minigame": "mix", "output": "pasta_with_cheese", "hints": ["Смешай пасту с сыром"] },
+  { "id": "pasta_serve", "type": "serve", "requires": ["pasta_with_cheese", "plate"], "minigame": null, "output": "pasta", "hints": ["Подай пасту"] },
+
+  { "id": "smoothie_load", "type": "combine", "requires": ["berries", "milk", "blender"], "minigame": "hold", "output": "smoothie_loaded", "hints": ["Загрузи в блендер"] },
+  { "id": "smoothie_blend", "type": "mix", "requires": ["smoothie_loaded"], "minigame": "mix", "output": "smoothie_blended", "hints": ["Взбей до однородности"] },
+  { "id": "smoothie_serve", "type": "serve", "requires": ["smoothie_blended", "cup"], "minigame": null, "output": "smoothie", "hints": ["Налей в чашку"] },
+
+  { "id": "cookies_mix", "type": "mix", "requires": ["flour", "sugar", "butter", "egg", "bowl"], "minigame": "mix", "output": "cookie_dough", "hints": ["Замеси тесто"] },
+  { "id": "cookies_form", "type": "form", "requires": ["cookie_dough"], "minigame": "roll_stub", "output": "cookie_raw", "hints": ["Сформируй печенье"] },
+  { "id": "cookies_bake", "type": "heat", "requires": ["cookie_raw", "oven"], "minigame": "window", "output": "cookies_baked", "hints": ["Не передержи в духовке"] },
+  { "id": "cookies_serve", "type": "serve", "requires": ["cookies_baked", "plate"], "minigame": null, "output": "cookies", "hints": ["Подай печенье"] }
+]

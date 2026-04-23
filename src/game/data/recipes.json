@@ -1,0 +1,74 @@
+[
+  {
+    "id": "tea",
+    "name": "Чай",
+    "base_price": 30,
+    "t_fast": 35,
+    "t_ok": 60,
+    "required_equipment": ["kettle", "cup"],
+    "step_ids": ["tea_boil", "tea_pour", "tea_serve"]
+  },
+  {
+    "id": "toast",
+    "name": "Тост",
+    "base_price": 35,
+    "t_fast": 30,
+    "t_ok": 55,
+    "required_equipment": ["toaster", "plate"],
+    "step_ids": ["toast_toast", "toast_serve"]
+  },
+  {
+    "id": "rice",
+    "name": "Рис",
+    "base_price": 55,
+    "t_fast": 60,
+    "t_ok": 100,
+    "required_equipment": ["rice_cooker", "plate"],
+    "step_ids": ["rice_cook", "rice_serve"]
+  },
+  {
+    "id": "omelet",
+    "name": "Омлет",
+    "base_price": 70,
+    "t_fast": 70,
+    "t_ok": 110,
+    "required_equipment": ["bowl", "pan", "stove", "plate"],
+    "step_ids": ["omelet_crack", "omelet_mix", "omelet_cook", "omelet_serve"]
+  },
+  {
+    "id": "salad",
+    "name": "Овощной салат",
+    "base_price": 65,
+    "t_fast": 60,
+    "t_ok": 100,
+    "required_equipment": ["knife", "bowl", "plate"],
+    "step_ids": ["salad_chop_tomato", "salad_chop_cucumber", "salad_mix", "salad_serve"]
+  },
+  {
+    "id": "pasta",
+    "name": "Паста с сыром",
+    "base_price": 90,
+    "t_fast": 90,
+    "t_ok": 140,
+    "required_equipment": ["pot", "stove", "knife", "plate"],
+    "step_ids": ["pasta_boil", "pasta_chop_cheese", "pasta_combine", "pasta_serve"]
+  },
+  {
+    "id": "smoothie",
+    "name": "Смузи",
+    "base_price": 80,
+    "t_fast": 45,
+    "t_ok": 75,
+    "required_equipment": ["blender", "cup"],
+    "step_ids": ["smoothie_load", "smoothie_blend", "smoothie_serve"]
+  },
+  {
+    "id": "cookies",
+    "name": "Печенье",
+    "base_price": 110,
+    "t_fast": 120,
+    "t_ok": 180,
+    "required_equipment": ["bowl", "oven", "plate"],
+    "step_ids": ["cookies_mix", "cookies_form", "cookies_bake", "cookies_serve"]
+  }
+]
