@@ -13,11 +13,17 @@ import { useActivePick } from "@/game/active-pick";
 
 interface KitchenSceneProps {
   onHoverLabel: (label: string | null) => void;
-  onPickIngredient: () => string | null; // возвращает выбранный ингредиент к размещению (или null)
+  onPickIngredient: () => string | null;
+  onObjectAction: (equipment_id: string, label: string) => void;
   onBellRing: () => void;
 }
 
-export function KitchenScene({ onHoverLabel, onPickIngredient, onBellRing }: KitchenSceneProps) {
+export function KitchenScene({
+  onHoverLabel,
+  onPickIngredient,
+  onObjectAction,
+  onBellRing,
+}: KitchenSceneProps) {
   const slots = useGame((s) => s.table_slots);
   const placeFromInventory = useGame((s) => s.placeFromInventory);
   const pickupToInventory = useGame((s) => s.pickupToInventory);
@@ -57,9 +63,13 @@ export function KitchenScene({ onHoverLabel, onPickIngredient, onBellRing }: Kit
     eatFromTable(index);
   };
 
-  const handleObjectClick = (label: string, worldPos: [number, number, number]) => {
+  const handleObjectClick = (
+    equipment_id: string,
+    label: string,
+    worldPos: [number, number, number],
+  ) => {
     fireHand(worldPos, 180);
-    log(`Действие: ${label}`);
+    onObjectAction(equipment_id, label);
   };
 
   return (
@@ -74,7 +84,6 @@ export function KitchenScene({ onHoverLabel, onPickIngredient, onBellRing }: Kit
         <color attach="background" args={["#f3e6cf"]} />
         <fog attach="fog" args={["#f3e6cf", 6, 14]} />
 
-        {/* Свет */}
         <ambientLight intensity={0.55} />
         <directionalLight
           position={[2.5, 4, 3]}
@@ -89,19 +98,19 @@ export function KitchenScene({ onHoverLabel, onPickIngredient, onBellRing }: Kit
         <TableSurface />
 
         <Stove
-          onClick={(p) => handleObjectClick("Плита", p)}
+          onClick={(p) => handleObjectClick("stove", "Плита", p)}
           onHover={onHoverLabel}
         />
         <Bowl
-          onClick={(p) => handleObjectClick("Миска", p)}
+          onClick={(p) => handleObjectClick("bowl", "Миска", p)}
           onHover={onHoverLabel}
         />
         <Plate
-          onClick={(p) => handleObjectClick("Тарелка", p)}
+          onClick={(p) => handleObjectClick("plate", "Тарелка", p)}
           onHover={onHoverLabel}
         />
         <Cup
-          onClick={(p) => handleObjectClick("Чашка", p)}
+          onClick={(p) => handleObjectClick("cup", "Чашка", p)}
           onHover={onHoverLabel}
         />
         <Bell
@@ -113,7 +122,7 @@ export function KitchenScene({ onHoverLabel, onPickIngredient, onBellRing }: Kit
         />
         <WorkSurfaceMarker
           position={WORK_SURFACE_POS}
-          onClick={(p) => handleObjectClick("Рабочая зона", p)}
+          onClick={(p) => handleObjectClick("work_surface", "Рабочая зона", p)}
           onHover={onHoverLabel}
         />
 
@@ -132,7 +141,6 @@ export function KitchenScene({ onHoverLabel, onPickIngredient, onBellRing }: Kit
   );
 }
 
-/** Круговой индикатор long-press поверх 3D-канваса. */
 function LongPressOverlay({ progress }: { progress: { index: number; ratio: number } | null }) {
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
