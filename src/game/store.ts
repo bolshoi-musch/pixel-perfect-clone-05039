@@ -141,7 +141,113 @@ export const useGame = create<GameState>((set, get) => ({
     get().persist();
   },
 
-  buyEquipment: (id, price) => {
+  placeFromInventory: (ingredient_id, quality) => {
+    const s = get();
+    const ing = INGREDIENTS_BY_ID.get(ingredient_id);
+    if (!ing) return -1;
+    const invIdx = s.inventory.findIndex(
+      (e) => e.ingredient_id === ingredient_id && e.quality === quality,
+    );
+    if (invIdx < 0 || s.inventory[invIdx].count <= 0) return -1;
+
+    const freeIdx = s.table_slots.findIndex((sl) => sl.ingredient_id === null);
+    if (freeIdx < 0) {
+      // Стол переполнен — открываем модал выбора
+      set({ pending_overflow: { entry: { ingredient_id, quality, count: 1 } } });
+      get().log("Стол переполнен — выберите, что убрать");
+      return -1;
+    }
+
+    const inv = [...s.inventory];
+    inv[invIdx] = { ...inv[invIdx], count: inv[invIdx].count - 1 };
+    if (inv[invIdx].count <= 0) inv.splice(invIdx, 1);
+
+    const slots = [...s.table_slots];
+    slots[freeIdx] = {
+      ingredient_id,
+      quality,
+      category: ing.category,
+    };
+    set({ inventory: inv, table_slots: slots });
+    get().log(`Поставлено на стол: ${ing.name}`);
+    get().persist();
+    return freeIdx;
+  },
+
+  pickupToInventory: (slot_index) => {
+    if (slot_index < 0 || slot_index > 4) return false;
+    const s = get();
+    const slot = s.table_slots[slot_index];
+    if (!slot.ingredient_id || !slot.quality) return false;
+    const ing = INGREDIENTS_BY_ID.get(slot.ingredient_id);
+    s.addToInventory({
+      ingredient_id: slot.ingredient_id,
+      quality: slot.quality,
+      count: 1,
+    });
+    const slots = [...s.table_slots];
+    slots[slot_index] = { ...EMPTY_SLOT };
+    set({ table_slots: slots });
+    get().log(`В инвентарь: ${ing?.name ?? slot.ingredient_id}`);
+    get().persist();
+    return true;
+  },
+
+  eatFromTable: (slot_index) => {
+    if (slot_index < 0 || slot_index > 4) return "empty";
+    const s = get();
+    const slot = s.table_slots[slot_index];
+    if (!slot.ingredient_id) return "empty";
+    if (slot.category !== "raw") {
+      get().log("Это нельзя есть сырым");
+      return "not_raw";
+    }
+    const ing = INGREDIENTS_BY_ID.get(slot.ingredient_id);
+    const slots = [...s.table_slots];
+    slots[slot_index] = { ...EMPTY_SLOT };
+    set({ table_slots: slots });
+    get().log(`Съедено: ${ing?.name ?? slot.ingredient_id}`);
+    get().persist();
+    return "ok";
+  },
+
+  resolveOverflow: (slot_index_to_free) => {
+    const s = get();
+    if (!s.pending_overflow) return;
+    const { entry } = s.pending_overflow;
+    // Возвращаем убираемый предмет в инвентарь
+    const freed = s.table_slots[slot_index_to_free];
+    if (freed.ingredient_id && freed.quality) {
+      s.addToInventory({
+        ingredient_id: freed.ingredient_id,
+        quality: freed.quality,
+        count: 1,
+      });
+    }
+    const ing = INGREDIENTS_BY_ID.get(entry.ingredient_id);
+    const slots = [...get().table_slots];
+    slots[slot_index_to_free] = {
+      ingredient_id: entry.ingredient_id,
+      quality: entry.quality,
+      category: ing?.category ?? null,
+    };
+    // Списываем предмет из инвентаря
+    const inv = [...get().inventory];
+    const ii = inv.findIndex(
+      (e) => e.ingredient_id === entry.ingredient_id && e.quality === entry.quality,
+    );
+    if (ii >= 0) {
+      inv[ii] = { ...inv[ii], count: inv[ii].count - 1 };
+      if (inv[ii].count <= 0) inv.splice(ii, 1);
+    }
+    set({ table_slots: slots, inventory: inv, pending_overflow: null });
+    get().log(`Заменено на столе: ${ing?.name ?? entry.ingredient_id}`);
+    get().persist();
+  },
+
+  cancelOverflow: () => set({ pending_overflow: null }),
+
+
     const s = get();
     if (s.equipment_owned.includes(id)) return false;
     if (s.money < price) return false;
