@@ -137,11 +137,28 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
   cancelMinigame: () => set({ active_minigame: null }),
 
   ringBell: () => {
-    const p = get().progress;
+    let p = get().progress;
     if (!p) return { ok: false, reason: "no_order" };
+
+    // Auto-complete pending serve steps when bell is pressed
+    let recipe = RECIPES_BY_ID.get(p.recipe_id)!;
+    while (!p.finished && p.step_index < recipe.step_ids.length) {
+      const step = STEPS_BY_ID.get(recipe.step_ids[p.step_index]);
+      if (!step || step.type !== "serve") break;
+      // Check requires: prepared items + plate/cup are owned by default
+      const game = useGame.getState();
+      const owned = new Set(game.equipment_owned);
+      const preparedSet = new Set(p.prepared);
+      const allOk = step.requires.every(
+        (r) => owned.has(r) || preparedSet.has(r) || r === "water",
+      );
+      if (!allOk) break;
+      completeStep(set, get, step, 0.9, 0);
+      p = get().progress!;
+    }
+
     if (!p.finished) return { ok: false, reason: "not_finished" };
 
-    const recipe = RECIPES_BY_ID.get(p.recipe_id)!;
     const t_elapsed_sec = (Date.now() - p.started_at) / 1000;
     const totalConsumed = p.consumed_basic + p.consumed_premium;
     const premium_share = totalConsumed > 0 ? p.consumed_premium / totalConsumed : 0;
@@ -161,7 +178,6 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
     game.completeOrder(recipe.id, result.stars, review, result.reward_money);
     game.log(`★${result.stars} • +${result.reward_money} ₽`);
 
-    // Onboarding flags
     if (recipe.id === "omelet") game.setOnboardingFlag("done_first_omelet", true);
     if (recipe.id === "tea") game.setOnboardingFlag("done_first_tea", true);
 
