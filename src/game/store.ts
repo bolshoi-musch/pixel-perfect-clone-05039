@@ -10,13 +10,22 @@ import type {
   IngredientQuality,
   IngredientCategory,
 } from "./types";
+import type { ActionLogEntry } from "./interactions";
+import { INGREDIENTS_BY_ID } from "./data";
 
 interface GameState extends SaveData {
   hydrated: boolean;
+
+  // Ephemeral UI state (не сохраняется)
+  action_log: ActionLogEntry[];
+  pending_overflow: { entry: InventoryEntry } | null;
+
   // actions
   hydrate: () => void;
   startNewGame: () => void;
   persist: () => void;
+
+  log: (text: string) => void;
 
   setMoney: (money: number) => void;
   addMoney: (delta: number) => void;
@@ -26,6 +35,16 @@ interface GameState extends SaveData {
 
   setTableSlot: (index: number, slot: TableSlot) => void;
   clearTableSlot: (index: number) => void;
+
+  /** Положить из инвентаря на стол. Возвращает индекс слота или -1 если переполнено. */
+  placeFromInventory: (ingredient_id: string, quality: IngredientQuality) => number;
+  /** Убрать предмет со стола в инвентарь. */
+  pickupToInventory: (slot_index: number) => boolean;
+  /** Съесть raw-предмет со стола. Возвращает true если съеден. */
+  eatFromTable: (slot_index: number) => "ok" | "not_raw" | "empty";
+  /** Разрешить переполнение, освободив указанный слот. */
+  resolveOverflow: (slot_index_to_free: number) => void;
+  cancelOverflow: () => void;
 
   buyEquipment: (id: string, price: number) => boolean;
 
@@ -42,6 +61,17 @@ const EMPTY_SLOT: TableSlot = { ingredient_id: null, quality: null, category: nu
 export const useGame = create<GameState>((set, get) => ({
   ...makeInitialSave(),
   hydrated: false,
+  action_log: [],
+  pending_overflow: null,
+
+  log: (text) => {
+    const entry: ActionLogEntry = {
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      ts: Date.now(),
+      text,
+    };
+    set({ action_log: [entry, ...get().action_log].slice(0, 30) });
+  },
 
   hydrate: () => {
     if (get().hydrated) return;
