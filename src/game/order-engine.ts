@@ -79,14 +79,13 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
     const step = step_id ? STEPS_BY_ID.get(step_id) : undefined;
     if (!step) return { ok: false, reason: "no_step" };
 
-    // Equipment must be in step.requires
-    if (!step.requires.includes(equipment_id)) {
-      // wrong-equipment ⇒ small error and log
+    // Validate equipment matches the step.
+    if (!equipmentMatchesStep(equipment_id, step)) {
       bumpError(set, get, "Не то оборудование для этого шага");
       return { ok: false, reason: "wrong_equipment" };
     }
 
-    // Check requirements: ingredients/preparedness
+    // Check requirements: ingredients/preparedness/equipment ownership.
     const game = useGame.getState();
     const onTable = new Set(
       game.table_slots.map((s) => s.ingredient_id).filter((x): x is string => !!x),
@@ -97,10 +96,9 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
     const missing: string[] = [];
     for (const req of step.requires) {
       if (req === equipment_id) continue;
-      if (owned.has(req)) continue; // equipment requirement
-      if (preparedSet.has(req)) continue; // intermediate ingredient
-      if (onTable.has(req)) continue; // raw ingredient on table
-      // try water specially: if water needed and equipment is kettle/pot/rice_cooker present, allow
+      if (owned.has(req)) continue;
+      if (preparedSet.has(req)) continue;
+      if (onTable.has(req)) continue;
       if (req === "water") continue; // implicit water for MVP
       missing.push(req);
     }
