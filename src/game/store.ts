@@ -19,6 +19,8 @@ interface GameState extends SaveData {
   // Ephemeral UI state (не сохраняется)
   action_log: ActionLogEntry[];
   pending_overflow: { entry: InventoryEntry } | null;
+  last_clicked_target: string | null;
+  setLastClickedTarget: (label: string | null) => void;
 
   // actions
   hydrate: () => void;
