@@ -3,8 +3,9 @@
 
 import { create } from "zustand";
 import { RECIPES_BY_ID, STEPS_BY_ID, INGREDIENTS_BY_ID } from "./data";
-import type { Recipe, RecipeStep, MinigameKind } from "./types";
+import type { RecipeStep, MinigameKind, IngredientQuality } from "./types";
 import { useGame } from "./store";
+import { useActivePick } from "./active-pick";
 import { computeScore } from "./scoring";
 import { buildReview } from "./reviews";
 
@@ -42,13 +43,31 @@ export type StepAttempt =
   | { ok: true; opened_minigame: MinigameKind | null; step: RecipeStep }
   | {
       ok: false;
-      reason: "no_order" | "no_step" | "wrong_equipment" | "missing" | "already_done";
+      reason:
+        | "no_order"
+        | "no_step"
+        | "wrong_equipment"
+        | "missing"
+        | "already_done";
       missing?: string[];
+      hint_equipment?: string;
     };
 
 export type RingResult =
   | { ok: false; reason: "no_order" | "not_finished" }
   | { ok: true; stars: number; reward: number; recipe_id: string };
+
+// ---- Ingredient aliasing ----
+// Premium varieties satisfy basic ingredient requirements.
+const INGREDIENT_ALIAS: Record<string, string> = {
+  egg_premium: "egg",
+  bread_premium: "bread",
+};
+
+/** Resolve any inventory id to its "canonical" id used in step.requires. */
+function canonicalIngredient(id: string): string {
+  return INGREDIENT_ALIAS[id] ?? id;
+}
 
 export const useOrderEngine = create<OrderEngineState>((set, get) => ({
   progress: null,
@@ -83,16 +102,23 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
     const step = step_id ? STEPS_BY_ID.get(step_id) : undefined;
     if (!step) return { ok: false, reason: "no_step" };
 
-    // Validate equipment matches the step.
+    // Validate equipment matches the step. SOFT hint instead of error spam.
     if (!equipmentMatchesStep(equipment_id, step)) {
-      bumpError(set, get, "Не то оборудование для этого шага");
-      return { ok: false, reason: "wrong_equipment" };
+      const target = expectedEquipmentForStep(step);
+      const targetName = target ? equipmentLabel(target) : "нужный инструмент";
+      useGame.getState().log(`Сейчас нажми на: ${targetName}`);
+      return { ok: false, reason: "wrong_equipment", hint_equipment: target ?? undefined };
     }
 
     // Check requirements: ingredients/preparedness/equipment ownership.
     const game = useGame.getState();
-    const onTable = new Set(
-      game.table_slots.map((s) => s.ingredient_id).filter((x): x is string => !!x),
+    const onTableCanonical = new Set(
+      game.table_slots
+        .map((s) => (s.ingredient_id ? canonicalIngredient(s.ingredient_id) : null))
+        .filter((x): x is string => !!x),
+    );
+    const inventoryCanonical = new Set(
+      game.inventory.filter((e) => e.count > 0).map((e) => canonicalIngredient(e.ingredient_id)),
     );
     const preparedSet = new Set(p.prepared);
     const owned = new Set(game.equipment_owned);
@@ -102,7 +128,8 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
       if (req === equipment_id) continue;
       if (owned.has(req)) continue;
       if (preparedSet.has(req)) continue;
-      if (onTable.has(req)) continue;
+      if (onTableCanonical.has(req)) continue;
+      if (inventoryCanonical.has(req)) continue; // direct-consume from inventory
       if (req === "water") continue; // implicit water for MVP
       missing.push(req);
     }
@@ -208,7 +235,43 @@ function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
     equipment_id === "work_surface"
   )
     return true;
+  // Serve step → bell handles it (so clicking plate/cup is harmless), but no match here.
   return false;
+}
+
+/** Best guess: which equipment is the "primary" target the player should click. */
+export function expectedEquipmentForStep(step: RecipeStep): string | null {
+  // Heat steps → the heat appliance in requires (or stove fallback)
+  if (step.minigame === "window") {
+    const heat = step.requires.find((r) => HEAT_EQUIPMENT.has(r));
+    return heat ?? "stove";
+  }
+  if (step.minigame === "mix") return "bowl";
+  if (step.minigame === "chop_stub" || step.minigame === "roll_stub") return "work_surface";
+  // combine/serve: prefer first equipment in requires (bowl/cup/plate/pan...)
+  const tools = ["bowl", "cup", "plate", "pan", "kettle", "rice_cooker", "blender", "pot", "oven"];
+  const tool = step.requires.find((r) => tools.includes(r));
+  return tool ?? null;
+}
+
+const EQUIPMENT_LABELS: Record<string, string> = {
+  stove: "Плита",
+  oven: "Духовка",
+  toaster: "Тостер",
+  kettle: "Чайник",
+  rice_cooker: "Рисоварка",
+  bowl: "Миска",
+  cup: "Чашка",
+  plate: "Тарелка",
+  pan: "Сковорода",
+  pot: "Кастрюля",
+  blender: "Блендер",
+  work_surface: "Рабочая зона",
+  bell: "Звонок",
+};
+
+function equipmentLabel(id: string): string {
+  return EQUIPMENT_LABELS[id] ?? id;
 }
 
 function bumpError(
@@ -232,34 +295,66 @@ function completeStep(
   const p = get().progress;
   if (!p) return;
 
-  // Consume raw ingredients from the table
+  // Consume raw ingredients: from table first, then from inventory (direct-consume).
   const game = useGame.getState();
   const owned = new Set(game.equipment_owned);
   const preparedSet = new Set(p.prepared);
   let consumed_basic = p.consumed_basic;
   let consumed_premium = p.consumed_premium;
 
-  const consumedFromTable: string[] = [];
   const newPrepared = [...p.prepared];
 
   for (const req of step.requires) {
     if (owned.has(req)) continue;
     if (preparedSet.has(req)) {
-      // remove the intermediate (consumed)
       const idx = newPrepared.indexOf(req);
       if (idx >= 0) newPrepared.splice(idx, 1);
       continue;
     }
     if (req === "water") continue;
-    // raw ingredient — find it on the table
-    const slotIdx = game.table_slots.findIndex((s) => s.ingredient_id === req);
+
+    // 1) Try table slot (any ingredient whose canonical matches req)
+    const slotIdx = game.table_slots.findIndex(
+      (s) => s.ingredient_id && canonicalIngredient(s.ingredient_id) === req,
+    );
     if (slotIdx >= 0) {
       const slot = game.table_slots[slotIdx];
       if (slot.quality === "premium") consumed_premium += 1;
       else consumed_basic += 1;
-      consumedFromTable.push(req);
       game.clearTableSlot(slotIdx);
+      continue;
     }
+
+    // 2) Direct-consume from inventory: prefer the actively picked one if matches.
+    const pick = useActivePick.getState().pick;
+    let pickedFrom: { id: string; quality: IngredientQuality } | null = null;
+    if (pick) {
+      const [pId, pQ] = pick.split("|") as [string, IngredientQuality];
+      if (canonicalIngredient(pId) === req) pickedFrom = { id: pId, quality: pQ };
+    }
+    if (!pickedFrom) {
+      // Find any inventory entry whose canonical matches req (premium first to reward effort).
+      const sortedInv = [...game.inventory].sort((a, b) =>
+        a.quality === b.quality ? 0 : a.quality === "premium" ? -1 : 1,
+      );
+      const match = sortedInv.find(
+        (e) => canonicalIngredient(e.ingredient_id) === req && e.count > 0,
+      );
+      if (match) pickedFrom = { id: match.ingredient_id, quality: match.quality };
+    }
+    if (pickedFrom) {
+      game.removeFromInventory(pickedFrom.id, pickedFrom.quality, 1);
+      if (pickedFrom.quality === "premium") consumed_premium += 1;
+      else consumed_basic += 1;
+      // Clear pick if it was the one consumed
+      if (
+        pick &&
+        pick === `${pickedFrom.id}|${pickedFrom.quality}`
+      ) {
+        useActivePick.getState().setPick(null);
+      }
+    }
+    // If nothing found here — tryStep already verified availability, so this shouldn't happen.
   }
 
   if (step.output) newPrepared.push(step.output);
@@ -310,11 +405,12 @@ export function pickNextRecipe(): string | null {
   if (!ob.done_first_tea) return "tea";
 
   const owned = new Set(game.equipment_owned);
-  const inventoryIds = new Set(game.inventory.map((e) => e.ingredient_id));
+  const inventoryCanonical = new Set(
+    game.inventory.map((e) => canonicalIngredient(e.ingredient_id)),
+  );
 
   const playable = [...RECIPES_BY_ID.values()].filter((r) => {
     if (!r.required_equipment.every((e) => owned.has(e))) return false;
-    // Need at least one raw ingredient that recipe consumes available
     const stepIngredients = r.step_ids
       .flatMap((sid) => STEPS_BY_ID.get(sid)?.requires ?? [])
       .filter((id) => INGREDIENTS_BY_ID.has(id));
@@ -322,12 +418,11 @@ export function pickNextRecipe(): string | null {
       const ing = INGREDIENTS_BY_ID.get(id)!;
       if (ing.category !== "raw") return true;
       if (id === "water") return true;
-      return inventoryIds.has(id);
+      return inventoryCanonical.has(id);
     });
   });
 
   if (playable.length === 0) {
-    // fallback to starter queue
     return STARTER_QUEUE[Math.floor(Math.random() * STARTER_QUEUE.length)];
   }
   return playable[Math.floor(Math.random() * playable.length)].id;
