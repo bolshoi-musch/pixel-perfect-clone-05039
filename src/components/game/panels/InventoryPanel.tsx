@@ -21,7 +21,8 @@ export function InventoryPanel() {
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        Выберите ингредиент и кликните по пустому слоту на столе, чтобы поставить.
+        Выбери продукт и нажми по нужному инструменту (миска, плита…) — ингредиент
+        используется напрямую. Можно также положить его на свободный слот стола.
       </p>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {inventory.map((entry) => {
