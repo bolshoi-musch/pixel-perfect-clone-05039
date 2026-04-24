@@ -29,6 +29,7 @@ export function KitchenScene({
   const pickupToInventory = useGame((s) => s.pickupToInventory);
   const eatFromTable = useGame((s) => s.eatFromTable);
   const log = useGame((s) => s.log);
+  const setLastClickedTarget = useGame((s) => s.setLastClickedTarget);
 
   const [handTarget, setHandTarget] = useState<HandTarget | null>(null);
   const handKeyRef = useRef(0);
