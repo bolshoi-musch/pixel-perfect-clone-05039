@@ -19,6 +19,8 @@ interface GameState extends SaveData {
   // Ephemeral UI state (не сохраняется)
   action_log: ActionLogEntry[];
   pending_overflow: { entry: InventoryEntry } | null;
+  last_clicked_target: string | null;
+  setLastClickedTarget: (label: string | null) => void;
 
   // actions
   hydrate: () => void;
@@ -63,6 +65,8 @@ export const useGame = create<GameState>((set, get) => ({
   hydrated: false,
   action_log: [],
   pending_overflow: null,
+  last_clicked_target: null,
+  setLastClickedTarget: (label) => set({ last_clicked_target: label }),
 
   log: (text) => {
     const entry: ActionLogEntry = {

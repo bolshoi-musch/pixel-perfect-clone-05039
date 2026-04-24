@@ -1,17 +1,26 @@
 import { useGame } from "@/game/store";
 import { useActivePick } from "@/game/active-pick";
-import { INGREDIENTS_BY_ID } from "@/game/data";
+import { useOrderEngine, expectedEquipmentForStep } from "@/game/order-engine";
+import { INGREDIENTS_BY_ID, STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
 import { useNavigate } from "@tanstack/react-router";
 
 export function SettingsPanel() {
   const resetGame = useGame((s) => s.resetGame);
   const navigate = useNavigate();
   const tableSlots = useGame((s) => s.table_slots);
+  const inventory = useGame((s) => s.inventory);
   const actionLog = useGame((s) => s.action_log);
+  const lastTarget = useGame((s) => s.last_clicked_target);
   const pick = useActivePick((s) => s.pick);
+  const progress = useOrderEngine((s) => s.progress);
 
   const lastAction = actionLog[0]?.text ?? "—";
   const pickIng = pick ? INGREDIENTS_BY_ID.get(pick.split("|")[0]) : null;
+
+  const recipe = progress ? RECIPES_BY_ID.get(progress.recipe_id) : null;
+  const stepId = recipe?.step_ids[progress?.step_index ?? -1];
+  const step = stepId ? STEPS_BY_ID.get(stepId) : null;
+  const expectedEq = step ? expectedEquipmentForStep(step) : null;
 
   return (
     <div className="space-y-4">
@@ -47,18 +56,42 @@ export function SettingsPanel() {
 
       <section className="rounded-xl border border-dashed border-border/60 bg-background/40 p-3">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Debug
+          Debug overlay
         </h4>
         <dl className="mt-2 space-y-2 text-xs">
-          <div>
-            <dt className="text-muted-foreground">selectedIngredient</dt>
-            <dd className="mt-0.5 font-mono text-foreground">
-              {pickIng ? `${pickIng.name} (${pick})` : "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">tableSlots</dt>
-            <dd className="mt-0.5 space-y-0.5 font-mono text-foreground">
+          <DebugRow label="recipe">
+            {recipe ? `${recipe.name} (${recipe.id})` : "—"}
+          </DebugRow>
+          <DebugRow label="activeStep">
+            {step
+              ? `${progress!.step_index + 1}/${recipe!.step_ids.length} · ${step.id} (${step.type}${
+                  step.minigame ? `/${step.minigame}` : ""
+                })`
+              : "—"}
+          </DebugRow>
+          <DebugRow label="step.requires">
+            {step ? step.requires.join(", ") || "—" : "—"}
+          </DebugRow>
+          <DebugRow label="expected equipment">{expectedEq ?? "—"}</DebugRow>
+          <DebugRow label="step.hint">{step?.hints?.[0] ?? "—"}</DebugRow>
+          <DebugRow label="selectedIngredient">
+            {pickIng ? `${pickIng.name} · ${pick}` : "—"}
+          </DebugRow>
+          <DebugRow label="inventory">
+            <div className="space-y-0.5">
+              {inventory.length === 0 && <div>пусто</div>}
+              {inventory.map((e) => {
+                const ing = INGREDIENTS_BY_ID.get(e.ingredient_id);
+                return (
+                  <div key={`${e.ingredient_id}|${e.quality}`}>
+                    {ing?.name ?? e.ingredient_id} · {e.quality} ×{e.count}
+                  </div>
+                );
+              })}
+            </div>
+          </DebugRow>
+          <DebugRow label="tableSlots">
+            <div className="space-y-0.5">
               {tableSlots.map((s, i) => {
                 const ing = s.ingredient_id ? INGREDIENTS_BY_ID.get(s.ingredient_id) : null;
                 return (
@@ -67,14 +100,28 @@ export function SettingsPanel() {
                   </div>
                 );
               })}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">lastAction</dt>
-            <dd className="mt-0.5 font-mono text-foreground">{lastAction}</dd>
-          </div>
+            </div>
+          </DebugRow>
+          <DebugRow label="lastClickedTarget">{lastTarget ?? "—"}</DebugRow>
+          <DebugRow label="lastAction">{lastAction}</DebugRow>
+          <DebugRow label="errors / scores">
+            {progress
+              ? `errors=${progress.total_errors} · scores=[${progress.minigame_scores
+                  .map((x) => x.toFixed(2))
+                  .join(", ")}]`
+              : "—"}
+          </DebugRow>
         </dl>
       </section>
+    </div>
+  );
+}
+
+function DebugRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="mt-0.5 font-mono text-foreground">{children}</dd>
     </div>
   );
 }
