@@ -43,6 +43,7 @@ export function KitchenScene({
   const setPick = useActivePick((s) => s.setPick);
 
   const handleSlotShortClick = (index: number, worldPos: [number, number, number]) => {
+    setLastClickedTarget(`slot[${index}]`);
     const slot = slots[index];
     fireHand(worldPos);
     if (slot.ingredient_id) {
@@ -50,7 +51,7 @@ export function KitchenScene({
     } else {
       const pick = onPickIngredient();
       if (!pick) {
-        log("Выберите ингредиент в инвентаре");
+        log("Выберите ингредиент в «Продукты»");
         return;
       }
       const [id, quality] = pick.split("|") as [string, "basic" | "premium"];
@@ -60,6 +61,7 @@ export function KitchenScene({
   };
 
   const handleSlotLongPress = (index: number, worldPos: [number, number, number]) => {
+    setLastClickedTarget(`slot[${index}] (long)`);
     fireHand(worldPos, 280);
     eatFromTable(index);
   };
@@ -69,6 +71,7 @@ export function KitchenScene({
     label: string,
     worldPos: [number, number, number],
   ) => {
+    setLastClickedTarget(`${label} (${equipment_id})`);
     fireHand(worldPos, 180);
     onObjectAction(equipment_id, label);
   };
