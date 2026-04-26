@@ -421,13 +421,18 @@ export const TEST_RECIPE_POOL: readonly string[] = ["omelet", "tea"];
 export function pickNextRecipe(): string | null {
   const game = useGame.getState();
   const reviews = game.reviews;
-  const lastReview = reviews.length > 0 ? reviews[reviews.length - 1] : null;
+  // store.completeOrder prepends the new review, so reviews[0] is the most recent.
+  const lastReview = reviews.length > 0 ? reviews[0] : null;
   const lastId = lastReview?.recipe_id ?? null;
 
+  let next: string | null;
   if (!lastId || !TEST_RECIPE_POOL.includes(lastId)) {
-    return TEST_RECIPE_POOL[0] ?? null;
+    next = TEST_RECIPE_POOL[0] ?? null;
+  } else {
+    const idx = TEST_RECIPE_POOL.indexOf(lastId);
+    next = TEST_RECIPE_POOL[(idx + 1) % TEST_RECIPE_POOL.length] ?? null;
   }
-  const idx = TEST_RECIPE_POOL.indexOf(lastId);
-  return TEST_RECIPE_POOL[(idx + 1) % TEST_RECIPE_POOL.length] ?? null;
+  console.debug(`pickNextRecipe: last=${lastId ?? "none"}, next=${next ?? "none"}`);
+  return next;
 }
 
