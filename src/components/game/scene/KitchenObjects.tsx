@@ -3,6 +3,8 @@
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { SCENE_COLORS } from "./colors";
+import { ItemShape } from "./ItemShape";
+import { EQUIPMENT_POSITIONS } from "@/game/kitchen-layout";
 
 interface ClickableProps {
   position: [number, number, number];
