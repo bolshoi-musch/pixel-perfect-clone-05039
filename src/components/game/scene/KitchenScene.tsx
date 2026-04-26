@@ -4,6 +4,8 @@
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/game/store";
+import { useOrderEngine, expectedEquipmentForStep } from "@/game/order-engine";
+import { STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
 import { Environment } from "./Environment";
 import { TableSurface, WORK_SURFACE_POS } from "./Table";
 import { TableSlots } from "./TableSlots";
