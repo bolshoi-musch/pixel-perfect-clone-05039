@@ -58,6 +58,29 @@ export function SettingsPanel() {
         </button>
       </section>
 
+      <section>
+        <h4 className="text-sm font-semibold text-foreground">Подсказки</h4>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Detailed — полная карточка с инструкцией. Short — короткие подсказки. Off — только наведение.
+        </p>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {(["detailed", "short", "off"] as HintMode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setHintMode(m)}
+              className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                hintMode === m
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border bg-background/60 text-muted-foreground hover:bg-accent"
+              }`}
+            >
+              {m === "detailed" ? "Detailed" : m === "short" ? "Short" : "Off"}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="rounded-xl border border-dashed border-border/60 bg-background/40 p-3">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Debug overlay
