@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useGame } from "@/game/store";
@@ -16,6 +16,25 @@ const STOVE_UPGRADE_PRICES: Record<number, number> = {
   1: 80,
   2: 160,
 };
+
+const PURCHASE_FEEDBACK_MS = 800;
+
+/** Shared hook: track last purchased key for visual feedback. */
+function useLastPurchased() {
+  const [key, setKey] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+  const flash = (k: string) => {
+    setKey(k);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setKey(null), PURCHASE_FEEDBACK_MS);
+  };
+  return { lastKey: key, flash };
+}
 
 export function ShopPanel({ defaultTab = "products" }: Props) {
   const [tab, setTab] = useState<ShopTab>(defaultTab);
