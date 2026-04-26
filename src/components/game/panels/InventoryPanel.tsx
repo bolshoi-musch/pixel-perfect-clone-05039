@@ -1,28 +1,40 @@
 import { useGame } from "@/game/store";
 import { useActivePick } from "@/game/active-pick";
 import { INGREDIENTS_BY_ID } from "@/game/data";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "../EmptyState";
 
-export function InventoryPanel() {
+interface Props {
+  onOpenShop?: () => void;
+}
+
+export function InventoryPanel({ onOpenShop }: Props) {
   const inventory = useGame((s) => s.inventory);
   const pick = useActivePick((s) => s.pick);
   const setPick = useActivePick((s) => s.setPick);
 
   if (inventory.length === 0) {
     return (
-      <EmptyState
-        icon="🥬"
-        title="Продуктов пока нет"
-        hint="Купите ингредиенты в магазине, чтобы начать готовить."
-      />
+      <div className="space-y-3">
+        <EmptyState
+          icon="🥬"
+          title="Продуктов пока нет"
+          hint="Купите ингредиенты в магазине, чтобы начать готовить."
+        />
+        {onOpenShop && (
+          <Button variant="default" className="w-full" onClick={onOpenShop}>
+            Открыть магазин
+          </Button>
+        )}
+      </div>
     );
   }
 
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        Выбери продукт и нажми по нужному инструменту (миска, плита…) — ингредиент
-        используется напрямую. Можно также положить его на свободный слот стола.
+        Выбери продукт и нажми по нужному инструменту (миска, плита, чашка…) — ингредиент
+        используется напрямую. Покупка продуктов — в Магазине.
       </p>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {inventory.map((entry) => {
@@ -60,6 +72,11 @@ export function InventoryPanel() {
           );
         })}
       </ul>
+      {onOpenShop && (
+        <Button variant="outline" className="w-full" onClick={onOpenShop}>
+          Открыть магазин
+        </Button>
+      )}
     </div>
   );
 }
