@@ -220,10 +220,10 @@ function PlayPage() {
         </div>
       </header>
 
-      {progress?.finished && (
+      {bellEnabled && (
         <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 -translate-y-1/2 px-4 text-center">
-          <p className="mx-auto inline-block rounded-full bg-primary/90 px-5 py-2 text-sm font-medium text-primary-foreground shadow-[var(--shadow-warm)]">
-            🛎 Звени в звонок — заказ готов!
+          <p className="mx-auto inline-block animate-pulse rounded-full bg-primary/90 px-5 py-2 text-sm font-medium text-primary-foreground shadow-[var(--shadow-warm)]">
+            🛎 Нажми звонок, чтобы подать заказ
           </p>
         </div>
       )}
