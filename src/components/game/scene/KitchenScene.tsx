@@ -9,7 +9,18 @@ import { STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
 import { Environment } from "./Environment";
 import { TableSurface, WORK_SURFACE_POS } from "./Table";
 import { TableSlots } from "./TableSlots";
-import { Bell, Bowl, Cup, Kettle, Plate, Stove, WorkSurfaceMarker } from "./KitchenObjects";
+import {
+  Bell,
+  Blender,
+  Bowl,
+  Cup,
+  Kettle,
+  Plate,
+  RiceCooker,
+  Stove,
+  Toaster,
+  WorkSurfaceMarker,
+} from "./KitchenObjects";
 import { Hand, type HandTarget } from "./Hand";
 import { useActivePick } from "@/game/active-pick";
 
@@ -48,6 +59,13 @@ export function KitchenScene({
     const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
     return step ? expectedEquipmentForStep(step) : null;
   })();
+
+  // What to render inside bowl/plate/cup based on currently prepared items.
+  const prepared = orderProgress?.prepared ?? [];
+  const pickFirst = (...ids: string[]) => ids.find((id) => prepared.includes(id)) ?? null;
+  const bowlContent = pickFirst("egg_mix", "egg_in_bowl");
+  const plateContent = pickFirst("plated_omelet", "omelet_cooked");
+  const cupContent = pickFirst("tea_brewed", "hot_water");
 
   const fireHand = (pos: [number, number, number], holdMs = 200) => {
     handKeyRef.current += 1;
@@ -127,18 +145,42 @@ export function KitchenScene({
             onHover={onHoverLabel}
           />
         )}
+        {equipmentOwned.includes("toaster") && (
+          <Toaster
+            attention={activeTarget === "toaster"}
+            onClick={(p) => handleObjectClick("toaster", "Тостер", p)}
+            onHover={onHoverLabel}
+          />
+        )}
+        {equipmentOwned.includes("blender") && (
+          <Blender
+            attention={activeTarget === "blender"}
+            onClick={(p) => handleObjectClick("blender", "Блендер", p)}
+            onHover={onHoverLabel}
+          />
+        )}
+        {equipmentOwned.includes("rice_cooker") && (
+          <RiceCooker
+            attention={activeTarget === "rice_cooker"}
+            onClick={(p) => handleObjectClick("rice_cooker", "Рисоварка", p)}
+            onHover={onHoverLabel}
+          />
+        )}
         <Bowl
           attention={activeTarget === "bowl"}
+          content={bowlContent}
           onClick={(p) => handleObjectClick("bowl", "Миска", p)}
           onHover={onHoverLabel}
         />
         <Plate
           attention={activeTarget === "plate"}
+          content={plateContent}
           onClick={(p) => handleObjectClick("plate", "Тарелка", p)}
           onHover={onHoverLabel}
         />
         <Cup
           attention={activeTarget === "cup"}
+          content={cupContent}
           onClick={(p) => handleObjectClick("cup", "Чашка", p)}
           onHover={onHoverLabel}
         />

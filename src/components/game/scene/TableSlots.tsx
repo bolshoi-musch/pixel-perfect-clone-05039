@@ -7,8 +7,10 @@ import { Text } from "@react-three/drei";
 import { useRef, useState } from "react";
 import type { TableSlot } from "@/game/types";
 import { INGREDIENTS_BY_ID } from "@/game/data";
+import { getItemVisual } from "@/game/item-visuals";
 import { SLOT_POSITIONS } from "./Table";
 import { SCENE_COLORS, INGREDIENT_COLOR } from "./colors";
+import { ItemShape } from "./ItemShape";
 
 const LONG_PRESS_MS = 600;
 const CLICK_GUARD_MS = 150;
@@ -180,7 +182,8 @@ function Slot({
       </Text>
 
       {/* Содержимое слота — без своих pointer-обработчиков, наследует от группы */}
-      {ing && (
+      {ing && getItemVisual(ing.id) && <ItemShape itemId={ing.id} scale={0.95} />}
+      {ing && !getItemVisual(ing.id) && (
         <mesh castShadow position={[0, 0.05, 0]}>
           <sphereGeometry args={[0.12, 18, 18]} />
           <meshStandardMaterial

@@ -1,6 +1,8 @@
 import { useGame } from "@/game/store";
 import { useActivePick } from "@/game/active-pick";
 import { useOrderEngine, expectedEquipmentForStep } from "@/game/order-engine";
+import { useHintMode } from "@/game/hint-mode";
+import type { HintMode } from "@/game/hint-content";
 import { INGREDIENTS_BY_ID, STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -13,6 +15,8 @@ export function SettingsPanel() {
   const lastTarget = useGame((s) => s.last_clicked_target);
   const pick = useActivePick((s) => s.pick);
   const progress = useOrderEngine((s) => s.progress);
+  const hintMode = useHintMode((s) => s.mode);
+  const setHintMode = useHintMode((s) => s.setMode);
 
   const lastAction = actionLog[0]?.text ?? "—";
   const pickIng = pick ? INGREDIENTS_BY_ID.get(pick.split("|")[0]) : null;
@@ -52,6 +56,29 @@ export function SettingsPanel() {
         >
           Выйти в главное меню
         </button>
+      </section>
+
+      <section>
+        <h4 className="text-sm font-semibold text-foreground">Подсказки</h4>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Detailed — полная карточка с инструкцией. Short — короткие подсказки. Off — только наведение.
+        </p>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {(["detailed", "short", "off"] as HintMode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setHintMode(m)}
+              className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                hintMode === m
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border bg-background/60 text-muted-foreground hover:bg-accent"
+              }`}
+            >
+              {m === "detailed" ? "Detailed" : m === "short" ? "Short" : "Off"}
+            </button>
+          ))}
+        </div>
       </section>
 
       <section className="rounded-xl border border-dashed border-border/60 bg-background/40 p-3">

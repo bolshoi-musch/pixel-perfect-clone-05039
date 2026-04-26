@@ -3,6 +3,8 @@
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { SCENE_COLORS } from "./colors";
+import { ItemShape } from "./ItemShape";
+import { EQUIPMENT_POSITIONS } from "@/game/kitchen-layout";
 
 interface ClickableProps {
   position: [number, number, number];
@@ -89,12 +91,14 @@ interface EquipProps {
   onClick: ClickableProps["onClick"];
   onHover?: ClickableProps["onHover"];
   attention?: boolean;
+  /** Если задан id готового продукта — показать его внутри (для bowl/plate/cup). */
+  content?: string | null;
 }
 
 export function Stove({ onClick, onHover, attention }: EquipProps) {
   return (
     <Clickable
-      position={[-1.7, 0.2, -0.4]}
+      position={EQUIPMENT_POSITIONS.stove}
       onClick={onClick}
       onHover={onHover}
       label="Плита"
@@ -115,69 +119,107 @@ export function Stove({ onClick, onHover, attention }: EquipProps) {
         <torusGeometry args={[0.18, 0.015, 8, 24]} />
         <meshStandardMaterial color="#3a1a1a" emissive="#c44536" emissiveIntensity={0.4} />
       </mesh>
+      {/* Ручки управления спереди */}
+      <mesh position={[-0.2, -0.05, 0.36]}>
+        <cylinderGeometry args={[0.025, 0.025, 0.04, 12]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} />
+      </mesh>
+      <mesh position={[0.2, -0.05, 0.36]}>
+        <cylinderGeometry args={[0.025, 0.025, 0.04, 12]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} />
+      </mesh>
     </Clickable>
   );
 }
 
-export function Bowl({ onClick, onHover, attention }: EquipProps) {
+export function Bowl({ onClick, onHover, attention, content }: EquipProps) {
   return (
     <Clickable
-      position={[-0.7, 0.06, -0.35]}
+      position={EQUIPMENT_POSITIONS.bowl}
       onClick={onClick}
       onHover={onHover}
       label="Миска"
       attention={attention}
       attentionRadius={0.28}
     >
+      {/* Внешняя стенка миски */}
       <mesh castShadow>
-        <cylinderGeometry args={[0.2, 0.14, 0.16, 24]} />
-        <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.4} />
+        <cylinderGeometry args={[0.2, 0.13, 0.14, 28]} />
+        <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.45} />
       </mesh>
+      {/* Внутренняя «впадина» */}
       <mesh position={[0, 0.04, 0]}>
-        <cylinderGeometry args={[0.17, 0.12, 0.1, 24]} />
-        <meshStandardMaterial color={SCENE_COLORS.woodDark} roughness={0.6} />
+        <cylinderGeometry args={[0.17, 0.1, 0.1, 28]} />
+        <meshStandardMaterial color={SCENE_COLORS.woodLight} roughness={0.7} />
       </mesh>
+      {content && (
+        <group position={[0, 0.06, 0]}>
+          <ItemShape itemId={content} scale={0.9} />
+        </group>
+      )}
     </Clickable>
   );
 }
 
-export function Plate({ onClick, onHover, attention }: EquipProps) {
+export function Plate({ onClick, onHover, attention, content }: EquipProps) {
   return (
     <Clickable
-      position={[0.5, 0.06, -0.35]}
+      position={EQUIPMENT_POSITIONS.plate}
       onClick={onClick}
       onHover={onHover}
       label="Тарелка"
       attention={attention}
       attentionRadius={0.32}
     >
-      <mesh castShadow rotation={[0, 0, 0]}>
-        <cylinderGeometry args={[0.26, 0.22, 0.04, 28]} />
+      {/* Бортик */}
+      <mesh castShadow>
+        <cylinderGeometry args={[0.27, 0.24, 0.025, 32]} />
         <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.35} />
       </mesh>
+      {/* Углубление */}
+      <mesh position={[0, 0.013, 0]}>
+        <cylinderGeometry args={[0.22, 0.22, 0.008, 32]} />
+        <meshStandardMaterial color="#fff8ec" roughness={0.4} />
+      </mesh>
+      {content && (
+        <group position={[0, 0.02, 0]}>
+          <ItemShape itemId={content} scale={1} />
+        </group>
+      )}
     </Clickable>
   );
 }
 
-export function Cup({ onClick, onHover, attention }: EquipProps) {
+export function Cup({ onClick, onHover, attention, content }: EquipProps) {
   return (
     <Clickable
-      position={[1.3, 0.1, -0.35]}
+      position={EQUIPMENT_POSITIONS.cup}
       onClick={onClick}
       onHover={onHover}
       label="Чашка"
       attention={attention}
       attentionRadius={0.2}
     >
+      {/* Корпус */}
       <mesh castShadow>
-        <cylinderGeometry args={[0.1, 0.085, 0.16, 20]} />
+        <cylinderGeometry args={[0.1, 0.085, 0.16, 24]} />
         <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.4} />
+      </mesh>
+      {/* Внутренняя темная полость */}
+      <mesh position={[0, 0.07, 0]}>
+        <cylinderGeometry args={[0.085, 0.075, 0.02, 20]} />
+        <meshStandardMaterial color="#3a2a1a" roughness={0.8} />
       </mesh>
       {/* Ручка */}
       <mesh position={[0.13, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.05, 0.014, 8, 16]} />
         <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.4} />
       </mesh>
+      {content && (
+        <group position={[0, 0.075, 0]}>
+          <ItemShape itemId={content} scale={0.85} />
+        </group>
+      )}
     </Clickable>
   );
 }
@@ -185,7 +227,7 @@ export function Cup({ onClick, onHover, attention }: EquipProps) {
 export function Kettle({ onClick, onHover, attention }: EquipProps) {
   return (
     <Clickable
-      position={[-1.0, 0.18, -0.4]}
+      position={EQUIPMENT_POSITIONS.kettle}
       onClick={onClick}
       onHover={onHover}
       label="Чайник"
@@ -233,7 +275,7 @@ export function Bell({
   const scale = attention ? 1.35 : 1;
   const emissive = attention ? 0.6 : 0.05;
   return (
-    <Clickable position={[1.55, 0.08, 0.2]} onClick={onClick} onHover={onHover} label="Звонок гостя 🛎">
+    <Clickable position={EQUIPMENT_POSITIONS.bell} onClick={onClick} onHover={onHover} label="Звонок гостя 🛎">
       <group scale={scale}>
         {/* Подставка */}
         <mesh position={[0, 0, 0]} castShadow>
@@ -300,3 +342,75 @@ export function WorkSurfaceMarker({
     </Clickable>
   );
 }
+
+export function Toaster({ onClick, onHover, attention }: EquipProps) {
+  return (
+    <Clickable
+      position={EQUIPMENT_POSITIONS.toaster}
+      onClick={onClick}
+      onHover={onHover}
+      label="Тостер"
+      attention={attention}
+      attentionRadius={0.3}
+    >
+      <mesh castShadow>
+        <boxGeometry args={[0.4, 0.3, 0.25]} />
+        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.4} metalness={0.6} />
+      </mesh>
+      {/* Прорези */}
+      <mesh position={[-0.08, 0.16, 0]}>
+        <boxGeometry args={[0.1, 0.02, 0.18]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh position={[0.08, 0.16, 0]}>
+        <boxGeometry args={[0.1, 0.02, 0.18]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+    </Clickable>
+  );
+}
+
+export function Blender({ onClick, onHover, attention }: EquipProps) {
+  return (
+    <Clickable
+      position={EQUIPMENT_POSITIONS.blender}
+      onClick={onClick}
+      onHover={onHover}
+      label="Блендер"
+      attention={attention}
+      attentionRadius={0.3}
+    >
+      <mesh castShadow position={[0, -0.05, 0]}>
+        <cylinderGeometry args={[0.15, 0.18, 0.18, 16]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.5} metalness={0.4} />
+      </mesh>
+      <mesh castShadow position={[0, 0.13, 0]}>
+        <cylinderGeometry args={[0.1, 0.1, 0.26, 16]} />
+        <meshStandardMaterial color="#dce8f0" transparent opacity={0.55} roughness={0.1} />
+      </mesh>
+    </Clickable>
+  );
+}
+
+export function RiceCooker({ onClick, onHover, attention }: EquipProps) {
+  return (
+    <Clickable
+      position={EQUIPMENT_POSITIONS.rice_cooker}
+      onClick={onClick}
+      onHover={onHover}
+      label="Рисоварка"
+      attention={attention}
+      attentionRadius={0.32}
+    >
+      <mesh castShadow>
+        <cylinderGeometry args={[0.22, 0.24, 0.3, 24]} />
+        <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.6} />
+      </mesh>
+      <mesh castShadow position={[0, 0.17, 0]}>
+        <cylinderGeometry args={[0.2, 0.22, 0.04, 24]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.4} metalness={0.5} />
+      </mesh>
+    </Clickable>
+  );
+}
+
