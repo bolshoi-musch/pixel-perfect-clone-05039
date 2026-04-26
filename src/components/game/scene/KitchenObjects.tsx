@@ -9,15 +9,35 @@ interface ClickableProps {
   onClick: (worldPos: [number, number, number]) => void;
   onHover?: (label: string | null) => void;
   label: string;
+  attention?: boolean;
+  /** Approx XZ radius of the highlight ring placed around the object. */
+  attentionRadius?: number;
   children: React.ReactNode;
 }
 
 const CLICK_GUARD_MS = 150;
 
-function Clickable({ position, onClick, onHover, label, children }: ClickableProps) {
+function Clickable({
+  position,
+  onClick,
+  onHover,
+  label,
+  attention = false,
+  attentionRadius = 0.3,
+  children,
+}: ClickableProps) {
   const [hovered, setHovered] = useState(false);
+  const [pulse, setPulse] = useState(0);
   const lastFireRef = useRef(0);
   const downAtRef = useRef<number | null>(null);
+
+  // Soft sin-based pulse for attention ring
+  useFrame(({ clock }) => {
+    if (attention) setPulse(0.5 + 0.5 * Math.sin(clock.getElapsedTime() * 4));
+  });
+
+  const baseScale = hovered ? 1.04 : 1;
+  const attnScale = attention ? 1 + 0.04 * pulse : 1;
 
   return (
     <group
@@ -48,13 +68,17 @@ function Clickable({ position, onClick, onHover, label, children }: ClickablePro
         lastFireRef.current = now;
         onClick([position[0], position[1], position[2]]);
       }}
-      scale={hovered ? 1.04 : 1}
+      scale={baseScale * attnScale}
     >
       {children}
-      {hovered && (
-        <mesh position={[0, 0, 0]}>
-          <sphereGeometry args={[0.001, 4, 4]} />
-          <meshBasicMaterial color={SCENE_COLORS.highlight} />
+      {attention && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -position[1] + 0.005, 0]}>
+          <ringGeometry args={[attentionRadius, attentionRadius + 0.06, 40]} />
+          <meshBasicMaterial
+            color={SCENE_COLORS.highlight}
+            transparent
+            opacity={0.35 + 0.45 * pulse}
+          />
         </mesh>
       )}
     </group>
