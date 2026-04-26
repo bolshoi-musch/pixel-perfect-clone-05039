@@ -292,19 +292,25 @@ export function Bell({
   onHover?: ClickableProps["onHover"];
   attention?: boolean;
 }) {
-  const scale = attention ? 1.35 : 1;
-  const emissive = attention ? 0.6 : 0.05;
+  const scale = attention ? 1.12 : 1;
+  const emissive = attention ? 0.55 : 0.08;
   return (
-    <Clickable position={EQUIPMENT_POSITIONS.bell} onClick={onClick} onHover={onHover} label="Звонок гостя 🛎">
+    <Clickable
+      position={EQUIPMENT_POSITIONS.bell}
+      onClick={onClick}
+      onHover={onHover}
+      label="Звонок гостя 🛎"
+      attentionRadius={0.16}
+    >
       <group scale={scale}>
-        {/* Подставка */}
+        {/* Подставка — небольшой деревянный круг */}
         <mesh position={[0, 0, 0]} castShadow>
-          <cylinderGeometry args={[0.16, 0.18, 0.035, 28]} />
-          <meshStandardMaterial color={SCENE_COLORS.bellBase} roughness={0.5} />
+          <cylinderGeometry args={[0.085, 0.095, 0.022, 24]} />
+          <meshStandardMaterial color={SCENE_COLORS.bellBase} roughness={0.6} />
         </mesh>
-        {/* Купол колокольчика */}
-        <mesh position={[0, 0.105, 0]} castShadow>
-          <sphereGeometry args={[0.13, 24, 24, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        {/* Купол колокольчика — компактный */}
+        <mesh position={[0, 0.06, 0]} castShadow>
+          <sphereGeometry args={[0.07, 24, 24, 0, Math.PI * 2, 0, Math.PI / 2]} />
           <meshStandardMaterial
             color={SCENE_COLORS.bell}
             roughness={0.25}
@@ -314,8 +320,8 @@ export function Bell({
           />
         </mesh>
         {/* Кнопка-«пуговица» сверху */}
-        <mesh position={[0, 0.235, 0]} castShadow>
-          <sphereGeometry args={[0.028, 16, 16]} />
+        <mesh position={[0, 0.13, 0]} castShadow>
+          <sphereGeometry args={[0.018, 14, 14]} />
           <meshStandardMaterial
             color={SCENE_COLORS.bell}
             metalness={0.85}
@@ -325,8 +331,8 @@ export function Bell({
         </mesh>
         {attention && (
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
-            <ringGeometry args={[0.22, 0.27, 32]} />
-            <meshBasicMaterial color={SCENE_COLORS.bell} transparent opacity={0.6} />
+            <ringGeometry args={[0.12, 0.15, 32]} />
+            <meshBasicMaterial color={SCENE_COLORS.bell} transparent opacity={0.55} />
           </mesh>
         )}
       </group>
