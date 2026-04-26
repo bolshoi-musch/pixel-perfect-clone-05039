@@ -1,6 +1,6 @@
 // Объекты кухни: плита, миска, тарелка, чашка, звонок. Все интерактивные.
 
-import { ThreeEvent } from "@react-three/fiber";
+import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { SCENE_COLORS } from "./colors";
 
