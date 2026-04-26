@@ -27,6 +27,7 @@ export function KitchenScene({
   onBellRing,
 }: KitchenSceneProps) {
   const slots = useGame((s) => s.table_slots);
+  const equipmentOwned = useGame((s) => s.equipment_owned);
   const placeFromInventory = useGame((s) => s.placeFromInventory);
   const pickupToInventory = useGame((s) => s.pickupToInventory);
   const eatFromTable = useGame((s) => s.eatFromTable);
