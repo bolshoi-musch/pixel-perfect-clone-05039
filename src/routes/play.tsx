@@ -289,21 +289,21 @@ function PlayPage() {
       <PanelDialog
         open={panel === "shop"}
         onClose={() => setPanel(null)}
-        title="Магазин ингредиентов"
+        title="Магазин"
       >
-        <ShopPanel />
+        <ShopPanel defaultTab={shopTab} key={shopTab} />
       </PanelDialog>
       <PanelDialog open={panel === "inventory"} onClose={() => setPanel(null)} title="Продукты">
-        <InventoryPanel />
+        <InventoryPanel onOpenShop={() => openShop("products")} />
       </PanelDialog>
       <PanelDialog open={panel === "equipment"} onClose={() => setPanel(null)} title="Техника">
-        <EquipmentPanel />
+        <EquipmentPanel onOpenShop={() => openShop("equipment")} />
       </PanelDialog>
       <PanelDialog open={panel === "reviews"} onClose={() => setPanel(null)} title="Отзывы гостей">
         <ReviewsPanel />
       </PanelDialog>
       <PanelDialog open={panel === "order"} onClose={() => setPanel(null)} title="Текущий заказ">
-        <OrderPanel />
+        <OrderPanel onOpenShop={(t) => openShop(t)} />
       </PanelDialog>
       <PanelDialog open={panel === "settings"} onClose={() => setPanel(null)} title="Настройки">
         <SettingsPanel />
