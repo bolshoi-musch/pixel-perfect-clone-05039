@@ -303,20 +303,26 @@ function PlayPage() {
       </header>
 
       {/* Главная подсказка: Следующее действие */}
-      {progress && (
+      {progress && hintMode !== "off" && (
         <div className="pointer-events-none absolute inset-x-0 top-28 z-10 px-4 text-center">
           <div
-            className={`mx-auto inline-flex max-w-md flex-col items-center gap-1 rounded-2xl border px-5 py-2.5 shadow-[var(--shadow-warm)] backdrop-blur ${
+            className={`mx-auto inline-flex max-w-md flex-col items-center gap-1 rounded-2xl border shadow-[var(--shadow-warm)] backdrop-blur ${
+              hintMode === "short" ? "px-3 py-1.5" : "px-5 py-2.5"
+            } ${
               guidance.isServe
                 ? "animate-pulse border-primary bg-primary/95 text-primary-foreground"
                 : "border-border/60 bg-card/90 text-foreground"
             }`}
           >
-            <span className="text-[10px] uppercase tracking-wider opacity-70">
-              Следующее действие
+            {hintMode === "detailed" && (
+              <span className="text-[10px] uppercase tracking-wider opacity-70">
+                Следующее действие
+              </span>
+            )}
+            <span className={hintMode === "short" ? "text-xs font-semibold" : "text-sm font-semibold"}>
+              {guidance.instruction}
             </span>
-            <span className="text-sm font-semibold">{guidance.instruction}</span>
-            {needsPick && !guidance.isServe && (
+            {hintMode === "detailed" && needsPick && !guidance.isServe && (
               <span className="text-[11px] opacity-80">
                 Открой «Продукты» внизу и выбери ингредиент
               </span>
