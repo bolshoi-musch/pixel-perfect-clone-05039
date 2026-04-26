@@ -182,7 +182,8 @@ function Slot({
       </Text>
 
       {/* Содержимое слота — без своих pointer-обработчиков, наследует от группы */}
-      {ing && (
+      {ing && getItemVisual(ing.id) && <ItemShape itemId={ing.id} scale={0.95} />}
+      {ing && !getItemVisual(ing.id) && (
         <mesh castShadow position={[0, 0.05, 0]}>
           <sphereGeometry args={[0.12, 18, 18]} />
           <meshStandardMaterial
