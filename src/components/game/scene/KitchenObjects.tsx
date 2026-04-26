@@ -275,7 +275,7 @@ export function Bell({
   const scale = attention ? 1.35 : 1;
   const emissive = attention ? 0.6 : 0.05;
   return (
-    <Clickable position={[1.55, 0.08, 0.2]} onClick={onClick} onHover={onHover} label="Звонок гостя 🛎">
+    <Clickable position={EQUIPMENT_POSITIONS.bell} onClick={onClick} onHover={onHover} label="Звонок гостя 🛎">
       <group scale={scale}>
         {/* Подставка */}
         <mesh position={[0, 0, 0]} castShadow>
