@@ -26,12 +26,10 @@ function GLTFInner({
   const scene = gltf.scene.clone(true);
   // Убедимся, что mesh внутри отбрасывают тени.
   scene.traverse((obj) => {
-    // @ts-expect-error three.js типы
-    if (obj.isMesh) {
-      // @ts-expect-error three.js типы
-      obj.castShadow = true;
-      // @ts-expect-error three.js типы
-      obj.receiveShadow = true;
+    const m = obj as { isMesh?: boolean; castShadow?: boolean; receiveShadow?: boolean };
+    if (m.isMesh) {
+      m.castShadow = true;
+      m.receiveShadow = true;
     }
   });
   return <primitive object={scene} scale={scale} rotation={rotation} position={position} />;
