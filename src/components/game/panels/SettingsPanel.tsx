@@ -1,6 +1,8 @@
 import { useGame } from "@/game/store";
 import { useActivePick } from "@/game/active-pick";
 import { useOrderEngine, expectedEquipmentForStep } from "@/game/order-engine";
+import { useHintMode } from "@/game/hint-mode";
+import type { HintMode } from "@/game/hint-content";
 import { INGREDIENTS_BY_ID, STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
 import { useNavigate } from "@tanstack/react-router";
 
