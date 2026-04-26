@@ -120,6 +120,7 @@ export function KitchenScene({
           onHover={onHoverLabel}
         />
         <Bell
+          attention={bellAttention}
           onClick={(p) => {
             fireHand(p, 160);
             onBellRing();
