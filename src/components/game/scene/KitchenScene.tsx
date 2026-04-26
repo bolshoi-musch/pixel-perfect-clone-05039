@@ -37,15 +37,15 @@ export function KitchenScene({
   const handKeyRef = useRef(0);
   const [progress, setProgress] = useState<{ index: number; ratio: number } | null>(null);
 
-  // Highlight bell when current step is "serve" or order finished.
+  // Highlight target equipment for the current step.
   const orderProgress = useOrderEngine((s) => s.progress);
-  const bellAttention = (() => {
-    if (!orderProgress) return false;
-    if (orderProgress.finished) return true;
+  const activeTarget = (() => {
+    if (!orderProgress) return null;
+    if (orderProgress.finished) return "bell";
     const recipe = RECIPES_BY_ID.get(orderProgress.recipe_id);
     const stepId = recipe?.step_ids[orderProgress.step_index];
     const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
-    return step ? expectedEquipmentForStep(step) === "bell" : false;
+    return step ? expectedEquipmentForStep(step) : null;
   })();
 
   const fireHand = (pos: [number, number, number], holdMs = 200) => {
