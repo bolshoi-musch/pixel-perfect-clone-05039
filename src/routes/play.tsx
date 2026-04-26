@@ -107,15 +107,66 @@ function PlayPage() {
 
   const unreadReviews = Math.max(0, reviewsCount - seenReviewsCount);
 
-  // Bell HUD button is enabled when current step is "serve" or order finished
-  const bellEnabled = (() => {
-    if (!progress) return false;
-    if (progress.finished) return true;
-    const recipe = RECIPES_BY_ID.get(progress.recipe_id);
-    const stepId = recipe?.step_ids[progress.step_index];
+  // ---- Guidance for the current step ----
+  const guidance = (() => {
+    if (!progress || !order) {
+      return {
+        instruction: "Ожидаем заказ…",
+        target: null as string | null,
+        requiresPickId: null as string | null,
+        isServe: false,
+      };
+    }
+    if (progress.finished) {
+      return {
+        instruction: "Нажми Звонок, чтобы подать заказ",
+        target: "bell",
+        requiresPickId: null,
+        isServe: true,
+      };
+    }
+    const stepId = order.step_ids[progress.step_index];
     const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
-    return step ? expectedEquipmentForStep(step) === "bell" : false;
+    const target = step ? expectedEquipmentForStep(step) : null;
+    const map: Record<string, { instruction: string; pick?: string }> = {
+      omelet_crack: {
+        instruction: "Выбери Яйцо в Продуктах и нажми на Миску",
+        pick: "egg",
+      },
+      omelet_mix: { instruction: "Нажми на Миску и хорошо взбей" },
+      omelet_cook: { instruction: "Нажми на Плиту и поймай готовность" },
+      omelet_plate: { instruction: "Нажми на Тарелку, чтобы переложить омлет" },
+      omelet_serve: { instruction: "Нажми Звонок, чтобы подать омлет" },
+      tea_boil: { instruction: "Нажми на Чайник и поймай кипение" },
+      tea_pour: {
+        instruction: "Выбери Заварку в Продуктах и нажми на Чашку",
+        pick: "tea_leaves",
+      },
+      tea_serve: { instruction: "Нажми Звонок, чтобы подать чай" },
+    };
+    const entry = (stepId && map[stepId]) || {
+      instruction: step?.hints?.[0] ?? "Следуй подсказкам в панели заказа",
+    };
+    return {
+      instruction: entry.instruction,
+      target,
+      requiresPickId: entry.pick ?? null,
+      isServe: target === "bell",
+    };
   })();
+
+  const pickedIngredientId = pickValue ? pickValue.split("|")[0] : null;
+  const pickedCanonical = pickedIngredientId
+    ? (({ egg_premium: "egg", bread_premium: "bread" } as Record<string, string>)[
+        pickedIngredientId
+      ] ?? pickedIngredientId)
+    : null;
+  const needsPick =
+    guidance.requiresPickId !== null && pickedCanonical !== guidance.requiresPickId;
+  const productsHighlight = needsPick;
+
+  // Bell HUD button is enabled when current step is "serve" or order finished
+  const bellEnabled = guidance.isServe;
 
   const handlePickIngredient = () => pickConsume();
 
@@ -124,21 +175,27 @@ function PlayPage() {
       log("Звонок: нет активного заказа");
       return;
     }
-    // Soft hint: if there's a pending non-serve step (e.g. plating), guide user.
     const recipe = RECIPES_BY_ID.get(progress.recipe_id);
     const stepId = recipe?.step_ids[progress.step_index];
     const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
     if (step && step.type !== "serve" && !progress.finished) {
-      if (step.id === "omelet_plate") {
+      if (
+        step.id === "omelet_plate" ||
+        step.id === "omelet_cook" ||
+        step.id === "omelet_mix" ||
+        step.id === "omelet_crack"
+      ) {
         log("Сначала переложи омлет на тарелку");
+      } else if (step.id === "tea_pour" || step.id === "tea_boil") {
+        log("Сначала налей чай в чашку");
       } else {
-        log(step.hints?.[0] ?? "Сначала закончи готовку");
+        log("Сначала закончи текущий шаг");
       }
       return;
     }
     const r = ringBell();
     if (!r.ok) {
-      if (r.reason === "not_finished") log("Сначала закончи готовку");
+      if (r.reason === "not_finished") log("Сначала закончи текущий шаг");
       return;
     }
     const recipeDone = RECIPES_BY_ID.get(r.recipe_id);
@@ -155,16 +212,11 @@ function PlayPage() {
       log("Сначала прими заказ");
       return;
     }
-    // Soft hint: tea_pour requires tea_leaves to be picked from inventory.
-    const recipe = RECIPES_BY_ID.get(progress.recipe_id);
-    const stepId = recipe?.step_ids[progress.step_index];
-    const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
-    if (
-      step?.id === "tea_pour" &&
-      equipment_id === "cup" &&
-      pickValue !== "tea_leaves|basic"
-    ) {
-      log("Сначала выбери Заварку в Продуктах");
+    // Soft hint: if current step requires picking an ingredient and player taps the target
+    // without having picked it.
+    if (needsPick && guidance.target === equipment_id && guidance.requiresPickId) {
+      const ing = INGREDIENTS_BY_ID.get(guidance.requiresPickId);
+      log(`Сначала выбери ${ing?.name ?? guidance.requiresPickId} в Продуктах`);
       return;
     }
     tryStep(equipment_id);
