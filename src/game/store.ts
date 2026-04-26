@@ -265,6 +265,27 @@ export const useGame = create<GameState>((set, get) => ({
     return true;
   },
 
+  buyIngredient: (id, quality, price) => {
+    const s = get();
+    if (s.money < price) return false;
+    set({ money: s.money - price });
+    s.addToInventory({ ingredient_id: id, quality, count: 1 });
+    // addToInventory persists on its own
+    return true;
+  },
+
+  upgradeStove: (price) => {
+    const s = get();
+    if (s.stove_level >= 3) return false;
+    if (s.money < price) return false;
+    set({
+      money: s.money - price,
+      stove_level: s.stove_level + 1,
+    });
+    get().persist();
+    return true;
+  },
+
   setCurrentOrder: (recipe_id) => {
     set({ current_order_recipe_id: recipe_id });
     get().persist();
