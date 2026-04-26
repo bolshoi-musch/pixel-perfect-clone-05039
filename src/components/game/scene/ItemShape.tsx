@@ -55,16 +55,19 @@ export function ItemShape({ itemId, scale = 1, yOffset = 0 }: ItemShapeProps) {
         </mesh>
       );
     case "omelet":
+      // Сложенный омлет: вытянутый «полумесяц» из приплюснутой сферы.
       return (
-        <mesh
-          castShadow
-          position={[0, 0.02 + yOffset, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          scale={scale}
-        >
-          <cylinderGeometry args={[0.13, 0.11, 0.04, 24]} />
-          <meshStandardMaterial color={color} roughness={0.6} />
-        </mesh>
+        <group position={[0, 0.015 + yOffset, 0]} scale={scale}>
+          <mesh castShadow scale={[1.6, 0.35, 1]}>
+            <sphereGeometry args={[0.11, 24, 16]} />
+            <meshStandardMaterial color={color} roughness={0.55} />
+          </mesh>
+          {/* Верхний «складка»-блик чуть темнее */}
+          <mesh position={[0, 0.025, 0]} scale={[1.45, 0.18, 0.85]}>
+            <sphereGeometry args={[0.11, 20, 12]} />
+            <meshStandardMaterial color="#d99a3a" roughness={0.65} />
+          </mesh>
+        </group>
       );
     case "sphere":
     default:
