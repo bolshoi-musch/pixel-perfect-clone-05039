@@ -24,6 +24,7 @@ export const Route = createFileRoute("/play")({
 });
 
 type PanelKey = "shop" | "inventory" | "equipment" | "reviews" | "order" | "settings" | null;
+type ShopTab = "products" | "equipment" | "upgrades";
 
 function PlayPage() {
   const hydrate = useGame((s) => s.hydrate);
@@ -46,6 +47,7 @@ function PlayPage() {
   const progress = useOrderEngine((s) => s.progress);
 
   const [panel, setPanel] = useState<PanelKey>(null);
+  const [shopTab, setShopTab] = useState<ShopTab>("products");
   const [hoverLabel, setHoverLabel] = useState<string | null>(null);
   const [seenReviewsCount, setSeenReviewsCount] = useState(reviewsCount);
   const [completionToast, setCompletionToast] = useState<{
