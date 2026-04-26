@@ -238,13 +238,22 @@ export function WorkSurfaceMarker({
   onClick,
   onHover,
   position,
+  attention,
 }: {
   position: [number, number, number];
   onClick: ClickableProps["onClick"];
   onHover?: ClickableProps["onHover"];
+  attention?: boolean;
 }) {
   return (
-    <Clickable position={position} onClick={onClick} onHover={onHover} label="Рабочая зона">
+    <Clickable
+      position={position}
+      onClick={onClick}
+      onHover={onHover}
+      label="Рабочая зона"
+      attention={attention}
+      attentionRadius={0.3}
+    >
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]}>
         <ringGeometry args={[0.22, 0.27, 32]} />
         <meshBasicMaterial color={SCENE_COLORS.copper} transparent opacity={0.5} />
