@@ -15,6 +15,8 @@ export function SettingsPanel() {
   const lastTarget = useGame((s) => s.last_clicked_target);
   const pick = useActivePick((s) => s.pick);
   const progress = useOrderEngine((s) => s.progress);
+  const hintMode = useHintMode((s) => s.mode);
+  const setHintMode = useHintMode((s) => s.setMode);
 
   const lastAction = actionLog[0]?.text ?? "—";
   const pickIng = pick ? INGREDIENTS_BY_ID.get(pick.split("|")[0]) : null;
