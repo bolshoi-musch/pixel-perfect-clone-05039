@@ -242,6 +242,9 @@ function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
 
 /** Best guess: which equipment is the "primary" target the player should click. */
 export function expectedEquipmentForStep(step: RecipeStep): string | null {
+  // Per-step explicit override (kettle pour, etc.)
+  const override = STEP_TARGET_OVERRIDE[step.id];
+  if (override) return override;
   // Serve step is finalized by the bell.
   if (step.type === "serve") return "bell";
   // Heat steps → the heat appliance in requires (or stove fallback)
@@ -256,6 +259,11 @@ export function expectedEquipmentForStep(step: RecipeStep): string | null {
   const tool = step.requires.find((r) => tools.includes(r));
   return tool ?? null;
 }
+
+/** Steps that need a non-default click target. */
+const STEP_TARGET_OVERRIDE: Record<string, string> = {
+  tea_pour: "kettle", // pouring boiling water FROM the kettle into the cup
+};
 
 const EQUIPMENT_LABELS: Record<string, string> = {
   stove: "Плита",
