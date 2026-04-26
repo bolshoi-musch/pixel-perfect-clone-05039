@@ -306,11 +306,26 @@ function PlayPage() {
         </div>
       </header>
 
-      {bellEnabled && (
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 -translate-y-1/2 px-4 text-center">
-          <p className="mx-auto inline-block animate-pulse rounded-full bg-primary/90 px-5 py-2 text-sm font-medium text-primary-foreground shadow-[var(--shadow-warm)]">
-            🛎 Нажми звонок, чтобы подать заказ
-          </p>
+      {/* Главная подсказка: Следующее действие */}
+      {progress && (
+        <div className="pointer-events-none absolute inset-x-0 top-28 z-10 px-4 text-center">
+          <div
+            className={`mx-auto inline-flex max-w-md flex-col items-center gap-1 rounded-2xl border px-5 py-2.5 shadow-[var(--shadow-warm)] backdrop-blur ${
+              guidance.isServe
+                ? "animate-pulse border-primary bg-primary/95 text-primary-foreground"
+                : "border-border/60 bg-card/90 text-foreground"
+            }`}
+          >
+            <span className="text-[10px] uppercase tracking-wider opacity-70">
+              Следующее действие
+            </span>
+            <span className="text-sm font-semibold">{guidance.instruction}</span>
+            {needsPick && !guidance.isServe && (
+              <span className="text-[11px] opacity-80">
+                Открой «Продукты» внизу и выбери ингредиент
+              </span>
+            )}
+          </div>
         </div>
       )}
 
