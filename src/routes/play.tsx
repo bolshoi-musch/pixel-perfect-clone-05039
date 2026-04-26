@@ -252,6 +252,7 @@ function PlayPage() {
             onClick={() => setPanel("reviews")}
             badge={unreadReviews > 0 ? unreadReviews : undefined}
           />
+          <BellBtn enabled={bellEnabled} pulse={bellEnabled} onClick={handleBellRing} />
         </div>
       </nav>
 
