@@ -94,7 +94,7 @@ function MenuPage() {
         </div>
 
         <footer className="absolute bottom-6 left-0 right-0 text-xs text-muted-foreground/60">
-          Iteration 1 · каркас
+          Тестовый режим: Омлет и Чай
         </footer>
       </main>
     </div>
