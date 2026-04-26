@@ -282,6 +282,127 @@ export function WindowMinigame({ onDone, onCancel }: WindowProps) {
 
 // ============================================
 
+interface HoldProps {
+  onDone: (quality: number, errors: number) => void;
+  onCancel: () => void;
+}
+
+const HOLD_DURATION_MS = 1200;
+
+const HOLD_STEP_TEXT: Record<string, { title: string; subtitle: string; action: string }> = {
+  tea_pour: {
+    title: "Налей кипяток и добавь заварку",
+    subtitle: "Удерживай, пока чашка наполняется",
+    action: "Заваривание",
+  },
+  omelet_crack: {
+    title: "Разбей яйцо в миску",
+    subtitle: "Удерживай, чтобы аккуратно разбить",
+    action: "Разбиваем яйцо",
+  },
+  smoothie_load: {
+    title: "Загрузи продукты в блендер",
+    subtitle: "Удерживай, чтобы заложить продукты",
+    action: "Загрузка",
+  },
+  rice_cook: {
+    title: "Загрузи рис и воду",
+    subtitle: "Удерживай, пока рис готовится",
+    action: "Готовка",
+  },
+};
+
+/**
+ * HOLD minigame — simple press-and-hold action. Player presses the button and
+ * keeps it pressed until the progress bar fills. Releasing early cancels the
+ * action; completion returns a high quality.
+ */
+export function HoldMinigame({ onDone, onCancel }: HoldProps) {
+  const stepId = useOrderEngine((s) => s.active_minigame?.step_id ?? "");
+  const text = HOLD_STEP_TEXT[stepId] ?? {
+    title: "Выполни действие",
+    subtitle: "Удерживай кнопку, пока не заполнится",
+    action: "Удерживай",
+  };
+
+  const [progress, setProgress] = useState(0);
+  const [done, setDone] = useState(false);
+  const startRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const stop = () => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    startRef.current = null;
+  };
+
+  const tick = () => {
+    if (startRef.current === null) return;
+    const elapsed = performance.now() - startRef.current;
+    const p = Math.min(1, elapsed / HOLD_DURATION_MS);
+    setProgress(p);
+    if (p >= 1) {
+      setDone(true);
+      stop();
+      setTimeout(() => onDone(1.0, 0), 250);
+      return;
+    }
+    rafRef.current = requestAnimationFrame(tick);
+  };
+
+  const onDown = (e: React.PointerEvent) => {
+    if (done) return;
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    startRef.current = performance.now() - progress * HOLD_DURATION_MS;
+    rafRef.current = requestAnimationFrame(tick);
+  };
+
+  const onUp = (e: React.PointerEvent) => {
+    if (done) return;
+    (e.target as Element).releasePointerCapture?.(e.pointerId);
+    stop();
+  };
+
+  useEffect(() => {
+    return () => stop();
+  }, []);
+
+  return (
+    <Overlay title={text.title} subtitle={text.subtitle} onCancel={onCancel}>
+      <button
+        type="button"
+        onPointerDown={onDown}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+        onPointerLeave={onUp}
+        disabled={done}
+        className={`relative h-32 w-full select-none touch-none overflow-hidden rounded-2xl border-2 border-dashed transition ${
+          done
+            ? "border-primary bg-primary/20"
+            : progress > 0
+              ? "border-primary bg-primary/10"
+              : "border-border bg-card/80 hover:bg-accent"
+        }`}
+      >
+        <div
+          className="absolute inset-y-0 left-0 bg-primary/30 transition-[width] duration-75"
+          style={{ width: `${progress * 100}%` }}
+        />
+        <span className="relative text-base font-semibold text-foreground">
+          {done ? "Готово ✓" : progress > 0 ? text.action + "…" : "Нажми и удерживай"}
+        </span>
+      </button>
+      <div className="mt-4">
+        <ProgressBar value={progress} label="Прогресс" tone="primary" />
+      </div>
+    </Overlay>
+  );
+}
+
+// ============================================
+
 function Overlay({
   title,
   subtitle,
