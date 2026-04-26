@@ -124,14 +124,26 @@ function PlayPage() {
       log("Звонок: нет активного заказа");
       return;
     }
+    // Soft hint: if there's a pending non-serve step (e.g. plating), guide user.
+    const recipe = RECIPES_BY_ID.get(progress.recipe_id);
+    const stepId = recipe?.step_ids[progress.step_index];
+    const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
+    if (step && step.type !== "serve" && !progress.finished) {
+      if (step.id === "omelet_plate") {
+        log("Сначала переложи омлет на тарелку");
+      } else {
+        log(step.hints?.[0] ?? "Сначала закончи готовку");
+      }
+      return;
+    }
     const r = ringBell();
     if (!r.ok) {
       if (r.reason === "not_finished") log("Сначала закончи готовку");
       return;
     }
-    const recipe = RECIPES_BY_ID.get(r.recipe_id);
+    const recipeDone = RECIPES_BY_ID.get(r.recipe_id);
     setCompletionToast({
-      name: recipe?.name ?? r.recipe_id,
+      name: recipeDone?.name ?? r.recipe_id,
       stars: r.stars,
       reward: r.reward,
     });
