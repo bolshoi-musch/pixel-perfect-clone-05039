@@ -143,7 +143,24 @@ function PlayPage() {
       log("Сначала прими заказ");
       return;
     }
+    // Soft hint: tea_pour requires tea_leaves to be picked from inventory.
+    const recipe = RECIPES_BY_ID.get(progress.recipe_id);
+    const stepId = recipe?.step_ids[progress.step_index];
+    const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
+    if (
+      step?.id === "tea_pour" &&
+      equipment_id === "cup" &&
+      pickValue !== "tea_leaves|basic"
+    ) {
+      log("Сначала выбери Заварку в Продуктах");
+      return;
+    }
     tryStep(equipment_id);
+  };
+
+  const openShop = (tab: ShopTab = "products") => {
+    setShopTab(tab);
+    setPanel("shop");
   };
 
   return (
