@@ -1,9 +1,12 @@
 // Объекты кухни: плита, миска, тарелка, чашка, звонок. Все интерактивные.
+// Визуал — готовые GLTF-модели из ассет-пака с fallback на примитивы.
 
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { SCENE_COLORS } from "./colors";
 import { ItemShape } from "./ItemShape";
+import { ModelAsset } from "./ModelAsset";
+import { MODEL_ASSETS } from "@/game/model-assets";
 import { EQUIPMENT_POSITIONS } from "@/game/kitchen-layout";
 
 interface ClickableProps {
@@ -12,7 +15,6 @@ interface ClickableProps {
   onHover?: (label: string | null) => void;
   label: string;
   attention?: boolean;
-  /** Approx XZ radius of the highlight ring placed around the object. */
   attentionRadius?: number;
   children: React.ReactNode;
 }
@@ -33,7 +35,6 @@ function Clickable({
   const lastFireRef = useRef(0);
   const downAtRef = useRef<number | null>(null);
 
-  // Soft sin-based pulse for attention ring
   useFrame(({ clock }) => {
     if (attention) setPulse(0.5 + 0.5 * Math.sin(clock.getElapsedTime() * 4));
   });
@@ -95,6 +96,71 @@ interface EquipProps {
   content?: string | null;
 }
 
+// === Fallback-примитивы (используются, если GLTF не загрузился) ===
+
+function StoveFallback() {
+  return (
+    <>
+      <mesh castShadow>
+        <boxGeometry args={[0.7, 0.4, 0.7]} />
+        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.4} metalness={0.6} />
+      </mesh>
+      <mesh position={[0, 0.205, 0]} castShadow>
+        <boxGeometry args={[0.66, 0.02, 0.66]} />
+        <meshStandardMaterial color="#1d1d1d" roughness={0.6} metalness={0.4} />
+      </mesh>
+      <mesh position={[0, 0.232, 0]}>
+        <torusGeometry args={[0.18, 0.012, 8, 28]} />
+        <meshStandardMaterial color="#3a1a1a" emissive="#c44536" emissiveIntensity={0.5} />
+      </mesh>
+    </>
+  );
+}
+
+function BowlFallback() {
+  return (
+    <mesh castShadow>
+      <cylinderGeometry args={[0.22, 0.12, 0.13, 32]} />
+      <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.45} />
+    </mesh>
+  );
+}
+
+function PlateFallback() {
+  return (
+    <mesh castShadow>
+      <cylinderGeometry args={[0.27, 0.24, 0.025, 32]} />
+      <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.35} />
+    </mesh>
+  );
+}
+
+function CupFallback() {
+  return (
+    <mesh castShadow>
+      <cylinderGeometry args={[0.1, 0.085, 0.16, 24]} />
+      <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.4} />
+    </mesh>
+  );
+}
+
+function KettleFallback() {
+  return (
+    <>
+      <mesh castShadow>
+        <cylinderGeometry args={[0.18, 0.16, 0.28, 24]} />
+        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.3} metalness={0.7} />
+      </mesh>
+      <mesh castShadow position={[0.18, 0.05, 0]} rotation={[0, 0, -Math.PI / 3]}>
+        <coneGeometry args={[0.045, 0.18, 12]} />
+        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.3} metalness={0.7} />
+      </mesh>
+    </>
+  );
+}
+
+// === Объекты ===
+
 export function Stove({ onClick, onHover, attention }: EquipProps) {
   return (
     <Clickable
@@ -105,44 +171,13 @@ export function Stove({ onClick, onHover, attention }: EquipProps) {
       attention={attention}
       attentionRadius={0.5}
     >
-      {/* Корпус */}
-      <mesh castShadow>
-        <boxGeometry args={[0.7, 0.4, 0.7]} />
-        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.4} metalness={0.6} />
-      </mesh>
-      {/* Верхняя варочная панель — тёмная */}
-      <mesh position={[0, 0.205, 0]} castShadow>
-        <boxGeometry args={[0.66, 0.02, 0.66]} />
-        <meshStandardMaterial color="#1d1d1d" roughness={0.6} metalness={0.4} />
-      </mesh>
-      {/* Конфорка */}
-      <mesh position={[0, 0.22, 0]}>
-        <cylinderGeometry args={[0.22, 0.22, 0.015, 28]} />
-        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.5} />
-      </mesh>
-      {/* Концентрические кольца «ТЭН» */}
-      <mesh position={[0, 0.232, 0]}>
-        <torusGeometry args={[0.18, 0.012, 8, 28]} />
-        <meshStandardMaterial color="#3a1a1a" emissive="#c44536" emissiveIntensity={0.5} />
-      </mesh>
-      <mesh position={[0, 0.232, 0]}>
-        <torusGeometry args={[0.11, 0.01, 8, 24]} />
-        <meshStandardMaterial color="#3a1a1a" emissive="#c44536" emissiveIntensity={0.4} />
-      </mesh>
-      {/* Задняя панель управления */}
-      <mesh position={[0, 0.32, -0.32]} castShadow>
-        <boxGeometry args={[0.7, 0.18, 0.06]} />
-        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.4} metalness={0.7} />
-      </mesh>
-      {/* Ручки управления спереди */}
-      <mesh position={[-0.2, -0.05, 0.36]}>
-        <cylinderGeometry args={[0.03, 0.03, 0.04, 12]} />
-        <meshStandardMaterial color={SCENE_COLORS.steelDark} />
-      </mesh>
-      <mesh position={[0.2, -0.05, 0.36]}>
-        <cylinderGeometry args={[0.03, 0.03, 0.04, 12]} />
-        <meshStandardMaterial color={SCENE_COLORS.steelDark} />
-      </mesh>
+      <ModelAsset
+        path={MODEL_ASSETS.kitchen.stove}
+        scale={0.55}
+        rotation={[0, Math.PI, 0]}
+        position={[0, -0.2, 0]}
+        fallback={<StoveFallback />}
+      />
     </Clickable>
   );
 }
@@ -157,21 +192,12 @@ export function Bowl({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.28}
     >
-      {/* Внешняя форма миски: широкий верх, узкое дно */}
-      <mesh castShadow>
-        <cylinderGeometry args={[0.22, 0.12, 0.13, 32]} />
-        <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.45} />
-      </mesh>
-      {/* Бортик-кант сверху */}
-      <mesh position={[0, 0.07, 0]} castShadow>
-        <torusGeometry args={[0.21, 0.012, 10, 32]} />
-        <meshStandardMaterial color="#e9dec6" roughness={0.5} />
-      </mesh>
-      {/* Внутренняя «впадина» (тёмная) */}
-      <mesh position={[0, 0.045, 0]}>
-        <cylinderGeometry args={[0.19, 0.09, 0.09, 32]} />
-        <meshStandardMaterial color="#7a6a52" roughness={0.7} />
-      </mesh>
+      <ModelAsset
+        path={MODEL_ASSETS.kitchen.bowl}
+        scale={0.45}
+        position={[0, -0.07, 0]}
+        fallback={<BowlFallback />}
+      />
       {content && (
         <group position={[0, 0.07, 0]}>
           <ItemShape itemId={content} scale={1.1} />
@@ -191,18 +217,14 @@ export function Plate({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.32}
     >
-      {/* Бортик */}
-      <mesh castShadow>
-        <cylinderGeometry args={[0.27, 0.24, 0.025, 32]} />
-        <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.35} />
-      </mesh>
-      {/* Углубление */}
-      <mesh position={[0, 0.013, 0]}>
-        <cylinderGeometry args={[0.22, 0.22, 0.008, 32]} />
-        <meshStandardMaterial color="#fff8ec" roughness={0.4} />
-      </mesh>
+      <ModelAsset
+        path={MODEL_ASSETS.kitchen.plate}
+        scale={0.5}
+        position={[0, -0.04, 0]}
+        fallback={<PlateFallback />}
+      />
       {content && (
-        <group position={[0, 0.02, 0]}>
+        <group position={[0, 0.04, 0]}>
           <ItemShape itemId={content} scale={1} />
         </group>
       )}
@@ -211,6 +233,9 @@ export function Plate({ onClick, onHover, attention, content }: EquipProps) {
 }
 
 export function Cup({ onClick, onHover, attention, content }: EquipProps) {
+  // Используем cup_tea, если есть готовый чай — это даёт сразу заполненную чашку.
+  const useTeaCup = content === "tea_brewed";
+  const path = useTeaCup ? MODEL_ASSETS.kitchen.cupTea : MODEL_ASSETS.kitchen.cup;
   return (
     <Clickable
       position={EQUIPMENT_POSITIONS.cup}
@@ -220,23 +245,15 @@ export function Cup({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.2}
     >
-      {/* Корпус */}
-      <mesh castShadow>
-        <cylinderGeometry args={[0.1, 0.085, 0.16, 24]} />
-        <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.4} />
-      </mesh>
-      {/* Внутренняя темная полость */}
-      <mesh position={[0, 0.07, 0]}>
-        <cylinderGeometry args={[0.085, 0.075, 0.02, 20]} />
-        <meshStandardMaterial color="#3a2a1a" roughness={0.8} />
-      </mesh>
-      {/* Ручка */}
-      <mesh position={[0.13, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.05, 0.014, 8, 16]} />
-        <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.4} />
-      </mesh>
-      {content && (
-        <group position={[0, 0.075, 0]}>
+      <ModelAsset
+        path={path}
+        scale={0.4}
+        position={[0, -0.07, 0]}
+        fallback={<CupFallback />}
+      />
+      {/* Для НЕ-tea_brewed состояний (заварка, кипяток) показываем overlay поверх cup. */}
+      {content && !useTeaCup && (
+        <group position={[0, 0.06, 0]}>
           <ItemShape itemId={content} scale={0.85} />
         </group>
       )}
@@ -254,31 +271,12 @@ export function Kettle({ onClick, onHover, attention }: EquipProps) {
       attention={attention}
       attentionRadius={0.32}
     >
-      {/* Корпус */}
-      <mesh castShadow position={[0, 0, 0]}>
-        <cylinderGeometry args={[0.18, 0.16, 0.28, 24]} />
-        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.3} metalness={0.7} />
-      </mesh>
-      {/* Крышка */}
-      <mesh castShadow position={[0, 0.155, 0]}>
-        <cylinderGeometry args={[0.1, 0.12, 0.04, 20]} />
-        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.4} metalness={0.7} />
-      </mesh>
-      {/* Кнопка-набалдашник */}
-      <mesh castShadow position={[0, 0.19, 0]}>
-        <sphereGeometry args={[0.025, 12, 12]} />
-        <meshStandardMaterial color={SCENE_COLORS.bell} metalness={0.8} roughness={0.3} />
-      </mesh>
-      {/* Носик */}
-      <mesh castShadow position={[0.18, 0.05, 0]} rotation={[0, 0, -Math.PI / 3]}>
-        <coneGeometry args={[0.045, 0.18, 12]} />
-        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.3} metalness={0.7} />
-      </mesh>
-      {/* Ручка */}
-      <mesh castShadow position={[-0.18, 0.06, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.07, 0.018, 8, 18, Math.PI]} />
-        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.5} metalness={0.5} />
-      </mesh>
+      <ModelAsset
+        path={MODEL_ASSETS.kitchen.kettle}
+        scale={0.45}
+        position={[0, -0.13, 0]}
+        fallback={<KettleFallback />}
+      />
     </Clickable>
   );
 }
@@ -292,7 +290,8 @@ export function Bell({
   onHover?: ClickableProps["onHover"];
   attention?: boolean;
 }) {
-  const scale = attention ? 1.12 : 1;
+  // Уменьшено в ~2.5 раза против предыдущего варианта.
+  const scale = attention ? 1.1 : 1;
   const emissive = attention ? 0.55 : 0.08;
   return (
     <Clickable
@@ -300,17 +299,17 @@ export function Bell({
       onClick={onClick}
       onHover={onHover}
       label="Звонок гостя 🛎"
-      attentionRadius={0.16}
+      attentionRadius={0.08}
     >
-      <group scale={scale}>
-        {/* Подставка — небольшой деревянный круг */}
+      <group scale={scale * 0.5}>
+        {/* Подставка */}
         <mesh position={[0, 0, 0]} castShadow>
-          <cylinderGeometry args={[0.085, 0.095, 0.022, 24]} />
+          <cylinderGeometry args={[0.08, 0.09, 0.02, 24]} />
           <meshStandardMaterial color={SCENE_COLORS.bellBase} roughness={0.6} />
         </mesh>
-        {/* Купол колокольчика — компактный */}
-        <mesh position={[0, 0.06, 0]} castShadow>
-          <sphereGeometry args={[0.07, 24, 24, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        {/* Купол */}
+        <mesh position={[0, 0.05, 0]} castShadow>
+          <sphereGeometry args={[0.06, 24, 24, 0, Math.PI * 2, 0, Math.PI / 2]} />
           <meshStandardMaterial
             color={SCENE_COLORS.bell}
             roughness={0.25}
@@ -319,9 +318,9 @@ export function Bell({
             emissiveIntensity={emissive}
           />
         </mesh>
-        {/* Кнопка-«пуговица» сверху */}
-        <mesh position={[0, 0.13, 0]} castShadow>
-          <sphereGeometry args={[0.018, 14, 14]} />
+        {/* Кнопка-«пуговица» */}
+        <mesh position={[0, 0.11, 0]} castShadow>
+          <sphereGeometry args={[0.014, 14, 14]} />
           <meshStandardMaterial
             color={SCENE_COLORS.bell}
             metalness={0.85}
@@ -329,18 +328,11 @@ export function Bell({
             emissiveIntensity={emissive}
           />
         </mesh>
-        {attention && (
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
-            <ringGeometry args={[0.12, 0.15, 32]} />
-            <meshBasicMaterial color={SCENE_COLORS.bell} transparent opacity={0.55} />
-          </mesh>
-        )}
       </group>
     </Clickable>
   );
 }
 
-// Visual marker «рабочей зоны» (work_surface) — мягкий контур на столе
 export function WorkSurfaceMarker({
   onClick,
   onHover,
@@ -370,6 +362,7 @@ export function WorkSurfaceMarker({
 }
 
 export function Toaster({ onClick, onHover, attention }: EquipProps) {
+  // Нет готовой модели тостера — оставляем примитив.
   return (
     <Clickable
       position={EQUIPMENT_POSITIONS.toaster}
@@ -383,7 +376,6 @@ export function Toaster({ onClick, onHover, attention }: EquipProps) {
         <boxGeometry args={[0.4, 0.3, 0.25]} />
         <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.4} metalness={0.6} />
       </mesh>
-      {/* Прорези */}
       <mesh position={[-0.08, 0.16, 0]}>
         <boxGeometry args={[0.1, 0.02, 0.18]} />
         <meshStandardMaterial color="#1a1a1a" />
@@ -439,4 +431,3 @@ export function RiceCooker({ onClick, onHover, attention }: EquipProps) {
     </Clickable>
   );
 }
-
