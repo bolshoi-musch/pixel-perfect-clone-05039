@@ -402,40 +402,29 @@ const STEP_COMPLETION_LOG: Record<string, string> = {
 
 // ---------- Order generator ----------
 
-const STARTER_QUEUE: string[] = ["omelet", "tea"];
+/**
+ * Test pool — only these recipes are issued in MVP/test mode.
+ * Other recipes may exist in recipes.json but are intentionally ignored here.
+ */
+export const TEST_RECIPE_POOL: readonly string[] = ["omelet", "tea"];
 
 /**
- * Pick the next recipe id given current state.
- * Onboarding: omelet → tea. After that: random from recipes whose required_equipment
- * is all owned and whose required raw ingredients are in inventory.
+ * Pick the next recipe id (test mode):
+ * - Strictly alternates within TEST_RECIPE_POOL based on the most recent review.
+ * - First order: first item of the pool (omelet).
+ * - After omelet → tea, after tea → omelet.
  */
 export function pickNextRecipe(): string | null {
   const game = useGame.getState();
-  const ob = game.onboarding;
+  const reviews = game.reviews;
+  const lastReview = reviews.length > 0 ? reviews[reviews.length - 1] : null;
+  const lastId = lastReview?.recipe_id ?? null;
 
-  if (!ob.done_first_omelet) return "omelet";
-  if (!ob.done_first_tea) return "tea";
-
-  const owned = new Set(game.equipment_owned);
-  const inventoryCanonical = new Set(
-    game.inventory.map((e) => canonicalIngredient(e.ingredient_id)),
-  );
-
-  const playable = [...RECIPES_BY_ID.values()].filter((r) => {
-    if (!r.required_equipment.every((e) => owned.has(e))) return false;
-    const stepIngredients = r.step_ids
-      .flatMap((sid) => STEPS_BY_ID.get(sid)?.requires ?? [])
-      .filter((id) => INGREDIENTS_BY_ID.has(id));
-    return stepIngredients.every((id) => {
-      const ing = INGREDIENTS_BY_ID.get(id)!;
-      if (ing.category !== "raw") return true;
-      if (id === "water") return true;
-      return inventoryCanonical.has(id);
-    });
-  });
-
-  if (playable.length === 0) {
-    return STARTER_QUEUE[Math.floor(Math.random() * STARTER_QUEUE.length)];
+  if (!lastId || !TEST_RECIPE_POOL.includes(lastId)) {
+    return TEST_RECIPE_POOL[0] ?? null;
   }
-  return playable[Math.floor(Math.random() * playable.length)].id;
+  const idx = TEST_RECIPE_POOL.indexOf(lastId);
+  return TEST_RECIPE_POOL[(idx + 1) % TEST_RECIPE_POOL.length] ?? null;
+}
+
 }
