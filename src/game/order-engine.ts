@@ -363,7 +363,7 @@ function completeStep(
   if (step.output) newPrepared.push(step.output);
 
   const minigame_scores =
-    step.minigame === "mix" || step.minigame === "window"
+    step.minigame === "mix" || step.minigame === "window" || step.minigame === "hold"
       ? [...p.minigame_scores, score]
       : p.minigame_scores;
 
