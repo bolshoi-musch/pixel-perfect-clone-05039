@@ -7,8 +7,10 @@ import { Text } from "@react-three/drei";
 import { useRef, useState } from "react";
 import type { TableSlot } from "@/game/types";
 import { INGREDIENTS_BY_ID } from "@/game/data";
+import { getItemVisual } from "@/game/item-visuals";
 import { SLOT_POSITIONS } from "./Table";
 import { SCENE_COLORS, INGREDIENT_COLOR } from "./colors";
+import { ItemShape } from "./ItemShape";
 
 const LONG_PRESS_MS = 600;
 const CLICK_GUARD_MS = 150;
