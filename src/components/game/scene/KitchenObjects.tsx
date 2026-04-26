@@ -157,19 +157,24 @@ export function Bowl({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.28}
     >
-      {/* Внешняя стенка миски */}
+      {/* Внешняя форма миски: широкий верх, узкое дно */}
       <mesh castShadow>
-        <cylinderGeometry args={[0.2, 0.13, 0.14, 28]} />
+        <cylinderGeometry args={[0.22, 0.12, 0.13, 32]} />
         <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.45} />
       </mesh>
-      {/* Внутренняя «впадина» */}
-      <mesh position={[0, 0.04, 0]}>
-        <cylinderGeometry args={[0.17, 0.1, 0.1, 28]} />
-        <meshStandardMaterial color={SCENE_COLORS.woodLight} roughness={0.7} />
+      {/* Бортик-кант сверху */}
+      <mesh position={[0, 0.07, 0]} castShadow>
+        <torusGeometry args={[0.21, 0.012, 10, 32]} />
+        <meshStandardMaterial color="#e9dec6" roughness={0.5} />
+      </mesh>
+      {/* Внутренняя «впадина» (тёмная) */}
+      <mesh position={[0, 0.045, 0]}>
+        <cylinderGeometry args={[0.19, 0.09, 0.09, 32]} />
+        <meshStandardMaterial color="#7a6a52" roughness={0.7} />
       </mesh>
       {content && (
-        <group position={[0, 0.06, 0]}>
-          <ItemShape itemId={content} scale={0.9} />
+        <group position={[0, 0.07, 0]}>
+          <ItemShape itemId={content} scale={1.1} />
         </group>
       )}
     </Clickable>
