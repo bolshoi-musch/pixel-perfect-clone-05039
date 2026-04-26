@@ -121,8 +121,12 @@ function PlayPage() {
       };
     }
     if (progress.finished) {
+      const txt =
+        hintMode === "short"
+          ? "Звонок"
+          : "Нажми Звонок, чтобы подать заказ";
       return {
-        instruction: "Нажми Звонок, чтобы подать заказ",
+        instruction: txt,
         target: "bell",
         requiresPickId: null,
         isServe: true,
@@ -131,29 +135,17 @@ function PlayPage() {
     const stepId = order.step_ids[progress.step_index];
     const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
     const target = step ? expectedEquipmentForStep(step) : null;
-    const map: Record<string, { instruction: string; pick?: string }> = {
-      omelet_crack: {
-        instruction: "Выбери Яйцо в Продуктах и нажми на Миску",
-        pick: "egg",
-      },
-      omelet_mix: { instruction: "Нажми на Миску и хорошо взбей" },
-      omelet_cook: { instruction: "Нажми на Плиту и поймай готовность" },
-      omelet_plate: { instruction: "Нажми на Тарелку, чтобы переложить омлет" },
-      omelet_serve: { instruction: "Нажми Звонок, чтобы подать омлет" },
-      tea_boil: { instruction: "Нажми на Чайник и поймай кипение" },
-      tea_pour: {
-        instruction: "Выбери Заварку в Продуктах и нажми на Чашку",
-        pick: "tea_leaves",
-      },
-      tea_serve: { instruction: "Нажми Звонок, чтобы подать чай" },
-    };
-    const entry = (stepId && map[stepId]) || {
-      instruction: step?.hints?.[0] ?? "Следуй подсказкам в панели заказа",
-    };
+    const entry = stepId ? STEP_HINTS[stepId] : undefined;
+    const instruction =
+      entry
+        ? hintMode === "short"
+          ? entry.short
+          : entry.detailed
+        : (step?.hints?.[0] ?? "Следуй подсказкам в панели заказа");
     return {
-      instruction: entry.instruction,
+      instruction,
       target,
-      requiresPickId: entry.pick ?? null,
+      requiresPickId: entry?.pick ?? null,
       isServe: target === "bell",
     };
   })();
@@ -166,7 +158,8 @@ function PlayPage() {
     : null;
   const needsPick =
     guidance.requiresPickId !== null && pickedCanonical !== guidance.requiresPickId;
-  const productsHighlight = needsPick;
+  // In Off mode we still allow soft hints on direct misuse, but hide the always-on highlight.
+  const productsHighlight = needsPick && hintMode !== "off";
 
   // Bell HUD button is enabled when current step is "serve" or order finished
   const bellEnabled = guidance.isServe;
