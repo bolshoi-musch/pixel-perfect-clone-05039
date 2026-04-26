@@ -384,12 +384,21 @@ function completeStep(
     },
   });
 
+  const customLog = STEP_COMPLETION_LOG[step.id];
   game.log(
-    finished
-      ? `Готово! Позвоните в звонок 🛎`
-      : `Шаг ${p.step_index + 1} выполнен (${(score * 100).toFixed(0)}%)`,
+    customLog
+      ? customLog
+      : finished
+        ? `Готово! Позвоните в звонок 🛎`
+        : `Шаг ${p.step_index + 1} выполнен (${(score * 100).toFixed(0)}%)`,
   );
 }
+
+/** Per-step custom completion message (overrides generic "Шаг N выполнен"). */
+const STEP_COMPLETION_LOG: Record<string, string> = {
+  omelet_cook: "Омлет готов. Переложи его на тарелку.",
+  omelet_plate: "Омлет на тарелке. Позвони в звонок.",
+};
 
 // ---------- Order generator ----------
 

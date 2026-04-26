@@ -33,7 +33,7 @@
     "t_fast": 70,
     "t_ok": 110,
     "required_equipment": ["bowl", "pan", "stove", "plate"],
-    "step_ids": ["omelet_crack", "omelet_mix", "omelet_cook", "omelet_serve"]
+    "step_ids": ["omelet_crack", "omelet_mix", "omelet_cook", "omelet_plate", "omelet_serve"]
   },
   {
     "id": "salad",

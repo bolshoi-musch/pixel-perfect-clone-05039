@@ -9,10 +9,11 @@
   { "id": "rice_cook", "type": "heat", "requires": ["rice", "water", "rice_cooker"], "minigame": "hold", "output": "rice_cooked", "hints": ["Загрузи рис и воду"] },
   { "id": "rice_serve", "type": "serve", "requires": ["rice_cooked", "plate"], "minigame": null, "output": "rice", "hints": ["Выложи на тарелку"] },
 
-  { "id": "omelet_crack", "type": "combine", "requires": ["egg", "bowl"], "minigame": "hold", "output": "egg_in_bowl", "hints": ["Разбей яйцо в миску"] },
-  { "id": "omelet_mix", "type": "mix", "requires": ["egg_in_bowl"], "minigame": "mix", "output": "egg_mix", "hints": ["Хорошо взбей"] },
-  { "id": "omelet_cook", "type": "heat", "requires": ["egg_mix", "pan", "stove"], "minigame": "window", "output": "omelet_cooked", "hints": ["Лови готовность"] },
-  { "id": "omelet_serve", "type": "serve", "requires": ["omelet_cooked", "plate"], "minigame": null, "output": "omelet", "hints": ["Подай омлет"] },
+  { "id": "omelet_crack", "type": "combine", "requires": ["egg", "bowl"], "minigame": "hold", "output": "egg_in_bowl", "hints": ["Разбей яйцо в миску", "Выбери Яйцо в Продуктах и нажми на Миску"] },
+  { "id": "omelet_mix", "type": "mix", "requires": ["egg_in_bowl"], "minigame": "mix", "output": "egg_mix", "hints": ["Хорошо взбей", "Нажми на Миску"] },
+  { "id": "omelet_cook", "type": "heat", "requires": ["egg_mix", "pan", "stove"], "minigame": "window", "output": "omelet_cooked", "hints": ["Приготовь омлет на плите", "Нажми на Плиту и поймай готовность"] },
+  { "id": "omelet_plate", "type": "combine", "requires": ["omelet_cooked", "plate"], "minigame": null, "output": "plated_omelet", "hints": ["Переложи омлет на тарелку", "Нажми на тарелку"] },
+  { "id": "omelet_serve", "type": "serve", "requires": ["plated_omelet"], "minigame": null, "output": "omelet", "hints": ["Позвони в звонок", "Нажми на Звонок, чтобы подать"] },
 
   { "id": "salad_chop_tomato", "type": "cut", "requires": ["tomato", "knife"], "minigame": "chop_stub", "output": "tomato_chopped", "hints": ["Нарежь помидор"] },
   { "id": "salad_chop_cucumber", "type": "cut", "requires": ["cucumber", "knife"], "minigame": "chop_stub", "output": "cucumber_chopped", "hints": ["Нарежь огурец"] },
