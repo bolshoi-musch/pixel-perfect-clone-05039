@@ -398,6 +398,7 @@ function completeStep(
 const STEP_COMPLETION_LOG: Record<string, string> = {
   omelet_cook: "Омлет готов. Переложи его на тарелку.",
   omelet_plate: "Омлет на тарелке. Позвони в звонок.",
+};
 
 // ---------- Order generator ----------
 
