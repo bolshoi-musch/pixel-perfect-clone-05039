@@ -120,6 +120,13 @@ export function KitchenScene({
           onClick={(p) => handleObjectClick("stove", "Плита", p)}
           onHover={onHoverLabel}
         />
+        {equipmentOwned.includes("kettle") && (
+          <Kettle
+            attention={activeTarget === "kettle"}
+            onClick={(p) => handleObjectClick("kettle", "Чайник", p)}
+            onHover={onHoverLabel}
+          />
+        )}
         <Bowl
           attention={activeTarget === "bowl"}
           onClick={(p) => handleObjectClick("bowl", "Миска", p)}
