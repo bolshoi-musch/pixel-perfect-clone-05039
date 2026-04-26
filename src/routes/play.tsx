@@ -105,6 +105,16 @@ function PlayPage() {
 
   const unreadReviews = Math.max(0, reviewsCount - seenReviewsCount);
 
+  // Bell HUD button is enabled when current step is "serve" or order finished
+  const bellEnabled = (() => {
+    if (!progress) return false;
+    if (progress.finished) return true;
+    const recipe = RECIPES_BY_ID.get(progress.recipe_id);
+    const stepId = recipe?.step_ids[progress.step_index];
+    const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
+    return step ? expectedEquipmentForStep(step) === "bell" : false;
+  })();
+
   const handlePickIngredient = () => pickConsume();
 
   const handleBellRing = () => {
