@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useGame } from "@/game/store";
@@ -16,6 +16,25 @@ const STOVE_UPGRADE_PRICES: Record<number, number> = {
   1: 80,
   2: 160,
 };
+
+const PURCHASE_FEEDBACK_MS = 800;
+
+/** Shared hook: track last purchased key for visual feedback. */
+function useLastPurchased() {
+  const [key, setKey] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+  const flash = (k: string) => {
+    setKey(k);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setKey(null), PURCHASE_FEEDBACK_MS);
+  };
+  return { lastKey: key, flash };
+}
 
 export function ShopPanel({ defaultTab = "products" }: Props) {
   const [tab, setTab] = useState<ShopTab>(defaultTab);
@@ -42,8 +61,10 @@ export function ShopPanel({ defaultTab = "products" }: Props) {
 
 function ProductsTab() {
   const money = useGame((s) => s.money);
+  const inventory = useGame((s) => s.inventory);
   const buyIngredient = useGame((s) => s.buyIngredient);
   const log = useGame((s) => s.log);
+  const { lastKey, flash } = useLastPurchased();
 
   // Group base ingredients with their premium variant (id + "_premium").
   const baseIngredients = INGREDIENTS.filter((i) => i.quality === "basic");
@@ -51,10 +72,17 @@ function ProductsTab() {
     INGREDIENTS.filter((i) => i.quality === "premium").map((i) => [i.id, i] as const),
   );
 
+  const countOf = (id: string, quality: IngredientQuality) =>
+    inventory.find((e) => e.ingredient_id === id && e.quality === quality)?.count ?? 0;
+
   const handleBuy = (id: string, quality: IngredientQuality, price: number, name: string) => {
     const ok = buyIngredient(id, quality, price);
-    if (ok) log(`Куплено: ${name} (+1) за ${price} ₽`);
-    else log(`Не хватает денег для покупки: ${name}`);
+    if (ok) {
+      log(`Куплено: ${name} (+1) за ${price} ₽`);
+      flash(`${id}|${quality}`);
+    } else {
+      log(`Не хватает денег для покупки: ${name}`);
+    }
   };
 
   return (
@@ -66,17 +94,31 @@ function ProductsTab() {
         {baseIngredients.map((ing) => {
           const premiumId = `${ing.id}_premium`;
           const premium = premiumById.get(premiumId);
+          const basicKey = `${ing.id}|basic`;
+          const premiumKey = premium ? `${premium.id}|premium` : null;
+          const purchasedHere = lastKey === basicKey || (premiumKey && lastKey === premiumKey);
           return (
             <li
               key={ing.id}
-              className="rounded-xl border border-border bg-background/60 p-3"
+              className={`rounded-xl border p-3 transition ${
+                purchasedHere
+                  ? "border-primary bg-primary/10 shadow-[0_0_0_2px_var(--primary)]"
+                  : "border-border bg-background/60"
+              }`}
             >
-              <div className="font-medium text-foreground">{ing.name}</div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-foreground">{ing.name}</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  В наличии: {countOf(ing.id, "basic")}
+                  {premium ? ` / ${countOf(premium.id, "premium")} ★` : ""}
+                </span>
+              </div>
               <div className="mt-2 space-y-2">
                 <BuyRow
                   label="Обычный"
                   price={ing.price}
                   canAfford={money >= ing.price}
+                  justBought={lastKey === basicKey}
                   onBuy={() => handleBuy(ing.id, "basic", ing.price, ing.name)}
                 />
                 {premium && (
@@ -84,6 +126,7 @@ function ProductsTab() {
                     label="Премиум"
                     price={premium.price}
                     canAfford={money >= premium.price}
+                    justBought={lastKey === premiumKey}
                     onBuy={() => handleBuy(premium.id, "premium", premium.price, premium.name)}
                   />
                 )}
@@ -100,11 +143,13 @@ function BuyRow({
   label,
   price,
   canAfford,
+  justBought,
   onBuy,
 }: {
   label: string;
   price: number;
   canAfford: boolean;
+  justBought?: boolean;
   onBuy: () => void;
 }) {
   return (
@@ -114,11 +159,12 @@ function BuyRow({
       </span>
       <Button
         size="sm"
-        variant={canAfford ? "default" : "secondary"}
-        disabled={!canAfford}
+        variant={justBought ? "default" : canAfford ? "default" : "secondary"}
+        disabled={!canAfford || justBought}
         onClick={onBuy}
+        className={justBought ? "bg-primary text-primary-foreground" : ""}
       >
-        {canAfford ? "Купить" : "Не хватает денег"}
+        {justBought ? "Куплено ✓" : canAfford ? "Купить" : "Не хватает денег"}
       </Button>
     </div>
   );
@@ -129,11 +175,16 @@ function EquipmentTab() {
   const money = useGame((s) => s.money);
   const buyEquipment = useGame((s) => s.buyEquipment);
   const log = useGame((s) => s.log);
+  const { lastKey, flash } = useLastPurchased();
 
   const handleBuy = (id: string, name: string, price: number) => {
     const ok = buyEquipment(id, price);
-    if (ok) log(`Куплено: ${name} за ${price} ₽`);
-    else log(`Не хватает денег для покупки: ${name}`);
+    if (ok) {
+      log(`Куплено: ${name} за ${price} ₽`);
+      flash(id);
+    } else {
+      log(`Не хватает денег для покупки: ${name}`);
+    }
   };
 
   return (
@@ -142,14 +193,19 @@ function EquipmentTab() {
         Купленная техника появляется на кухне (если для неё есть 3D-объект).
       </p>
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {EQUIPMENT.filter((e) => !e.owned_by_default || !owned.includes(e.id) ? true : true).map((eq) => {
+        {EQUIPMENT.map((eq) => {
           const isOwned = owned.includes(eq.id);
           const canAfford = money >= eq.price;
+          const justBought = lastKey === eq.id;
           return (
             <li
               key={eq.id}
               className={`rounded-xl border p-3 transition ${
-                isOwned ? "border-primary/40 bg-primary/5" : "border-border bg-background/60"
+                justBought
+                  ? "border-primary bg-primary/10 shadow-[0_0_0_2px_var(--primary)]"
+                  : isOwned
+                    ? "border-primary/40 bg-primary/5"
+                    : "border-border bg-background/60"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -186,15 +242,21 @@ function UpgradesTab() {
   const money = useGame((s) => s.money);
   const upgradeStove = useGame((s) => s.upgradeStove);
   const log = useGame((s) => s.log);
+  const { lastKey, flash } = useLastPurchased();
 
   const isMax = stoveLevel >= 3;
   const price = STOVE_UPGRADE_PRICES[stoveLevel] ?? 0;
   const canAfford = money >= price;
+  const justUpgraded = lastKey === "stove_upgrade";
 
   const handleUpgrade = () => {
     const ok = upgradeStove(price);
-    if (ok) log(`Плита улучшена до уровня ${stoveLevel + 1}`);
-    else log(`Не хватает денег для улучшения плиты`);
+    if (ok) {
+      log(`Плита улучшена до уровня ${stoveLevel + 1}`);
+      flash("stove_upgrade");
+    } else {
+      log(`Не хватает денег для улучшения плиты`);
+    }
   };
 
   return (
@@ -202,7 +264,13 @@ function UpgradesTab() {
       <p className="text-sm text-muted-foreground">
         Улучшения упрощают мини-игры. Плита: больше зелёная зона в WINDOW.
       </p>
-      <div className="rounded-xl border border-border bg-background/60 p-4">
+      <div
+        className={`rounded-xl border p-4 transition ${
+          justUpgraded
+            ? "border-primary bg-primary/10 shadow-[0_0_0_2px_var(--primary)]"
+            : "border-border bg-background/60"
+        }`}
+      >
         <div className="flex items-center justify-between gap-2">
           <div>
             <div className="font-medium text-foreground">Плита</div>
@@ -234,7 +302,11 @@ function UpgradesTab() {
             onClick={handleUpgrade}
             className="mt-3 w-full"
           >
-            {canAfford ? `Улучшить (${price} ₽)` : "Не хватает денег"}
+            {justUpgraded
+              ? "Улучшено ✓"
+              : canAfford
+                ? `Улучшить (${price} ₽)`
+                : "Не хватает денег"}
           </Button>
         )}
       </div>

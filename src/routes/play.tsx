@@ -14,7 +14,7 @@ import { SettingsPanel } from "@/components/game/panels/SettingsPanel";
 import { KitchenScene } from "@/components/game/scene/KitchenScene";
 import { ActionLog } from "@/components/game/ActionLog";
 import { OverflowDialog } from "@/components/game/OverflowDialog";
-import { MixMinigame, WindowMinigame } from "@/components/game/minigames/Minigames";
+import { MixMinigame, WindowMinigame, HoldMinigame } from "@/components/game/minigames/Minigames";
 
 export const Route = createFileRoute("/play")({
   head: () => ({
@@ -404,6 +404,9 @@ function PlayPage() {
       )}
       {activeMinigame?.kind === "window" && (
         <WindowMinigame onDone={(q, e) => finishMinigame(q, e)} onCancel={cancelMinigame} />
+      )}
+      {activeMinigame?.kind === "hold" && (
+        <HoldMinigame onDone={(q, e) => finishMinigame(q, e)} onCancel={cancelMinigame} />
       )}
     </div>
   );

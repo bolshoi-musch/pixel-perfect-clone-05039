@@ -143,12 +143,12 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
     }
 
     // Requirements met — open minigame OR auto-complete
-    if (step.minigame === "mix" || step.minigame === "window") {
+    if (step.minigame === "mix" || step.minigame === "window" || step.minigame === "hold") {
       set({ active_minigame: { step_id: step.id, kind: step.minigame } });
       return { ok: true, opened_minigame: step.minigame, step };
     }
 
-    // Auto-complete (hold/stub/null) — neutral score 0.85
+    // Auto-complete (chop_stub/roll_stub/null) — neutral score 0.85
     completeStep(set, get, step, 0.85, 0);
     return { ok: true, opened_minigame: null, step };
   },
@@ -363,7 +363,7 @@ function completeStep(
   if (step.output) newPrepared.push(step.output);
 
   const minigame_scores =
-    step.minigame === "mix" || step.minigame === "window"
+    step.minigame === "mix" || step.minigame === "window" || step.minigame === "hold"
       ? [...p.minigame_scores, score]
       : p.minigame_scores;
 
