@@ -15,6 +15,8 @@ import { KitchenScene } from "@/components/game/scene/KitchenScene";
 import { ActionLog } from "@/components/game/ActionLog";
 import { OverflowDialog } from "@/components/game/OverflowDialog";
 import { MixMinigame, WindowMinigame, HoldMinigame } from "@/components/game/minigames/Minigames";
+import { useHintMode } from "@/game/hint-mode";
+import { STEP_HINTS } from "@/game/hint-content";
 
 export const Route = createFileRoute("/play")({
   head: () => ({
