@@ -35,13 +35,17 @@ export const STEP_HINTS: Record<string, HintEntry> = {
     short: "Звонок",
   },
   tea_boil: {
-    detailed: "Нажми на Чайник и поймай кипение",
+    detailed: "Нажми на Чайник и поймай момент кипения",
     short: "Чайник",
   },
-  tea_pour: {
+  tea_brew: {
     detailed: "Выбери Заварку в Продуктах и нажми на Чашку",
     short: "Заварка → Чашка",
     pick: "tea_leaves",
+  },
+  tea_pour: {
+    detailed: "Нажми на Чайник, чтобы налить кипяток в чашку",
+    short: "Чайник → Чашка",
   },
   tea_serve: {
     detailed: "Нажми Звонок, чтобы подать чай",

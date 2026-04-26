@@ -17,14 +17,14 @@ export const WORK_SURFACE_POSITION: Vec3 = [0, 0.06, -0.35];
 
 /** Позиции стационарных устройств (на столе/у стены). */
 export const EQUIPMENT_POSITIONS: Record<string, Vec3> = {
-  stove: [-1.7, 0.2, -0.4],
-  kettle: [-1.0, 0.18, -0.4],
-  bowl: [-0.7, 0.06, -0.35],
-  plate: [0.5, 0.06, -0.35],
-  cup: [1.3, 0.1, -0.35],
-  bell: [1.55, 0.08, 0.2],
+  stove: [-1.7, 0.26, -0.4],
+  kettle: [-1.0, 0.2, -0.4],
+  bowl: [-0.55, 0.13, -0.3],
+  plate: [0.55, 0.07, -0.3],
+  cup: [1.3, 0.14, -0.3],
+  bell: [1.7, 0.07, 0.25],
   // Будущая техника (auto-place when bought):
-  toaster: [-0.3, 0.18, -0.4],
-  blender: [0.3, 0.22, -0.4],
-  rice_cooker: [1.0, 0.2, -0.4],
+  toaster: [-0.3, 0.21, -0.4],
+  blender: [0.3, 0.24, -0.4],
+  rice_cooker: [1.0, 0.21, -0.4],
 };

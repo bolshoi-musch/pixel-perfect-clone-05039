@@ -290,10 +290,15 @@ interface HoldProps {
 const HOLD_DURATION_MS = 1200;
 
 const HOLD_STEP_TEXT: Record<string, { title: string; subtitle: string; action: string }> = {
+  tea_brew: {
+    title: "Добавь заварку в чашку",
+    subtitle: "Удерживай, чтобы насыпать заварку",
+    action: "Засыпаем заварку",
+  },
   tea_pour: {
-    title: "Налей кипяток и добавь заварку",
+    title: "Налей кипяток в чашку",
     subtitle: "Удерживай, пока чашка наполняется",
-    action: "Заваривание",
+    action: "Наливаем кипяток",
   },
   omelet_crack: {
     title: "Разбей яйцо в миску",

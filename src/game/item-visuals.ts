@@ -23,6 +23,7 @@ export const ITEM_VISUALS: Record<string, ItemVisual> = {
   omelet_cooked: { label: "Омлет", color: "#e8b04a", shape: "omelet" },
   plated_omelet: { label: "Омлет на тарелке", color: "#e8b04a", shape: "omelet" },
   hot_water: { label: "Кипяток", color: "#cfe6f0", shape: "liquid" },
+  tea_with_leaves: { label: "Заварка в чашке", color: "#3d5a2a", shape: "leaves" },
   tea_brewed: { label: "Чай", color: "#7a3a1a", shape: "liquid" },
 };
 

@@ -222,6 +222,9 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
 const HEAT_EQUIPMENT = new Set(["stove", "oven", "toaster", "kettle", "rice_cooker"]);
 
 function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
+  // If a step has an explicit target override, only that exact equipment counts.
+  const override = STEP_TARGET_OVERRIDE[step.id];
+  if (override) return equipment_id === override;
   if (step.requires.includes(equipment_id)) return true;
   if (step.minigame === "mix" && equipment_id === "bowl") return true;
   if (step.minigame === "window" && HEAT_EQUIPMENT.has(equipment_id)) {
@@ -242,6 +245,9 @@ function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
 
 /** Best guess: which equipment is the "primary" target the player should click. */
 export function expectedEquipmentForStep(step: RecipeStep): string | null {
+  // Per-step explicit override (kettle pour, etc.)
+  const override = STEP_TARGET_OVERRIDE[step.id];
+  if (override) return override;
   // Serve step is finalized by the bell.
   if (step.type === "serve") return "bell";
   // Heat steps → the heat appliance in requires (or stove fallback)
@@ -256,6 +262,11 @@ export function expectedEquipmentForStep(step: RecipeStep): string | null {
   const tool = step.requires.find((r) => tools.includes(r));
   return tool ?? null;
 }
+
+/** Steps that need a non-default click target. */
+const STEP_TARGET_OVERRIDE: Record<string, string> = {
+  tea_pour: "kettle", // pouring boiling water FROM the kettle into the cup
+};
 
 const EQUIPMENT_LABELS: Record<string, string> = {
   stove: "Плита",
@@ -400,7 +411,8 @@ const STEP_COMPLETION_LOG: Record<string, string> = {
   omelet_mix: "Яйцо взбито",
   omelet_cook: "Омлет готов. Переложи его на тарелку.",
   omelet_plate: "Омлет на тарелке. Позвони в звонок.",
-  tea_boil: "Вода закипела. Налей чай в чашку.",
+  tea_boil: "Вода закипела. Теперь добавь заварку в чашку.",
+  tea_brew: "Заварка в чашке. Налей кипяток из чайника.",
   tea_pour: "Чай готов к подаче. Позвони в звонок.",
 };
 

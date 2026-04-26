@@ -182,8 +182,12 @@ function PlayPage() {
         step.id === "omelet_crack"
       ) {
         log("Сначала переложи омлет на тарелку");
-      } else if (step.id === "tea_pour" || step.id === "tea_boil") {
-        log("Сначала налей чай в чашку");
+      } else if (step.id === "tea_boil") {
+        log("Сначала добавь заварку в чашку");
+      } else if (step.id === "tea_brew") {
+        log("Сначала налей кипяток из чайника в чашку");
+      } else if (step.id === "tea_pour") {
+        log("Сначала налей кипяток в чашку");
       } else {
         log("Сначала закончи текущий шаг");
       }
