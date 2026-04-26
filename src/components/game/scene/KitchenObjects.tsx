@@ -182,6 +182,45 @@ export function Cup({ onClick, onHover, attention }: EquipProps) {
   );
 }
 
+export function Kettle({ onClick, onHover, attention }: EquipProps) {
+  return (
+    <Clickable
+      position={[-1.0, 0.18, -0.4]}
+      onClick={onClick}
+      onHover={onHover}
+      label="Чайник"
+      attention={attention}
+      attentionRadius={0.32}
+    >
+      {/* Корпус */}
+      <mesh castShadow position={[0, 0, 0]}>
+        <cylinderGeometry args={[0.18, 0.16, 0.28, 24]} />
+        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.3} metalness={0.7} />
+      </mesh>
+      {/* Крышка */}
+      <mesh castShadow position={[0, 0.155, 0]}>
+        <cylinderGeometry args={[0.1, 0.12, 0.04, 20]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.4} metalness={0.7} />
+      </mesh>
+      {/* Кнопка-набалдашник */}
+      <mesh castShadow position={[0, 0.19, 0]}>
+        <sphereGeometry args={[0.025, 12, 12]} />
+        <meshStandardMaterial color={SCENE_COLORS.bell} metalness={0.8} roughness={0.3} />
+      </mesh>
+      {/* Носик */}
+      <mesh castShadow position={[0.18, 0.05, 0]} rotation={[0, 0, -Math.PI / 3]}>
+        <coneGeometry args={[0.045, 0.18, 12]} />
+        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.3} metalness={0.7} />
+      </mesh>
+      {/* Ручка */}
+      <mesh castShadow position={[-0.18, 0.06, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.07, 0.018, 8, 18, Math.PI]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.5} metalness={0.5} />
+      </mesh>
+    </Clickable>
+  );
+}
+
 export function Bell({
   onClick,
   onHover,
