@@ -65,7 +65,7 @@ export function KitchenScene({
   const pickFirst = (...ids: string[]) => ids.find((id) => prepared.includes(id)) ?? null;
   const bowlContent = pickFirst("egg_mix", "egg_in_bowl");
   const plateContent = pickFirst("plated_omelet", "omelet_cooked");
-  const cupContent = pickFirst("tea_brewed", "hot_water");
+  const cupContent = pickFirst("tea_brewed", "tea_with_leaves", "hot_water");
 
   const fireHand = (pos: [number, number, number], holdMs = 200) => {
     handKeyRef.current += 1;
