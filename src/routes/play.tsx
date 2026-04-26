@@ -405,6 +405,9 @@ function PlayPage() {
       {activeMinigame?.kind === "window" && (
         <WindowMinigame onDone={(q, e) => finishMinigame(q, e)} onCancel={cancelMinigame} />
       )}
+      {activeMinigame?.kind === "hold" && (
+        <HoldMinigame onDone={(q, e) => finishMinigame(q, e)} onCancel={cancelMinigame} />
+      )}
     </div>
   );
 }
