@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useGame, selectAvgRating } from "@/game/store";
 import { useActivePick } from "@/game/active-pick";
-import { useOrderEngine, pickNextRecipe } from "@/game/order-engine";
-import { RECIPES_BY_ID, INGREDIENTS_BY_ID } from "@/game/data";
+import { useOrderEngine, pickNextRecipe, expectedEquipmentForStep } from "@/game/order-engine";
+import { RECIPES_BY_ID, INGREDIENTS_BY_ID, STEPS_BY_ID } from "@/game/data";
 import { PanelDialog } from "@/components/game/PanelDialog";
 import { ShopPanel } from "@/components/game/panels/ShopPanel";
 import { InventoryPanel } from "@/components/game/panels/InventoryPanel";
@@ -104,6 +104,16 @@ function PlayPage() {
   const activePickIng = pickValue ? INGREDIENTS_BY_ID.get(pickValue.split("|")[0]) : null;
 
   const unreadReviews = Math.max(0, reviewsCount - seenReviewsCount);
+
+  // Bell HUD button is enabled when current step is "serve" or order finished
+  const bellEnabled = (() => {
+    if (!progress) return false;
+    if (progress.finished) return true;
+    const recipe = RECIPES_BY_ID.get(progress.recipe_id);
+    const stepId = recipe?.step_ids[progress.step_index];
+    const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
+    return step ? expectedEquipmentForStep(step) === "bell" : false;
+  })();
 
   const handlePickIngredient = () => pickConsume();
 
@@ -252,6 +262,7 @@ function PlayPage() {
             onClick={() => setPanel("reviews")}
             badge={unreadReviews > 0 ? unreadReviews : undefined}
           />
+          <BellBtn enabled={bellEnabled} pulse={bellEnabled} onClick={handleBellRing} />
         </div>
       </nav>
 
@@ -329,6 +340,33 @@ function ActionBtn({
           {badge}
         </span>
       )}
+    </button>
+  );
+}
+
+function BellBtn({
+  enabled,
+  pulse,
+  onClick,
+}: {
+  enabled: boolean;
+  pulse: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!enabled}
+      title={enabled ? "Подать заказ" : "Сначала закончи готовку"}
+      className={`relative flex min-w-[88px] flex-col items-center gap-0.5 rounded-xl px-4 py-2 transition active:scale-[0.97] ${
+        enabled
+          ? "bg-primary text-primary-foreground shadow-[var(--shadow-warm)] hover:opacity-90"
+          : "text-muted-foreground opacity-50"
+      } ${pulse ? "animate-pulse" : ""}`}
+    >
+      <span className="text-lg leading-none">🛎</span>
+      <span className="text-xs font-semibold">Звонок</span>
     </button>
   );
 }

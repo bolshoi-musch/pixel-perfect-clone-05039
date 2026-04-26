@@ -124,21 +124,53 @@ export function Cup({ onClick, onHover }: { onClick: ClickableProps["onClick"]; 
   );
 }
 
-export function Bell({ onClick, onHover }: { onClick: ClickableProps["onClick"]; onHover?: ClickableProps["onHover"] }) {
+export function Bell({
+  onClick,
+  onHover,
+  attention = false,
+}: {
+  onClick: ClickableProps["onClick"];
+  onHover?: ClickableProps["onHover"];
+  attention?: boolean;
+}) {
+  const scale = attention ? 1.35 : 1;
+  const emissive = attention ? 0.6 : 0.05;
   return (
-    <Clickable position={[1.85, 0.08, 0.35]} onClick={onClick} onHover={onHover} label="Звонок гостя">
-      <mesh position={[0, 0, 0]}>
-        <cylinderGeometry args={[0.13, 0.13, 0.025, 24]} />
-        <meshStandardMaterial color={SCENE_COLORS.bellBase} roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 0.085, 0]}>
-        <sphereGeometry args={[0.1, 20, 20, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color={SCENE_COLORS.bell} roughness={0.3} metalness={0.7} />
-      </mesh>
-      <mesh position={[0, 0.18, 0]}>
-        <sphereGeometry args={[0.018, 12, 12]} />
-        <meshStandardMaterial color={SCENE_COLORS.bell} metalness={0.7} />
-      </mesh>
+    <Clickable position={[1.55, 0.08, 0.2]} onClick={onClick} onHover={onHover} label="Звонок гостя 🛎">
+      <group scale={scale}>
+        {/* Подставка */}
+        <mesh position={[0, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.16, 0.18, 0.035, 28]} />
+          <meshStandardMaterial color={SCENE_COLORS.bellBase} roughness={0.5} />
+        </mesh>
+        {/* Купол колокольчика */}
+        <mesh position={[0, 0.105, 0]} castShadow>
+          <sphereGeometry args={[0.13, 24, 24, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial
+            color={SCENE_COLORS.bell}
+            roughness={0.25}
+            metalness={0.85}
+            emissive={SCENE_COLORS.bell}
+            emissiveIntensity={emissive}
+          />
+        </mesh>
+        {/* Кнопка-«пуговица» сверху */}
+        <mesh position={[0, 0.235, 0]} castShadow>
+          <sphereGeometry args={[0.028, 16, 16]} />
+          <meshStandardMaterial
+            color={SCENE_COLORS.bell}
+            metalness={0.85}
+            emissive={SCENE_COLORS.bell}
+            emissiveIntensity={emissive}
+          />
+        </mesh>
+        {attention && (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
+            <ringGeometry args={[0.22, 0.27, 32]} />
+            <meshBasicMaterial color={SCENE_COLORS.bell} transparent opacity={0.6} />
+          </mesh>
+        )}
+      </group>
     </Clickable>
   );
 }

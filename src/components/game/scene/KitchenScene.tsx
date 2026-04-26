@@ -4,6 +4,8 @@
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/game/store";
+import { useOrderEngine, expectedEquipmentForStep } from "@/game/order-engine";
+import { STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
 import { Environment } from "./Environment";
 import { TableSurface, WORK_SURFACE_POS } from "./Table";
 import { TableSlots } from "./TableSlots";
@@ -34,6 +36,17 @@ export function KitchenScene({
   const [handTarget, setHandTarget] = useState<HandTarget | null>(null);
   const handKeyRef = useRef(0);
   const [progress, setProgress] = useState<{ index: number; ratio: number } | null>(null);
+
+  // Highlight bell when current step is "serve" or order finished.
+  const orderProgress = useOrderEngine((s) => s.progress);
+  const bellAttention = (() => {
+    if (!orderProgress) return false;
+    if (orderProgress.finished) return true;
+    const recipe = RECIPES_BY_ID.get(orderProgress.recipe_id);
+    const stepId = recipe?.step_ids[orderProgress.step_index];
+    const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
+    return step ? expectedEquipmentForStep(step) === "bell" : false;
+  })();
 
   const fireHand = (pos: [number, number, number], holdMs = 200) => {
     handKeyRef.current += 1;
@@ -118,6 +131,7 @@ export function KitchenScene({
           onHover={onHoverLabel}
         />
         <Bell
+          attention={bellAttention}
           onClick={(p) => {
             fireHand(p, 160);
             onBellRing();

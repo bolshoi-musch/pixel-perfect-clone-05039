@@ -241,6 +241,8 @@ function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
 
 /** Best guess: which equipment is the "primary" target the player should click. */
 export function expectedEquipmentForStep(step: RecipeStep): string | null {
+  // Serve step is finalized by the bell.
+  if (step.type === "serve") return "bell";
   // Heat steps → the heat appliance in requires (or stove fallback)
   if (step.minigame === "window") {
     const heat = step.requires.find((r) => HEAT_EQUIPMENT.has(r));
@@ -248,7 +250,7 @@ export function expectedEquipmentForStep(step: RecipeStep): string | null {
   }
   if (step.minigame === "mix") return "bowl";
   if (step.minigame === "chop_stub" || step.minigame === "roll_stub") return "work_surface";
-  // combine/serve: prefer first equipment in requires (bowl/cup/plate/pan...)
+  // combine: prefer first equipment in requires (bowl/cup/plate/pan...)
   const tools = ["bowl", "cup", "plate", "pan", "kettle", "rice_cooker", "blender", "pot", "oven"];
   const tool = step.requires.find((r) => tools.includes(r));
   return tool ?? null;
