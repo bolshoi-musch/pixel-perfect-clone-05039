@@ -145,18 +145,42 @@ export function KitchenScene({
             onHover={onHoverLabel}
           />
         )}
+        {equipmentOwned.includes("toaster") && (
+          <Toaster
+            attention={activeTarget === "toaster"}
+            onClick={(p) => handleObjectClick("toaster", "Тостер", p)}
+            onHover={onHoverLabel}
+          />
+        )}
+        {equipmentOwned.includes("blender") && (
+          <Blender
+            attention={activeTarget === "blender"}
+            onClick={(p) => handleObjectClick("blender", "Блендер", p)}
+            onHover={onHoverLabel}
+          />
+        )}
+        {equipmentOwned.includes("rice_cooker") && (
+          <RiceCooker
+            attention={activeTarget === "rice_cooker"}
+            onClick={(p) => handleObjectClick("rice_cooker", "Рисоварка", p)}
+            onHover={onHoverLabel}
+          />
+        )}
         <Bowl
           attention={activeTarget === "bowl"}
+          content={bowlContent}
           onClick={(p) => handleObjectClick("bowl", "Миска", p)}
           onHover={onHoverLabel}
         />
         <Plate
           attention={activeTarget === "plate"}
+          content={plateContent}
           onClick={(p) => handleObjectClick("plate", "Тарелка", p)}
           onHover={onHoverLabel}
         />
         <Cup
           attention={activeTarget === "cup"}
+          content={cupContent}
           onClick={(p) => handleObjectClick("cup", "Чашка", p)}
           onHover={onHoverLabel}
         />
