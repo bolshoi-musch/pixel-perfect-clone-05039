@@ -343,3 +343,30 @@ function ActionBtn({
     </button>
   );
 }
+
+function BellBtn({
+  enabled,
+  pulse,
+  onClick,
+}: {
+  enabled: boolean;
+  pulse: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!enabled}
+      title={enabled ? "Подать заказ" : "Сначала закончи готовку"}
+      className={`relative flex min-w-[88px] flex-col items-center gap-0.5 rounded-xl px-4 py-2 transition active:scale-[0.97] ${
+        enabled
+          ? "bg-primary text-primary-foreground shadow-[var(--shadow-warm)] hover:opacity-90"
+          : "text-muted-foreground opacity-50"
+      } ${pulse ? "animate-pulse" : ""}`}
+    >
+      <span className="text-lg leading-none">🛎</span>
+      <span className="text-xs font-semibold">Звонок</span>
+    </button>
+  );
+}
