@@ -1,29 +1,49 @@
 import { useGame } from "@/game/store";
 import { useOrderEngine } from "@/game/order-engine";
-import { RECIPES_BY_ID, STEPS_BY_ID } from "@/game/data";
+import { RECIPES_BY_ID, STEPS_BY_ID, INGREDIENTS_BY_ID, EQUIPMENT_BY_ID } from "@/game/data";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "../EmptyState";
 
-export function OrderPanel() {
+interface Props {
+  onOpenShop?: (tab: "products" | "equipment") => void;
+}
+
+export function OrderPanel({ onOpenShop }: Props) {
   const currentId = useGame((s) => s.current_order_recipe_id);
+  const inventory = useGame((s) => s.inventory);
+  const equipmentOwned = useGame((s) => s.equipment_owned);
   const progress = useOrderEngine((s) => s.progress);
 
   if (!currentId) {
-    return (
-      <EmptyState
-        icon="📋"
-        title="Нет активного заказа"
-        hint="Скоро придёт следующий гость."
-      />
-    );
+    return <EmptyState icon="📋" title="Нет активного заказа" hint="Скоро придёт следующий гость." />;
   }
 
   const recipe = RECIPES_BY_ID.get(currentId);
-  if (!recipe) {
-    return <EmptyState icon="❓" title="Заказ не найден" />;
-  }
+  if (!recipe) return <EmptyState icon="❓" title="Заказ не найден" />;
 
   const stepIndex = progress?.step_index ?? 0;
   const finished = progress?.finished ?? false;
+
+  // Compute all raw ingredients required by recipe steps.
+  const requiredRawIngredients = new Set<string>();
+  for (const sid of recipe.step_ids) {
+    const step = STEPS_BY_ID.get(sid);
+    if (!step) continue;
+    for (const r of step.requires) {
+      const ing = INGREDIENTS_BY_ID.get(r);
+      if (ing && ing.category === "raw" && r !== "water") requiredRawIngredients.add(r);
+    }
+  }
+  const inventoryIds = new Set(inventory.filter((e) => e.count > 0).map((e) => e.ingredient_id));
+  // Premium variant counts as basic.
+  const ALIAS: Record<string, string> = { egg_premium: "egg", bread_premium: "bread" };
+  const inventoryCanonical = new Set(
+    [...inventoryIds].map((id) => ALIAS[id] ?? id),
+  );
+  const missingIngredients = [...requiredRawIngredients].filter((id) => !inventoryCanonical.has(id));
+
+  const ownedSet = new Set(equipmentOwned);
+  const missingEquipment = recipe.required_equipment.filter((e) => !ownedSet.has(e));
 
   return (
     <div className="space-y-4">
@@ -37,6 +57,61 @@ export function OrderPanel() {
         <Stat label="Норма" value={`≤${recipe.t_ok}с`} />
         <Stat label="Шагов" value={`${stepIndex}/${recipe.step_ids.length}`} />
       </div>
+
+      {/* Требования */}
+      <div className="rounded-xl border border-border bg-background/60 p-3">
+        <h4 className="mb-2 text-sm font-semibold text-foreground">Нужно для заказа</h4>
+        <div className="flex flex-wrap gap-1.5">
+          {recipe.required_equipment.map((eid) => {
+            const has = ownedSet.has(eid);
+            return (
+              <Tag key={eid} ok={has}>
+                🔧 {EQUIPMENT_BY_ID.get(eid)?.name ?? eid}
+              </Tag>
+            );
+          })}
+          {[...requiredRawIngredients].map((iid) => {
+            const has = inventoryCanonical.has(iid);
+            return (
+              <Tag key={iid} ok={has}>
+                🥬 {INGREDIENTS_BY_ID.get(iid)?.name ?? iid}
+              </Tag>
+            );
+          })}
+        </div>
+      </div>
+
+      {(missingIngredients.length > 0 || missingEquipment.length > 0) && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3">
+          <h4 className="mb-2 text-sm font-semibold text-foreground">Не хватает</h4>
+          {missingEquipment.length > 0 && (
+            <div className="mb-2">
+              <p className="mb-1 text-xs text-muted-foreground">Техника:</p>
+              <p className="text-sm text-foreground">
+                {missingEquipment.map((id) => EQUIPMENT_BY_ID.get(id)?.name ?? id).join(", ")}
+              </p>
+              {onOpenShop && (
+                <Button size="sm" className="mt-2" onClick={() => onOpenShop("equipment")}>
+                  Купить в магазине
+                </Button>
+              )}
+            </div>
+          )}
+          {missingIngredients.length > 0 && (
+            <div>
+              <p className="mb-1 text-xs text-muted-foreground">Продукты:</p>
+              <p className="text-sm text-foreground">
+                {missingIngredients.map((id) => INGREDIENTS_BY_ID.get(id)?.name ?? id).join(", ")}
+              </p>
+              {onOpenShop && (
+                <Button size="sm" className="mt-2" onClick={() => onOpenShop("products")}>
+                  Купить в магазине
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {finished && (
         <div className="rounded-xl border border-primary/40 bg-primary/10 p-3 text-sm font-medium text-primary">
@@ -79,14 +154,8 @@ export function OrderPanel() {
                   >
                     {step?.hints?.[0] ?? step?.type}
                   </p>
-                  {step?.minigame && active && (
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {step.minigame === "mix" && "→ Кликни по миске"}
-                      {step.minigame === "window" && "→ Кликни по плите"}
-                      {step.minigame === "hold" && "→ Кликни по нужной технике"}
-                      {(step.minigame === "roll_stub" || step.minigame === "chop_stub") &&
-                        "→ Кликни по технике"}
-                    </p>
+                  {step?.hints?.[1] && active && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">{step.hints[1]}</p>
                   )}
                 </div>
               </li>
@@ -104,5 +173,19 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="text-sm font-semibold text-foreground">{value}</div>
     </div>
+  );
+}
+
+function Tag({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+  return (
+    <span
+      className={`rounded-md border px-2 py-0.5 text-xs ${
+        ok
+          ? "border-primary/40 bg-primary/10 text-foreground"
+          : "border-destructive/40 bg-destructive/5 text-muted-foreground line-through"
+      }`}
+    >
+      {children}
+    </span>
   );
 }
