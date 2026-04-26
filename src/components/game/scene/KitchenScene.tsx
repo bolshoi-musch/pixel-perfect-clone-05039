@@ -60,6 +60,13 @@ export function KitchenScene({
     return step ? expectedEquipmentForStep(step) : null;
   })();
 
+  // What to render inside bowl/plate/cup based on currently prepared items.
+  const prepared = orderProgress?.prepared ?? [];
+  const pickFirst = (...ids: string[]) => ids.find((id) => prepared.includes(id)) ?? null;
+  const bowlContent = pickFirst("egg_mix", "egg_in_bowl");
+  const plateContent = pickFirst("plated_omelet", "omelet_cooked");
+  const cupContent = pickFirst("tea_brewed", "hot_water");
+
   const fireHand = (pos: [number, number, number], holdMs = 200) => {
     handKeyRef.current += 1;
     setHandTarget({ pos, holdMs, key: handKeyRef.current });
