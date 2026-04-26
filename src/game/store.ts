@@ -303,6 +303,7 @@ function extractSave(s: SaveData): SaveData {
     money: s.money,
     inventory: s.inventory,
     equipment_owned: s.equipment_owned,
+    stove_level: s.stove_level,
     table_slots: s.table_slots,
     current_order_recipe_id: s.current_order_recipe_id,
     rating_history: s.rating_history,
