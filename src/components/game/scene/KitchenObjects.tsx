@@ -342,3 +342,75 @@ export function WorkSurfaceMarker({
     </Clickable>
   );
 }
+
+export function Toaster({ onClick, onHover, attention }: EquipProps) {
+  return (
+    <Clickable
+      position={EQUIPMENT_POSITIONS.toaster}
+      onClick={onClick}
+      onHover={onHover}
+      label="Тостер"
+      attention={attention}
+      attentionRadius={0.3}
+    >
+      <mesh castShadow>
+        <boxGeometry args={[0.4, 0.3, 0.25]} />
+        <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.4} metalness={0.6} />
+      </mesh>
+      {/* Прорези */}
+      <mesh position={[-0.08, 0.16, 0]}>
+        <boxGeometry args={[0.1, 0.02, 0.18]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh position={[0.08, 0.16, 0]}>
+        <boxGeometry args={[0.1, 0.02, 0.18]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+    </Clickable>
+  );
+}
+
+export function Blender({ onClick, onHover, attention }: EquipProps) {
+  return (
+    <Clickable
+      position={EQUIPMENT_POSITIONS.blender}
+      onClick={onClick}
+      onHover={onHover}
+      label="Блендер"
+      attention={attention}
+      attentionRadius={0.3}
+    >
+      <mesh castShadow position={[0, -0.05, 0]}>
+        <cylinderGeometry args={[0.15, 0.18, 0.18, 16]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.5} metalness={0.4} />
+      </mesh>
+      <mesh castShadow position={[0, 0.13, 0]}>
+        <cylinderGeometry args={[0.1, 0.1, 0.26, 16]} />
+        <meshStandardMaterial color="#dce8f0" transparent opacity={0.55} roughness={0.1} />
+      </mesh>
+    </Clickable>
+  );
+}
+
+export function RiceCooker({ onClick, onHover, attention }: EquipProps) {
+  return (
+    <Clickable
+      position={EQUIPMENT_POSITIONS.rice_cooker}
+      onClick={onClick}
+      onHover={onHover}
+      label="Рисоварка"
+      attention={attention}
+      attentionRadius={0.32}
+    >
+      <mesh castShadow>
+        <cylinderGeometry args={[0.22, 0.24, 0.3, 24]} />
+        <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.6} />
+      </mesh>
+      <mesh castShadow position={[0, 0.17, 0]}>
+        <cylinderGeometry args={[0.2, 0.22, 0.04, 24]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.4} metalness={0.5} />
+      </mesh>
+    </Clickable>
+  );
+}
+
