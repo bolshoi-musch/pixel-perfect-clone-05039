@@ -396,8 +396,12 @@ function completeStep(
 
 /** Per-step custom completion message (overrides generic "Шаг N выполнен"). */
 const STEP_COMPLETION_LOG: Record<string, string> = {
+  omelet_crack: "Яйцо добавлено в миску",
+  omelet_mix: "Яйцо взбито",
   omelet_cook: "Омлет готов. Переложи его на тарелку.",
   omelet_plate: "Омлет на тарелке. Позвони в звонок.",
+  tea_boil: "Вода закипела. Налей чай в чашку.",
+  tea_pour: "Чай готов к подаче. Позвони в звонок.",
 };
 
 // ---------- Order generator ----------
