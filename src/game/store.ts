@@ -49,6 +49,8 @@ interface GameState extends SaveData {
   cancelOverflow: () => void;
 
   buyEquipment: (id: string, price: number) => boolean;
+  buyIngredient: (id: string, quality: IngredientQuality, price: number) => boolean;
+  upgradeStove: (price: number) => boolean;
 
   setCurrentOrder: (recipe_id: string | null) => void;
   completeOrder: (recipe_id: string, stars: number, review: ReviewEntry, reward: number) => void;
@@ -263,6 +265,27 @@ export const useGame = create<GameState>((set, get) => ({
     return true;
   },
 
+  buyIngredient: (id, quality, price) => {
+    const s = get();
+    if (s.money < price) return false;
+    set({ money: s.money - price });
+    s.addToInventory({ ingredient_id: id, quality, count: 1 });
+    // addToInventory persists on its own
+    return true;
+  },
+
+  upgradeStove: (price) => {
+    const s = get();
+    if (s.stove_level >= 3) return false;
+    if (s.money < price) return false;
+    set({
+      money: s.money - price,
+      stove_level: s.stove_level + 1,
+    });
+    get().persist();
+    return true;
+  },
+
   setCurrentOrder: (recipe_id) => {
     set({ current_order_recipe_id: recipe_id });
     get().persist();
@@ -303,6 +326,7 @@ function extractSave(s: SaveData): SaveData {
     money: s.money,
     inventory: s.inventory,
     equipment_owned: s.equipment_owned,
+    stove_level: s.stove_level,
     table_slots: s.table_slots,
     current_order_recipe_id: s.current_order_recipe_id,
     rating_history: s.rating_history,

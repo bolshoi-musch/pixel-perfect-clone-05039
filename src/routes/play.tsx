@@ -24,6 +24,7 @@ export const Route = createFileRoute("/play")({
 });
 
 type PanelKey = "shop" | "inventory" | "equipment" | "reviews" | "order" | "settings" | null;
+type ShopTab = "products" | "equipment" | "upgrades";
 
 function PlayPage() {
   const hydrate = useGame((s) => s.hydrate);
@@ -46,6 +47,7 @@ function PlayPage() {
   const progress = useOrderEngine((s) => s.progress);
 
   const [panel, setPanel] = useState<PanelKey>(null);
+  const [shopTab, setShopTab] = useState<ShopTab>("products");
   const [hoverLabel, setHoverLabel] = useState<string | null>(null);
   const [seenReviewsCount, setSeenReviewsCount] = useState(reviewsCount);
   const [completionToast, setCompletionToast] = useState<{
@@ -141,7 +143,24 @@ function PlayPage() {
       log("Сначала прими заказ");
       return;
     }
+    // Soft hint: tea_pour requires tea_leaves to be picked from inventory.
+    const recipe = RECIPES_BY_ID.get(progress.recipe_id);
+    const stepId = recipe?.step_ids[progress.step_index];
+    const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
+    if (
+      step?.id === "tea_pour" &&
+      equipment_id === "cup" &&
+      pickValue !== "tea_leaves|basic"
+    ) {
+      log("Сначала выбери Заварку в Продуктах");
+      return;
+    }
     tryStep(equipment_id);
+  };
+
+  const openShop = (tab: ShopTab = "products") => {
+    setShopTab(tab);
+    setPanel("shop");
   };
 
   return (
@@ -270,21 +289,21 @@ function PlayPage() {
       <PanelDialog
         open={panel === "shop"}
         onClose={() => setPanel(null)}
-        title="Магазин ингредиентов"
+        title="Магазин"
       >
-        <ShopPanel />
+        <ShopPanel defaultTab={shopTab} key={shopTab} />
       </PanelDialog>
       <PanelDialog open={panel === "inventory"} onClose={() => setPanel(null)} title="Продукты">
-        <InventoryPanel />
+        <InventoryPanel onOpenShop={() => openShop("products")} />
       </PanelDialog>
       <PanelDialog open={panel === "equipment"} onClose={() => setPanel(null)} title="Техника">
-        <EquipmentPanel />
+        <EquipmentPanel onOpenShop={() => openShop("equipment")} />
       </PanelDialog>
       <PanelDialog open={panel === "reviews"} onClose={() => setPanel(null)} title="Отзывы гостей">
         <ReviewsPanel />
       </PanelDialog>
       <PanelDialog open={panel === "order"} onClose={() => setPanel(null)} title="Текущий заказ">
-        <OrderPanel />
+        <OrderPanel onOpenShop={(t) => openShop(t)} />
       </PanelDialog>
       <PanelDialog open={panel === "settings"} onClose={() => setPanel(null)} title="Настройки">
         <SettingsPanel />

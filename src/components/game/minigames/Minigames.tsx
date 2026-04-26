@@ -2,6 +2,9 @@
 // Quality = circles completed within 5s & smoothness of motion.
 
 import { useEffect, useRef, useState } from "react";
+import { useGame } from "@/game/store";
+import { useOrderEngine } from "@/game/order-engine";
+import { STEPS_BY_ID } from "@/game/data";
 
 interface Props {
   onDone: (quality: number, errors: number) => void;
@@ -153,7 +156,8 @@ interface WindowProps {
 const WINDOW_DURATION_MS = 6000;
 const SWEEP_PERIOD_MS = 1800;
 const TARGET_X = 0.5; // ideal center
-const TARGET_HALF_WIDTH = 0.18; // green zone
+const BASE_TARGET_HALF_WIDTH = 0.18; // green zone (stove L1)
+const STOVE_BONUS_PER_LEVEL = 0.05; // L2: +0.05, L3: +0.10
 
 /**
  * WINDOW minigame — кулинарный таймер. Курсор скользит по шкале, нужно
@@ -165,6 +169,19 @@ export function WindowMinigame({ onDone, onCancel }: WindowProps) {
   const [elapsed, setElapsed] = useState(0);
   const [tapped, setTapped] = useState<{ x: number; quality: number } | null>(null);
   const lockRef = useRef(false);
+
+  // Stove level expands the green zone, but only when the active step uses the stove.
+  const stoveLevel = useGame((s) => s.stove_level);
+  const progress = useOrderEngine((s) => s.progress);
+  const activeStep = useOrderEngine((s) => s.active_minigame);
+  const usesStove = (() => {
+    if (!progress || !activeStep) return false;
+    const step = STEPS_BY_ID.get(activeStep.step_id);
+    return step ? step.requires.includes("stove") : false;
+  })();
+  const TARGET_HALF_WIDTH = usesStove
+    ? BASE_TARGET_HALF_WIDTH + (Math.max(1, stoveLevel) - 1) * STOVE_BONUS_PER_LEVEL
+    : BASE_TARGET_HALF_WIDTH;
 
   useEffect(() => {
     let raf = 0;

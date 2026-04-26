@@ -9,13 +9,15 @@ import type {
 } from "./types";
 
 export const SAVE_KEY = "kitchen.save.v1";
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface SaveData {
   version: number;
   money: number;
   inventory: InventoryEntry[];
   equipment_owned: string[]; // ids
+  /** Уровень плиты 1..3 — расширяет green zone в WINDOW мини-игре. */
+  stove_level: number;
   table_slots: TableSlot[]; // length 5
   current_order_recipe_id: string | null;
   rating_history: number[]; // последние оценки (звёзды)
@@ -49,6 +51,7 @@ export function makeInitialSave(): SaveData {
       "bowl",
       "kettle",
     ],
+    stove_level: 1,
     table_slots: Array.from({ length: 5 }, () => ({ ...EMPTY_SLOT })),
     current_order_recipe_id: null,
     rating_history: [],
@@ -70,7 +73,14 @@ function migrate(raw: unknown): SaveData | null {
   if (obj.version === SAVE_VERSION) {
     return obj as SaveData;
   }
-  // TODO: миграции с предыдущих версий, когда появятся.
+  // v1 → v2: добавили stove_level.
+  if (obj.version === 1) {
+    return {
+      ...(obj as SaveData),
+      stove_level: 1,
+      version: SAVE_VERSION,
+    };
+  }
   return null;
 }
 

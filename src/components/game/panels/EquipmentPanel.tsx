@@ -2,61 +2,75 @@ import { useGame } from "@/game/store";
 import { EQUIPMENT } from "@/game/data";
 import { Button } from "@/components/ui/button";
 
-export function EquipmentPanel() {
-  const owned = useGame((s) => s.equipment_owned);
-  const money = useGame((s) => s.money);
-  const buyEquipment = useGame((s) => s.buyEquipment);
-  const log = useGame((s) => s.log);
+interface Props {
+  onOpenShop?: () => void;
+}
 
-  const handleBuy = (id: string, name: string, price: number) => {
-    const ok = buyEquipment(id, price);
-    if (ok) log(`Куплено: ${name} за ${price} ₽`);
-    else log(`Не хватает денег для покупки: ${name}`);
-  };
+export function EquipmentPanel({ onOpenShop }: Props) {
+  const owned = useGame((s) => s.equipment_owned);
+  const stoveLevel = useGame((s) => s.stove_level);
+
+  const ownedEq = EQUIPMENT.filter((e) => owned.includes(e.id));
+  const notOwnedEq = EQUIPMENT.filter((e) => !owned.includes(e.id));
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Доступная и предстоящая к покупке техника. Купленные приборы появляются на кухне (если для них есть 3D-объект).
+        Это обзор кухни: что куплено и какой уровень плиты. Покупка — в Магазине.
       </p>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {EQUIPMENT.map((eq) => {
-          const isOwned = owned.includes(eq.id);
-          const canAfford = money >= eq.price;
-          return (
+
+      <div className="rounded-xl border border-border bg-background/60 p-3">
+        <div className="flex items-center justify-between">
+          <span className="font-medium text-foreground">Уровень плиты</span>
+          <span className="text-sm text-foreground">{stoveLevel} / 3</span>
+        </div>
+        <div className="mt-2 flex gap-1">
+          {[1, 2, 3].map((lvl) => (
+            <div
+              key={lvl}
+              className={`h-2 flex-1 rounded-full ${
+                lvl <= stoveLevel ? "bg-primary" : "bg-muted"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h4 className="mb-2 text-sm font-semibold text-foreground">На кухне</h4>
+        <ul className="grid grid-cols-2 gap-2">
+          {ownedEq.map((eq) => (
             <li
               key={eq.id}
-              className={`rounded-xl border p-3 transition ${
-                isOwned
-                  ? "border-primary/40 bg-primary/5"
-                  : "border-border bg-background/60"
-              }`}
+              className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-foreground"
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-medium text-foreground">{eq.name}</span>
-                {isOwned ? (
-                  <span className="text-xs font-semibold text-primary">✓ На кухне</span>
-                ) : (
-                  <span className="text-xs text-muted-foreground">{eq.price} ₽</span>
-                )}
-              </div>
-              {!isOwned && (
-                <div className="mt-2">
-                  <Button
-                    size="sm"
-                    variant={canAfford ? "default" : "secondary"}
-                    disabled={!canAfford}
-                    onClick={() => handleBuy(eq.id, eq.name, eq.price)}
-                    className="w-full"
-                  >
-                    {canAfford ? "Купить" : "Недостаточно денег"}
-                  </Button>
-                </div>
-              )}
+              ✓ {eq.name}
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      </div>
+
+      {notOwnedEq.length > 0 && (
+        <div>
+          <h4 className="mb-2 text-sm font-semibold text-foreground">Можно купить</h4>
+          <ul className="grid grid-cols-2 gap-2">
+            {notOwnedEq.map((eq) => (
+              <li
+                key={eq.id}
+                className="rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-muted-foreground"
+              >
+                {eq.name} · {eq.price} ₽
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {onOpenShop && (
+        <Button variant="default" className="w-full" onClick={onOpenShop}>
+          Открыть магазин
+        </Button>
+      )}
     </div>
   );
 }
