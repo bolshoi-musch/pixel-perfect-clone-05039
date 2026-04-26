@@ -1,7 +1,8 @@
 [
-  { "id": "tea_boil", "type": "heat", "requires": ["water", "kettle"], "minigame": "window", "output": "hot_water", "hints": ["Поймай момент, когда вода закипит"] },
-  { "id": "tea_pour", "type": "combine", "requires": ["hot_water", "tea_leaves", "cup"], "minigame": "hold", "output": "tea_brewed", "hints": ["Добавь заварку и налей кипяток в чашку", "Выбери Заварку в Продуктах и нажми на Чашку"] },
-  { "id": "tea_serve", "type": "serve", "requires": ["tea_brewed"], "minigame": null, "output": "tea", "hints": ["Позвони в звонок"] },
+  { "id": "tea_boil", "type": "heat", "requires": ["water", "kettle"], "minigame": "window", "output": "hot_water", "hints": ["Вскипяти воду в чайнике", "Нажми на Чайник и поймай кипение"] },
+  { "id": "tea_brew", "type": "combine", "requires": ["tea_leaves", "cup"], "minigame": "hold", "output": "tea_with_leaves", "hints": ["Добавь заварку в чашку", "Выбери Заварку в Продуктах и нажми на Чашку"] },
+  { "id": "tea_pour", "type": "combine", "requires": ["hot_water", "tea_with_leaves", "kettle", "cup"], "minigame": "hold", "output": "tea_brewed", "hints": ["Налей кипяток из чайника в чашку", "Нажми на Чайник, чтобы налить кипяток"] },
+  { "id": "tea_serve", "type": "serve", "requires": ["tea_brewed"], "minigame": null, "output": "tea", "hints": ["Позвони в звонок", "Нажми на Звонок, чтобы подать чай"] },
 
   { "id": "toast_toast", "type": "heat", "requires": ["bread", "toaster"], "minigame": "window", "output": "toast_ready", "hints": ["Не передержи в тостере"] },
   { "id": "toast_serve", "type": "serve", "requires": ["toast_ready", "plate"], "minigame": null, "output": "toast", "hints": ["Подай на тарелке"] },

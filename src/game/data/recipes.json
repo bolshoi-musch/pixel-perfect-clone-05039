@@ -6,7 +6,7 @@
     "t_fast": 35,
     "t_ok": 60,
     "required_equipment": ["kettle", "cup"],
-    "step_ids": ["tea_boil", "tea_pour", "tea_serve"]
+    "step_ids": ["tea_boil", "tea_brew", "tea_pour", "tea_serve"]
   },
   {
     "id": "toast",
