@@ -85,9 +85,22 @@ function Clickable({
   );
 }
 
-export function Stove({ onClick, onHover }: { onClick: ClickableProps["onClick"]; onHover?: ClickableProps["onHover"] }) {
+interface EquipProps {
+  onClick: ClickableProps["onClick"];
+  onHover?: ClickableProps["onHover"];
+  attention?: boolean;
+}
+
+export function Stove({ onClick, onHover, attention }: EquipProps) {
   return (
-    <Clickable position={[-1.7, 0.2, -0.4]} onClick={onClick} onHover={onHover} label="Плита">
+    <Clickable
+      position={[-1.7, 0.2, -0.4]}
+      onClick={onClick}
+      onHover={onHover}
+      label="Плита"
+      attention={attention}
+      attentionRadius={0.5}
+    >
       {/* Корпус */}
       <mesh castShadow>
         <boxGeometry args={[0.7, 0.4, 0.7]} />
@@ -106,9 +119,16 @@ export function Stove({ onClick, onHover }: { onClick: ClickableProps["onClick"]
   );
 }
 
-export function Bowl({ onClick, onHover }: { onClick: ClickableProps["onClick"]; onHover?: ClickableProps["onHover"] }) {
+export function Bowl({ onClick, onHover, attention }: EquipProps) {
   return (
-    <Clickable position={[-0.7, 0.06, -0.35]} onClick={onClick} onHover={onHover} label="Миска">
+    <Clickable
+      position={[-0.7, 0.06, -0.35]}
+      onClick={onClick}
+      onHover={onHover}
+      label="Миска"
+      attention={attention}
+      attentionRadius={0.28}
+    >
       <mesh castShadow>
         <cylinderGeometry args={[0.2, 0.14, 0.16, 24]} />
         <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.4} />
@@ -121,9 +141,16 @@ export function Bowl({ onClick, onHover }: { onClick: ClickableProps["onClick"];
   );
 }
 
-export function Plate({ onClick, onHover }: { onClick: ClickableProps["onClick"]; onHover?: ClickableProps["onHover"] }) {
+export function Plate({ onClick, onHover, attention }: EquipProps) {
   return (
-    <Clickable position={[0.5, 0.06, -0.35]} onClick={onClick} onHover={onHover} label="Тарелка">
+    <Clickable
+      position={[0.5, 0.06, -0.35]}
+      onClick={onClick}
+      onHover={onHover}
+      label="Тарелка"
+      attention={attention}
+      attentionRadius={0.32}
+    >
       <mesh castShadow rotation={[0, 0, 0]}>
         <cylinderGeometry args={[0.26, 0.22, 0.04, 28]} />
         <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.35} />
@@ -132,9 +159,16 @@ export function Plate({ onClick, onHover }: { onClick: ClickableProps["onClick"]
   );
 }
 
-export function Cup({ onClick, onHover }: { onClick: ClickableProps["onClick"]; onHover?: ClickableProps["onHover"] }) {
+export function Cup({ onClick, onHover, attention }: EquipProps) {
   return (
-    <Clickable position={[1.3, 0.1, -0.35]} onClick={onClick} onHover={onHover} label="Чашка">
+    <Clickable
+      position={[1.3, 0.1, -0.35]}
+      onClick={onClick}
+      onHover={onHover}
+      label="Чашка"
+      attention={attention}
+      attentionRadius={0.2}
+    >
       <mesh castShadow>
         <cylinderGeometry args={[0.1, 0.085, 0.16, 20]} />
         <meshStandardMaterial color={SCENE_COLORS.ceramic} roughness={0.4} />
