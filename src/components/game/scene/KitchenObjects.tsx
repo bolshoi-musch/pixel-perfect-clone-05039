@@ -227,7 +227,7 @@ export function Cup({ onClick, onHover, attention, content }: EquipProps) {
 export function Kettle({ onClick, onHover, attention }: EquipProps) {
   return (
     <Clickable
-      position={[-1.0, 0.18, -0.4]}
+      position={EQUIPMENT_POSITIONS.kettle}
       onClick={onClick}
       onHover={onHover}
       label="Чайник"
