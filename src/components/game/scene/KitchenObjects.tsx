@@ -91,6 +91,8 @@ interface EquipProps {
   onClick: ClickableProps["onClick"];
   onHover?: ClickableProps["onHover"];
   attention?: boolean;
+  /** Если задан id готового продукта — показать его внутри (для bowl/plate/cup). */
+  content?: string | null;
 }
 
 export function Stove({ onClick, onHover, attention }: EquipProps) {
