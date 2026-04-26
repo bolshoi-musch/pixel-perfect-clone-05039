@@ -61,8 +61,10 @@ export function ShopPanel({ defaultTab = "products" }: Props) {
 
 function ProductsTab() {
   const money = useGame((s) => s.money);
+  const inventory = useGame((s) => s.inventory);
   const buyIngredient = useGame((s) => s.buyIngredient);
   const log = useGame((s) => s.log);
+  const { lastKey, flash } = useLastPurchased();
 
   // Group base ingredients with their premium variant (id + "_premium").
   const baseIngredients = INGREDIENTS.filter((i) => i.quality === "basic");
@@ -70,10 +72,17 @@ function ProductsTab() {
     INGREDIENTS.filter((i) => i.quality === "premium").map((i) => [i.id, i] as const),
   );
 
+  const countOf = (id: string, quality: IngredientQuality) =>
+    inventory.find((e) => e.ingredient_id === id && e.quality === quality)?.count ?? 0;
+
   const handleBuy = (id: string, quality: IngredientQuality, price: number, name: string) => {
     const ok = buyIngredient(id, quality, price);
-    if (ok) log(`Куплено: ${name} (+1) за ${price} ₽`);
-    else log(`Не хватает денег для покупки: ${name}`);
+    if (ok) {
+      log(`Куплено: ${name} (+1) за ${price} ₽`);
+      flash(`${id}|${quality}`);
+    } else {
+      log(`Не хватает денег для покупки: ${name}`);
+    }
   };
 
   return (
@@ -85,17 +94,31 @@ function ProductsTab() {
         {baseIngredients.map((ing) => {
           const premiumId = `${ing.id}_premium`;
           const premium = premiumById.get(premiumId);
+          const basicKey = `${ing.id}|basic`;
+          const premiumKey = premium ? `${premium.id}|premium` : null;
+          const purchasedHere = lastKey === basicKey || (premiumKey && lastKey === premiumKey);
           return (
             <li
               key={ing.id}
-              className="rounded-xl border border-border bg-background/60 p-3"
+              className={`rounded-xl border p-3 transition ${
+                purchasedHere
+                  ? "border-primary bg-primary/10 shadow-[0_0_0_2px_var(--primary)]"
+                  : "border-border bg-background/60"
+              }`}
             >
-              <div className="font-medium text-foreground">{ing.name}</div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-foreground">{ing.name}</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  В наличии: {countOf(ing.id, "basic")}
+                  {premium ? ` / ${countOf(premium.id, "premium")} ★` : ""}
+                </span>
+              </div>
               <div className="mt-2 space-y-2">
                 <BuyRow
                   label="Обычный"
                   price={ing.price}
                   canAfford={money >= ing.price}
+                  justBought={lastKey === basicKey}
                   onBuy={() => handleBuy(ing.id, "basic", ing.price, ing.name)}
                 />
                 {premium && (
@@ -103,6 +126,7 @@ function ProductsTab() {
                     label="Премиум"
                     price={premium.price}
                     canAfford={money >= premium.price}
+                    justBought={lastKey === premiumKey}
                     onBuy={() => handleBuy(premium.id, "premium", premium.price, premium.name)}
                   />
                 )}
@@ -119,11 +143,13 @@ function BuyRow({
   label,
   price,
   canAfford,
+  justBought,
   onBuy,
 }: {
   label: string;
   price: number;
   canAfford: boolean;
+  justBought?: boolean;
   onBuy: () => void;
 }) {
   return (
@@ -133,11 +159,12 @@ function BuyRow({
       </span>
       <Button
         size="sm"
-        variant={canAfford ? "default" : "secondary"}
-        disabled={!canAfford}
+        variant={justBought ? "default" : canAfford ? "default" : "secondary"}
+        disabled={!canAfford || justBought}
         onClick={onBuy}
+        className={justBought ? "bg-primary text-primary-foreground" : ""}
       >
-        {canAfford ? "Купить" : "Не хватает денег"}
+        {justBought ? "Куплено ✓" : canAfford ? "Купить" : "Не хватает денег"}
       </Button>
     </div>
   );
