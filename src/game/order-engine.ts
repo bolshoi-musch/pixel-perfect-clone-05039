@@ -427,4 +427,3 @@ export function pickNextRecipe(): string | null {
   return TEST_RECIPE_POOL[(idx + 1) % TEST_RECIPE_POOL.length] ?? null;
 }
 
-}
