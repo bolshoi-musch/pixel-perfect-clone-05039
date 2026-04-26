@@ -9,7 +9,7 @@ import { STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
 import { Environment } from "./Environment";
 import { TableSurface, WORK_SURFACE_POS } from "./Table";
 import { TableSlots } from "./TableSlots";
-import { Bell, Bowl, Cup, Plate, Stove, WorkSurfaceMarker } from "./KitchenObjects";
+import { Bell, Bowl, Cup, Kettle, Plate, Stove, WorkSurfaceMarker } from "./KitchenObjects";
 import { Hand, type HandTarget } from "./Hand";
 import { useActivePick } from "@/game/active-pick";
 
@@ -27,6 +27,7 @@ export function KitchenScene({
   onBellRing,
 }: KitchenSceneProps) {
   const slots = useGame((s) => s.table_slots);
+  const equipmentOwned = useGame((s) => s.equipment_owned);
   const placeFromInventory = useGame((s) => s.placeFromInventory);
   const pickupToInventory = useGame((s) => s.pickupToInventory);
   const eatFromTable = useGame((s) => s.eatFromTable);
@@ -119,6 +120,13 @@ export function KitchenScene({
           onClick={(p) => handleObjectClick("stove", "Плита", p)}
           onHover={onHoverLabel}
         />
+        {equipmentOwned.includes("kettle") && (
+          <Kettle
+            attention={activeTarget === "kettle"}
+            onClick={(p) => handleObjectClick("kettle", "Чайник", p)}
+            onHover={onHoverLabel}
+          />
+        )}
         <Bowl
           attention={activeTarget === "bowl"}
           onClick={(p) => handleObjectClick("bowl", "Миска", p)}
