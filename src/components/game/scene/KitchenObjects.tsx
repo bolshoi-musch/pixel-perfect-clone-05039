@@ -110,22 +110,37 @@ export function Stove({ onClick, onHover, attention }: EquipProps) {
         <boxGeometry args={[0.7, 0.4, 0.7]} />
         <meshStandardMaterial color={SCENE_COLORS.steel} roughness={0.4} metalness={0.6} />
       </mesh>
+      {/* Верхняя варочная панель — тёмная */}
+      <mesh position={[0, 0.205, 0]} castShadow>
+        <boxGeometry args={[0.66, 0.02, 0.66]} />
+        <meshStandardMaterial color="#1d1d1d" roughness={0.6} metalness={0.4} />
+      </mesh>
       {/* Конфорка */}
-      <mesh position={[0, 0.21, 0]}>
-        <cylinderGeometry args={[0.22, 0.22, 0.03, 24]} />
+      <mesh position={[0, 0.22, 0]}>
+        <cylinderGeometry args={[0.22, 0.22, 0.015, 28]} />
         <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.5} />
       </mesh>
-      <mesh position={[0, 0.23, 0]}>
-        <torusGeometry args={[0.18, 0.015, 8, 24]} />
+      {/* Концентрические кольца «ТЭН» */}
+      <mesh position={[0, 0.232, 0]}>
+        <torusGeometry args={[0.18, 0.012, 8, 28]} />
+        <meshStandardMaterial color="#3a1a1a" emissive="#c44536" emissiveIntensity={0.5} />
+      </mesh>
+      <mesh position={[0, 0.232, 0]}>
+        <torusGeometry args={[0.11, 0.01, 8, 24]} />
         <meshStandardMaterial color="#3a1a1a" emissive="#c44536" emissiveIntensity={0.4} />
+      </mesh>
+      {/* Задняя панель управления */}
+      <mesh position={[0, 0.32, -0.32]} castShadow>
+        <boxGeometry args={[0.7, 0.18, 0.06]} />
+        <meshStandardMaterial color={SCENE_COLORS.steelDark} roughness={0.4} metalness={0.7} />
       </mesh>
       {/* Ручки управления спереди */}
       <mesh position={[-0.2, -0.05, 0.36]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.04, 12]} />
+        <cylinderGeometry args={[0.03, 0.03, 0.04, 12]} />
         <meshStandardMaterial color={SCENE_COLORS.steelDark} />
       </mesh>
       <mesh position={[0.2, -0.05, 0.36]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.04, 12]} />
+        <cylinderGeometry args={[0.03, 0.03, 0.04, 12]} />
         <meshStandardMaterial color={SCENE_COLORS.steelDark} />
       </mesh>
     </Clickable>
