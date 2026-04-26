@@ -115,23 +115,27 @@ export function KitchenScene({
         <TableSurface />
 
         <Stove
+          attention={activeTarget === "stove"}
           onClick={(p) => handleObjectClick("stove", "Плита", p)}
           onHover={onHoverLabel}
         />
         <Bowl
+          attention={activeTarget === "bowl"}
           onClick={(p) => handleObjectClick("bowl", "Миска", p)}
           onHover={onHoverLabel}
         />
         <Plate
+          attention={activeTarget === "plate"}
           onClick={(p) => handleObjectClick("plate", "Тарелка", p)}
           onHover={onHoverLabel}
         />
         <Cup
+          attention={activeTarget === "cup"}
           onClick={(p) => handleObjectClick("cup", "Чашка", p)}
           onHover={onHoverLabel}
         />
         <Bell
-          attention={bellAttention}
+          attention={activeTarget === "bell"}
           onClick={(p) => {
             fireHand(p, 160);
             onBellRing();
@@ -140,6 +144,7 @@ export function KitchenScene({
         />
         <WorkSurfaceMarker
           position={WORK_SURFACE_POS}
+          attention={activeTarget === "work_surface"}
           onClick={(p) => handleObjectClick("work_surface", "Рабочая зона", p)}
           onHover={onHoverLabel}
         />
