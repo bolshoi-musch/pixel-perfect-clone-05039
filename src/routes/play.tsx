@@ -39,6 +39,7 @@ function PlayPage() {
   const pickConsume = useActivePick((s) => s.consume);
   const pickValue = useActivePick((s) => s.pick);
   const setPick = useActivePick((s) => s.setPick);
+  const hintMode = useHintMode((s) => s.mode);
 
   const startOrder = useOrderEngine((s) => s.startOrder);
   const tryStep = useOrderEngine((s) => s.tryStep);
