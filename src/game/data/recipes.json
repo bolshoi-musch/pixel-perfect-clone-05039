@@ -5,7 +5,7 @@
     "base_price": 30,
     "t_fast": 35,
     "t_ok": 60,
-    "required_equipment": ["kettle", "cup"],
+    "required_equipment": ["kettle", "cup", "tea_leaves"],
     "step_ids": ["tea_boil", "tea_pour", "tea_serve"]
   },
   {
