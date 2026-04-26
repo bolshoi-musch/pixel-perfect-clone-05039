@@ -9,7 +9,18 @@ import { STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
 import { Environment } from "./Environment";
 import { TableSurface, WORK_SURFACE_POS } from "./Table";
 import { TableSlots } from "./TableSlots";
-import { Bell, Bowl, Cup, Kettle, Plate, Stove, WorkSurfaceMarker } from "./KitchenObjects";
+import {
+  Bell,
+  Blender,
+  Bowl,
+  Cup,
+  Kettle,
+  Plate,
+  RiceCooker,
+  Stove,
+  Toaster,
+  WorkSurfaceMarker,
+} from "./KitchenObjects";
 import { Hand, type HandTarget } from "./Hand";
 import { useActivePick } from "@/game/active-pick";
 
