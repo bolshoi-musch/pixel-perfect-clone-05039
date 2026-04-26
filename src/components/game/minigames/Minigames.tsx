@@ -2,6 +2,9 @@
 // Quality = circles completed within 5s & smoothness of motion.
 
 import { useEffect, useRef, useState } from "react";
+import { useGame } from "@/game/store";
+import { useOrderEngine } from "@/game/order-engine";
+import { RECIPES_BY_ID, STEPS_BY_ID } from "@/game/data";
 
 interface Props {
   onDone: (quality: number, errors: number) => void;
