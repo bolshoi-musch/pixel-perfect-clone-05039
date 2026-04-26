@@ -427,17 +427,23 @@ function ActionBtn({
   label,
   onClick,
   badge,
+  highlight,
 }: {
   icon: string;
   label: string;
   onClick: () => void;
   badge?: number;
+  highlight?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="relative flex min-w-[88px] flex-col items-center gap-0.5 rounded-xl px-4 py-2 text-foreground transition hover:bg-accent active:scale-[0.97]"
+      className={`relative flex min-w-[88px] flex-col items-center gap-0.5 rounded-xl px-4 py-2 text-foreground transition active:scale-[0.97] ${
+        highlight
+          ? "animate-pulse bg-primary/15 ring-2 ring-primary/60 hover:bg-primary/25"
+          : "hover:bg-accent"
+      }`}
     >
       <span className="text-lg leading-none">{icon}</span>
       <span className="text-xs font-medium">{label}</span>
