@@ -394,7 +394,7 @@ function SpriteImg({
       alt={alt}
       draggable={false}
       className={`pointer-events-none select-none object-contain ${className ?? ""}`}
-      style={{ filter: "drop-shadow(0 6px 6px rgba(0,0,0,0.28))" }}
+      style={{ filter: "drop-shadow(0 3px 3px rgba(0,0,0,0.18))" }}
     />
   );
 }
