@@ -407,6 +407,7 @@ function SlotAnchor({
   layout: StageObjectLayout;
   children: React.ReactNode;
 }) {
+  const offsetPx = (layout.visibleBottomOffsetRatio ?? 0) * layout.width;
   return (
     <div
       className="pointer-events-none absolute"
@@ -415,7 +416,7 @@ function SlotAnchor({
         top: `${layout.top}%`,
         width: layout.width,
         zIndex: layout.zIndex,
-        transform: "translate(-50%, -100%)",
+        transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
       }}
     >
       {children}
