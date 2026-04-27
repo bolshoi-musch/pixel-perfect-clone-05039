@@ -1,9 +1,7 @@
-// Простая визуализация item id → low-poly mesh / GLTF.
+// Простая визуализация item id → low-poly mesh (примитивы).
 // Используется в слотах стола и для overlay на bowl/plate/cup.
 
 import { getItemVisual, type VisualShape } from "@/game/item-visuals";
-import { ModelAsset } from "./ModelAsset";
-import { MODEL_ASSETS } from "@/game/model-assets";
 
 interface ItemShapeProps {
   itemId: string;
@@ -13,34 +11,9 @@ interface ItemShapeProps {
   yOffset?: number;
 }
 
-// Маппинг id → готовая GLTF-модель.
-const ITEM_MODELS: Record<string, { path: string; scale: number; y: number }> = {
-  egg: { path: MODEL_ASSETS.food.egg, scale: 0.35, y: 0 },
-  egg_premium: { path: MODEL_ASSETS.food.egg, scale: 0.4, y: 0 },
-  omelet_cooked: { path: MODEL_ASSETS.food.omelet, scale: 0.4, y: 0 },
-  plated_omelet: { path: MODEL_ASSETS.food.omelet, scale: 0.4, y: 0 },
-  tea_leaves: { path: MODEL_ASSETS.food.teaLeaves, scale: 0.3, y: 0 },
-  bread: { path: MODEL_ASSETS.food.bread, scale: 0.4, y: 0 },
-  bread_premium: { path: MODEL_ASSETS.food.bread, scale: 0.45, y: 0 },
-};
-
 export function ItemShape({ itemId, scale = 1, yOffset = 0 }: ItemShapeProps) {
   const v = getItemVisual(itemId);
   if (!v) return null;
-
-  // Если есть готовая модель — используем её с fallback на примитив.
-  const model = ITEM_MODELS[itemId];
-  if (model) {
-    return (
-      <ModelAsset
-        path={model.path}
-        scale={model.scale * scale}
-        position={[0, model.y + yOffset, 0]}
-        fallback={<PrimitiveShape shape={v.shape} color={v.color} scale={scale} yOffset={yOffset} />}
-      />
-    );
-  }
-
   return <PrimitiveShape shape={v.shape} color={v.color} scale={scale} yOffset={yOffset} />;
 }
 

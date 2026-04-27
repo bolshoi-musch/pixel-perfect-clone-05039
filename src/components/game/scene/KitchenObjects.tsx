@@ -1,12 +1,10 @@
 // Объекты кухни: плита, миска, тарелка, чашка, звонок. Все интерактивные.
-// Визуал — готовые GLTF-модели из ассет-пака с fallback на примитивы.
+// Визуал — стабильные low-poly примитивы (откат GLTF-интеграции).
 
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { SCENE_COLORS } from "./colors";
 import { ItemShape } from "./ItemShape";
-import { ModelAsset } from "./ModelAsset";
-import { MODEL_ASSETS } from "@/game/model-assets";
 import { EQUIPMENT_POSITIONS } from "@/game/kitchen-layout";
 
 interface ClickableProps {
@@ -171,13 +169,7 @@ export function Stove({ onClick, onHover, attention }: EquipProps) {
       attention={attention}
       attentionRadius={0.5}
     >
-      <ModelAsset
-        path={MODEL_ASSETS.kitchen.stove}
-        scale={0.55}
-        rotation={[0, Math.PI, 0]}
-        position={[0, -0.2, 0]}
-        fallback={<StoveFallback />}
-      />
+      <StoveFallback />
     </Clickable>
   );
 }
@@ -192,12 +184,7 @@ export function Bowl({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.28}
     >
-      <ModelAsset
-        path={MODEL_ASSETS.kitchen.bowl}
-        scale={0.45}
-        position={[0, -0.07, 0]}
-        fallback={<BowlFallback />}
-      />
+      <BowlFallback />
       {content && (
         <group position={[0, 0.07, 0]}>
           <ItemShape itemId={content} scale={1.1} />
@@ -217,12 +204,7 @@ export function Plate({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.32}
     >
-      <ModelAsset
-        path={MODEL_ASSETS.kitchen.plate}
-        scale={0.5}
-        position={[0, -0.04, 0]}
-        fallback={<PlateFallback />}
-      />
+      <PlateFallback />
       {content && (
         <group position={[0, 0.04, 0]}>
           <ItemShape itemId={content} scale={1} />
@@ -233,9 +215,6 @@ export function Plate({ onClick, onHover, attention, content }: EquipProps) {
 }
 
 export function Cup({ onClick, onHover, attention, content }: EquipProps) {
-  // Используем cup_tea, если есть готовый чай — это даёт сразу заполненную чашку.
-  const useTeaCup = content === "tea_brewed";
-  const path = useTeaCup ? MODEL_ASSETS.kitchen.cupTea : MODEL_ASSETS.kitchen.cup;
   return (
     <Clickable
       position={EQUIPMENT_POSITIONS.cup}
@@ -245,14 +224,8 @@ export function Cup({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.2}
     >
-      <ModelAsset
-        path={path}
-        scale={0.4}
-        position={[0, -0.07, 0]}
-        fallback={<CupFallback />}
-      />
-      {/* Для НЕ-tea_brewed состояний (заварка, кипяток) показываем overlay поверх cup. */}
-      {content && !useTeaCup && (
+      <CupFallback />
+      {content && (
         <group position={[0, 0.06, 0]}>
           <ItemShape itemId={content} scale={0.85} />
         </group>
@@ -271,12 +244,7 @@ export function Kettle({ onClick, onHover, attention }: EquipProps) {
       attention={attention}
       attentionRadius={0.32}
     >
-      <ModelAsset
-        path={MODEL_ASSETS.kitchen.kettle}
-        scale={0.45}
-        position={[0, -0.13, 0]}
-        fallback={<KettleFallback />}
-      />
+      <KettleFallback />
     </Clickable>
   );
 }
