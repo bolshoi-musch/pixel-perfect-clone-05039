@@ -12,6 +12,8 @@ import { ReviewsPanel } from "@/components/game/panels/ReviewsPanel";
 import { OrderPanel } from "@/components/game/panels/OrderPanel";
 import { SettingsPanel } from "@/components/game/panels/SettingsPanel";
 import { KitchenScene } from "@/components/game/scene/KitchenScene";
+import { KitchenStage2D } from "@/components/game/stage2d/KitchenStage2D";
+import { USE_2D_STAGE } from "@/components/game/stage2d/stage-flags";
 import { ActionLog } from "@/components/game/ActionLog";
 import { OverflowDialog } from "@/components/game/OverflowDialog";
 import { MixMinigame, WindowMinigame, HoldMinigame } from "@/components/game/minigames/Minigames";
@@ -230,12 +232,21 @@ function PlayPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       <div className="absolute inset-0">
-        <KitchenScene
-          onHoverLabel={setHoverLabel}
-          onPickIngredient={handlePickIngredient}
-          onObjectAction={handleObjectAction}
-          onBellRing={handleBellRing}
-        />
+        {USE_2D_STAGE ? (
+          <KitchenStage2D
+            onHoverLabel={setHoverLabel}
+            onPickIngredient={handlePickIngredient}
+            onObjectAction={handleObjectAction}
+            onBellRing={handleBellRing}
+          />
+        ) : (
+          <KitchenScene
+            onHoverLabel={setHoverLabel}
+            onPickIngredient={handlePickIngredient}
+            onObjectAction={handleObjectAction}
+            onBellRing={handleBellRing}
+          />
+        )}
       </div>
 
       {/* HUD */}
