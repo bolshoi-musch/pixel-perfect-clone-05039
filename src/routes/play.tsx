@@ -346,10 +346,10 @@ function PlayPage() {
         </div>
       )}
 
-      {/* Подсказка управления */}
-      {!progress?.finished && (
+      {/* Подсказка управления — только в detailed mode, чтобы не спорила со сценой */}
+      {!progress?.finished && hintMode === "detailed" && (
         <div className="pointer-events-none absolute inset-x-0 bottom-24 z-0 px-4 text-center">
-          <p className="mx-auto inline-block rounded-full bg-card/60 px-4 py-1 text-[11px] uppercase tracking-wider text-muted-foreground backdrop-blur">
+          <p className="mx-auto inline-block rounded-full bg-card/50 px-3 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground/80 backdrop-blur">
             Клик — взять/положить · Долгое нажатие — съесть (только сырое)
           </p>
         </div>
