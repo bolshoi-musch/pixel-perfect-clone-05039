@@ -4,9 +4,9 @@
 //
 // Принцип anchor "bottom-center":
 //   StageObject рендерит абсолютный контейнер с координатами (left%, top%),
-//   а внутри использует transform: translate(-50%, -100%), так что
-//   ИМЕННО НИЖНЯЯ ЦЕНТРАЛЬНАЯ ТОЧКА спрайта попадает в (left, top).
-//   Тень кладётся прямо под этим anchor.
+//   считает прозрачный padding снизу PNG через visibleBottomOffsetRatio и
+//   сдвигает контейнер так, чтобы ВИДИМАЯ нижняя точка предмета попадала
+//   в (left, top). Контактная тень кладётся в эту же точку опоры.
 
 import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/game/store";
@@ -356,27 +356,24 @@ function StageObject({
         transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
       }}
     >
-      <button
-        type="button"
-        onClick={onClick}
-        onPointerEnter={() => onHover(label)}
-        onPointerLeave={() => onHover(null)}
-        className={`pointer-events-auto relative inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${
-          attention
-            ? "drop-shadow-[0_0_14px_rgba(255,196,90,0.95)] [filter:drop-shadow(0_0_18px_rgba(255,180,70,0.85))_drop-shadow(0_0_6px_rgba(255,220,140,0.9))] animate-pulse"
-            : ""
-        }`}
-        aria-label={label}
-      >
-        {children}
-      </button>
-      {attention && showHereLabel && <HereLabel />}
       {layout.shadowWidth > 0 && (
         <ContactShadow
           width={layout.shadowWidth}
           visibleBottomOffsetPx={offsetPx}
         />
       )}
+      {attention && <ActiveContactHalo width={layout.shadowWidth || layout.width} visibleBottomOffsetPx={offsetPx} />}
+      <button
+        type="button"
+        onClick={onClick}
+        onPointerEnter={() => onHover(label)}
+        onPointerLeave={() => onHover(null)}
+        className={`pointer-events-auto relative z-[1] inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${attention ? "animate-pulse" : ""}`}
+        aria-label={label}
+      >
+        {children}
+      </button>
+      {attention && showHereLabel && <HereLabel />}
     </div>
   );
 }
