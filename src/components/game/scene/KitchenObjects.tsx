@@ -169,13 +169,7 @@ export function Stove({ onClick, onHover, attention }: EquipProps) {
       attention={attention}
       attentionRadius={0.5}
     >
-      <ModelAsset
-        path={MODEL_ASSETS.kitchen.stove}
-        scale={0.55}
-        rotation={[0, Math.PI, 0]}
-        position={[0, -0.2, 0]}
-        fallback={<StoveFallback />}
-      />
+      <StoveFallback />
     </Clickable>
   );
 }
