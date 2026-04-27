@@ -73,119 +73,127 @@ export const COUNTERTOP_MAX_WIDTH_PX = 860;
  * bell 56) — предметы стали главными на сцене, а не маленькими иконками.
  */
 export const STAGE_LAYOUT = {
-  // ── back row (стоит на задней половине столешницы) ───────
-  // visibleBottomOffsetRatio замерен по альфе PNG (bbox.bottom_pad / sprite_width):
-  //   stove ≈ 0.166, kettle ≈ 0.083, toaster ≈ 0.034.
+  // ── back row ─────────────────────────────────────────────
+  // visibleBottomOffsetRatio = прозрачный нижний padding PNG / ширина PNG.
   stove: {
-    left: 34,
-    top: 62,
-    width: 180,
-    zIndex: 10,
-    anchor: "bottom-center",
-    shadowWidth: 150,
-    visibleBottomOffsetRatio: 0.166,
-  },
-  toaster: {
-    left: 50,
-    top: 60,
-    width: 110,
-    zIndex: 10,
-    anchor: "bottom-center",
-    shadowWidth: 90,
-    visibleBottomOffsetRatio: 0.034,
-  },
-  kettle: {
-    left: 66,
-    top: 62,
-    width: 128,
+    left: 30,
+    top: 64,
+    width: 130,
     zIndex: 10,
     anchor: "bottom-center",
     shadowWidth: 100,
-    visibleBottomOffsetRatio: 0.083,
+    // stove.png: ~68px прозрачного низа при ширине 410px
+    visibleBottomOffsetRatio: 68 / 410,
+  },
+  toaster: {
+    left: 50,
+    top: 62,
+    width: 90,
+    zIndex: 10,
+    anchor: "bottom-center",
+    shadowWidth: 65,
+    // toaster.png: ~6px / 179px
+    visibleBottomOffsetRatio: 6 / 179,
+  },
+  kettle: {
+    left: 70,
+    top: 64,
+    width: 95,
+    zIndex: 10,
+    anchor: "bottom-center",
+    shadowWidth: 70,
+    // kettle.png: ~17px / 205px
+    visibleBottomOffsetRatio: 17 / 205,
   },
 
-  // ── work row (на столе, ближе к игроку) ──────────────────
-  // bowl/plate/cup стоят на столе почти без прозрачного хвоста снизу.
+  // ── work row ─────────────────────────────────────────────
   bowl: {
-    left: 41,
+    left: 36,
     top: 73,
-    width: 150,
+    width: 110,
     zIndex: 20,
     anchor: "bottom-center",
-    shadowWidth: 120,
-    visibleBottomOffsetRatio: 0.028,
+    shadowWidth: 75,
+    // bowl.png: ~5px / 176px
+    visibleBottomOffsetRatio: 5 / 176,
   },
   plate: {
-    left: 52,
+    left: 50,
     top: 73,
-    width: 165,
+    width: 120,
     zIndex: 20,
     anchor: "bottom-center",
-    shadowWidth: 130,
-    visibleBottomOffsetRatio: 0.011,
+    shadowWidth: 85,
+    // plate.png: ~2px / 176px
+    visibleBottomOffsetRatio: 2 / 176,
   },
   cup: {
-    left: 63,
+    left: 64,
     top: 73,
-    width: 100,
+    width: 70,
     zIndex: 20,
     anchor: "bottom-center",
-    shadowWidth: 78,
-    visibleBottomOffsetRatio: 0.042,
+    shadowWidth: 45,
+    // cup.png: ~3px / 72px
+    visibleBottomOffsetRatio: 3 / 72,
   },
 
-  // ── service ─────────────────────────────────────────────
-  // bell — SVG, без прозрачного паддинга.
+  // ── service ──────────────────────────────────────────────
   bell: {
-    left: 72,
-    top: 75,
-    width: 56,
+    left: 76,
+    top: 74,
+    width: 50,
     zIndex: 30,
     anchor: "bottom-center",
-    shadowWidth: 46,
+    shadowWidth: 32,
     visibleBottomOffsetRatio: 0,
   },
 
-  // ── table slots (5 штук, на передней кромке столешницы) ─
+  // ── table slots (на передней кромке столешницы) ──────────
   tableSlot1: {
-    left: 40,
-    top: 78,
-    width: 32,
+    left: 32,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
+    visibleBottomOffsetRatio: 0,
   },
   tableSlot2: {
-    left: 46,
-    top: 78,
-    width: 32,
+    left: 41,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
+    visibleBottomOffsetRatio: 0,
   },
   tableSlot3: {
-    left: 52,
-    top: 78,
-    width: 32,
+    left: 50,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
+    visibleBottomOffsetRatio: 0,
   },
   tableSlot4: {
-    left: 58,
-    top: 78,
-    width: 32,
+    left: 59,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
+    visibleBottomOffsetRatio: 0,
   },
   tableSlot5: {
-    left: 64,
-    top: 78,
-    width: 32,
+    left: 68,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
+    visibleBottomOffsetRatio: 0,
   },
 } as const satisfies Record<string, StageObjectLayout>;
 
