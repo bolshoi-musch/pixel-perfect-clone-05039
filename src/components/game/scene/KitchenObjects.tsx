@@ -1,12 +1,10 @@
 // Объекты кухни: плита, миска, тарелка, чашка, звонок. Все интерактивные.
-// Визуал — готовые GLTF-модели из ассет-пака с fallback на примитивы.
+// Визуал — стабильные low-poly примитивы (откат GLTF-интеграции).
 
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { SCENE_COLORS } from "./colors";
 import { ItemShape } from "./ItemShape";
-import { ModelAsset } from "./ModelAsset";
-import { MODEL_ASSETS } from "@/game/model-assets";
 import { EQUIPMENT_POSITIONS } from "@/game/kitchen-layout";
 
 interface ClickableProps {
