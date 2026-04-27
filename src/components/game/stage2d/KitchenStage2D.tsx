@@ -111,11 +111,25 @@ export function KitchenStage2D({
       {/* Layer 5: столешница (CSS) */}
       <Countertop />
 
+      {/* Контактные плашки под предметами — на самой поверхности столешницы. */}
+      <ContactBase layout={STAGE_LAYOUT.stove} width={105} height={10} />
+      {equipmentOwned.includes("toaster") && (
+        <ContactBase layout={STAGE_LAYOUT.toaster} width={64} height={8} />
+      )}
+      {equipmentOwned.includes("kettle") && (
+        <ContactBase layout={STAGE_LAYOUT.kettle} width={66} height={8} />
+      )}
+      <ContactBase layout={STAGE_LAYOUT.bowl} width={78} height={8} />
+      <ContactBase layout={STAGE_LAYOUT.plate} width={92} height={8} />
+      <ContactBase layout={STAGE_LAYOUT.cup} width={44} height={7} />
+      <ContactBase layout={STAGE_LAYOUT.bell} width={34} height={6} />
+
       {/* ── Back row ─────────────────────────────────────── */}
       <StageObject
         layout={STAGE_LAYOUT.stove}
         label="Плита"
-        attention={activeTarget === "stove"} showHereLabel={showHereLabel}
+        attention={activeTarget === "stove"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("stove", "Плита")}
       >
@@ -127,7 +141,8 @@ export function KitchenStage2D({
         <StageObject
           layout={STAGE_LAYOUT.toaster}
           label="Тостер"
-          attention={activeTarget === "toaster"} showHereLabel={showHereLabel}
+          attention={activeTarget === "toaster"}
+          showHereLabel={showHereLabel}
           onHover={onHoverLabel}
           onClick={() => handleObject("toaster", "Тостер")}
         >
@@ -139,7 +154,8 @@ export function KitchenStage2D({
         <StageObject
           layout={STAGE_LAYOUT.kettle}
           label="Чайник"
-          attention={activeTarget === "kettle"} showHereLabel={showHereLabel}
+          attention={activeTarget === "kettle"}
+          showHereLabel={showHereLabel}
           onHover={onHoverLabel}
           onClick={() => handleObject("kettle", "Чайник")}
         >
@@ -155,7 +171,8 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.bowl}
         label="Миска"
-        attention={activeTarget === "bowl"} showHereLabel={showHereLabel}
+        attention={activeTarget === "bowl"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("bowl", "Миска")}
       >
@@ -165,7 +182,8 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.plate}
         label="Тарелка"
-        attention={activeTarget === "plate"} showHereLabel={showHereLabel}
+        attention={activeTarget === "plate"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("plate", "Тарелка")}
       >
@@ -175,7 +193,8 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.cup}
         label="Чашка"
-        attention={activeTarget === "cup"} showHereLabel={showHereLabel}
+        attention={activeTarget === "cup"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("cup", "Чашка")}
       >
@@ -186,14 +205,15 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.bell}
         label="Звонок"
-        attention={activeTarget === "bell"} showHereLabel={showHereLabel}
+        attention={activeTarget === "bell"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => onBellRing()}
       >
         <BellSprite pulse={activeTarget === "bell"} widthPx={STAGE_LAYOUT.bell.width} />
       </StageObject>
 
-      {/* ── Table slots (5 шт, на передней кромке столешницы) ── */}
+      {/* ── Table slots ── */}
       {TABLE_SLOT_IDS_2D.map((id, i) => {
         const layout = STAGE_LAYOUT[id];
         const slot = slots[i];
