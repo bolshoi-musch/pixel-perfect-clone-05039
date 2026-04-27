@@ -1,15 +1,14 @@
-// Режим подсказок: detailed / short / off. Хранится в localStorage отдельно от save.
+// Режим подсказок: detailed / normal / minimal. Хранится в localStorage отдельно от save.
+// Поддерживает миграцию со старых значений (short → normal, off → minimal).
 
 import { create } from "zustand";
-import type { HintMode } from "./hint-content";
+import { normalizeHintMode, type HintMode } from "./hint-content";
 
 const KEY = "kitchen.hintMode.v1";
 
 function loadMode(): HintMode {
   if (typeof window === "undefined") return "detailed";
-  const v = window.localStorage.getItem(KEY);
-  if (v === "detailed" || v === "short" || v === "off") return v;
-  return "detailed";
+  return normalizeHintMode(window.localStorage.getItem(KEY));
 }
 
 function saveMode(mode: HintMode) {

@@ -1,12 +1,23 @@
-// Тексты подсказок для текущего шага в трёх режимах: detailed / short / off.
+// Тексты подсказок для текущего шага в трёх режимах: detailed / normal / minimal.
 // Возвращает компактные/полные строки и ID требуемого пика, если есть.
 
-export type HintMode = "detailed" | "short" | "off";
+export type HintMode = "detailed" | "normal" | "minimal";
+
+/** Старые названия из v1, поддерживаем чтение из localStorage. */
+export type LegacyHintMode = "short" | "off";
+export type AnyHintMode = HintMode | LegacyHintMode;
+
+export function normalizeHintMode(v: string | null | undefined): HintMode {
+  if (v === "detailed" || v === "normal" || v === "minimal") return v;
+  if (v === "short") return "normal"; // legacy
+  if (v === "off") return "minimal"; // legacy
+  return "detailed";
+}
 
 export interface HintEntry {
   /** Полный текст для Detailed. */
   detailed: string;
-  /** Короткий заголовок для Short. */
+  /** Короткий заголовок для Normal. */
   short: string;
   /** ID ингредиента, который нужно выбрать (для подсветки кнопки «Продукты»). */
   pick?: string;
@@ -55,10 +66,10 @@ export const STEP_HINTS: Record<string, HintEntry> = {
 
 export function getHintText(stepId: string | null, mode: HintMode): string | null {
   if (!stepId) return null;
-  if (mode === "off") return null;
+  if (mode === "minimal") return null;
   const entry = STEP_HINTS[stepId];
   if (!entry) return null;
-  return mode === "short" ? entry.short : entry.detailed;
+  return mode === "normal" ? entry.short : entry.detailed;
 }
 
 export function getHintPick(stepId: string | null): string | null {

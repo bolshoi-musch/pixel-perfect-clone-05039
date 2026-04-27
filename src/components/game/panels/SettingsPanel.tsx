@@ -61,10 +61,11 @@ export function SettingsPanel() {
       <section>
         <h4 className="text-sm font-semibold text-foreground">Подсказки</h4>
         <p className="mt-1 text-xs text-muted-foreground">
-          Detailed — полная карточка с инструкцией. Short — короткие подсказки. Off — только наведение.
+          Detailed — полная карточка с инструкцией. Normal — короткие подсказки. Minimal —
+          только наведение.
         </p>
         <div className="mt-2 grid grid-cols-3 gap-2">
-          {(["detailed", "short", "off"] as HintMode[]).map((m) => (
+          {(["detailed", "normal", "minimal"] as HintMode[]).map((m) => (
             <button
               key={m}
               type="button"
@@ -75,7 +76,7 @@ export function SettingsPanel() {
                   : "border-border bg-background/60 text-muted-foreground hover:bg-accent"
               }`}
             >
-              {m === "detailed" ? "Detailed" : m === "short" ? "Short" : "Off"}
+              {m === "detailed" ? "Detailed" : m === "normal" ? "Normal" : "Minimal"}
             </button>
           ))}
         </div>

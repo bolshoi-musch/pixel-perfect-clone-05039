@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/game/store";
 import { useOrderEngine, expectedEquipmentForStep } from "@/game/order-engine";
 import { STEPS_BY_ID, RECIPES_BY_ID } from "@/game/data";
+import { selectKitchenVisualState, visualToContentId } from "@/game/derived-state";
 import { Environment } from "./Environment";
 import { TableSurface, WORK_SURFACE_POS } from "./Table";
 import { TableSlots } from "./TableSlots";
@@ -51,21 +52,21 @@ export function KitchenScene({
 
   // Highlight target equipment for the current step.
   const orderProgress = useOrderEngine((s) => s.progress);
-  const activeTarget = (() => {
-    if (!orderProgress) return null;
-    if (orderProgress.finished) return "bell";
+  const { activeTarget, activeStepId } = (() => {
+    if (!orderProgress) return { activeTarget: null as string | null, activeStepId: null as string | null };
+    if (orderProgress.finished) return { activeTarget: "bell", activeStepId: null };
     const recipe = RECIPES_BY_ID.get(orderProgress.recipe_id);
-    const stepId = recipe?.step_ids[orderProgress.step_index];
+    const stepId = recipe?.step_ids[orderProgress.step_index] ?? null;
     const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
-    return step ? expectedEquipmentForStep(step) : null;
+    return {
+      activeTarget: step ? expectedEquipmentForStep(step) : null,
+      activeStepId: stepId,
+    };
   })();
 
-  // What to render inside bowl/plate/cup based on currently prepared items.
-  const prepared = orderProgress?.prepared ?? [];
-  const pickFirst = (...ids: string[]) => ids.find((id) => prepared.includes(id)) ?? null;
-  const bowlContent = pickFirst("egg_mix", "egg_in_bowl");
-  const plateContent = pickFirst("plated_omelet", "omelet_cooked");
-  const cupContent = pickFirst("tea_brewed", "tea_with_leaves", "hot_water");
+  // Derived visual state — единый источник для рендера контента в посуде.
+  const visualState = selectKitchenVisualState(orderProgress, activeStepId);
+  const { bowl: bowlContent, plate: plateContent, cup: cupContent } = visualToContentId(visualState);
 
   const fireHand = (pos: [number, number, number], holdMs = 200) => {
     handKeyRef.current += 1;
