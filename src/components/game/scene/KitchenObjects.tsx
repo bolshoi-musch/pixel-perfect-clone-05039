@@ -204,12 +204,7 @@ export function Plate({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.32}
     >
-      <ModelAsset
-        path={MODEL_ASSETS.kitchen.plate}
-        scale={0.5}
-        position={[0, -0.04, 0]}
-        fallback={<PlateFallback />}
-      />
+      <PlateFallback />
       {content && (
         <group position={[0, 0.04, 0]}>
           <ItemShape itemId={content} scale={1} />
