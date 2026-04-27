@@ -46,7 +46,7 @@ export interface StageObjectLayout {
  * не перекрывая нижнее меню.
  */
 export const COUNTERTOP_TOP_PCT = 42;
-export const COUNTERTOP_BOTTOM_PCT = 80;
+export const COUNTERTOP_BOTTOM_PCT = 81;
 
 /**
  * Внутренняя ширина CSS-столешницы (% от сцены и max-width в px).
@@ -74,95 +74,88 @@ export const COUNTERTOP_MAX_WIDTH_PX = 860;
  */
 export const STAGE_LAYOUT = {
   // ── back row ─────────────────────────────────────────────
-  // visibleBottomOffsetRatio = прозрачный нижний padding PNG / ширина PNG.
   stove: {
-    left: 30,
-    top: 64,
-    width: 130,
+    left: 32,
+    top: 63,
+    width: 140,
     zIndex: 10,
     anchor: "bottom-center",
-    shadowWidth: 100,
-    // stove.png: ~68px прозрачного низа при ширине 410px
-    visibleBottomOffsetRatio: 68 / 410,
+    shadowWidth: 0,
+    visibleBottomOffsetRatio: 0.166,
   },
   toaster: {
     left: 50,
-    top: 62,
+    top: 63,
     width: 90,
     zIndex: 10,
     anchor: "bottom-center",
-    shadowWidth: 65,
-    // toaster.png: ~6px / 179px
-    visibleBottomOffsetRatio: 6 / 179,
+    shadowWidth: 0,
+    visibleBottomOffsetRatio: 0.034,
   },
   kettle: {
-    left: 70,
-    top: 64,
-    width: 95,
+    left: 68,
+    top: 63,
+    width: 105,
     zIndex: 10,
     anchor: "bottom-center",
-    shadowWidth: 70,
-    // kettle.png: ~17px / 205px
-    visibleBottomOffsetRatio: 17 / 205,
+    shadowWidth: 0,
+    visibleBottomOffsetRatio: 0.083,
   },
 
   // ── work row ─────────────────────────────────────────────
   bowl: {
-    left: 36,
-    top: 73,
-    width: 110,
+    left: 38,
+    top: 75,
+    width: 125,
     zIndex: 20,
     anchor: "bottom-center",
-    shadowWidth: 75,
-    // bowl.png: ~5px / 176px
-    visibleBottomOffsetRatio: 5 / 176,
+    shadowWidth: 0,
+    visibleBottomOffsetRatio: 0.028,
   },
   plate: {
-    left: 50,
-    top: 73,
-    width: 120,
+    left: 51,
+    top: 75,
+    width: 135,
     zIndex: 20,
     anchor: "bottom-center",
-    shadowWidth: 85,
-    // plate.png: ~2px / 176px
-    visibleBottomOffsetRatio: 2 / 176,
+    shadowWidth: 0,
+    visibleBottomOffsetRatio: 0.011,
   },
   cup: {
-    left: 64,
-    top: 73,
-    width: 70,
+    left: 63,
+    top: 75,
+    width: 82,
     zIndex: 20,
     anchor: "bottom-center",
-    shadowWidth: 45,
-    // cup.png: ~3px / 72px
-    visibleBottomOffsetRatio: 3 / 72,
+    shadowWidth: 0,
+    visibleBottomOffsetRatio: 0.042,
   },
 
   // ── service ──────────────────────────────────────────────
   bell: {
-    left: 76,
-    top: 74,
-    width: 50,
+    left: 73,
+    top: 76,
+    width: 52,
     zIndex: 30,
     anchor: "bottom-center",
-    shadowWidth: 32,
+    shadowWidth: 0,
     visibleBottomOffsetRatio: 0,
   },
 
-  // ── table slots (на передней кромке столешницы) ──────────
+  // ── table slots ──────────────────────────────────────────
   tableSlot1: {
-    left: 32,
-    top: 79,
-    width: 34,
+    left: 38,
+    top: 80,
+    width: 32,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
     visibleBottomOffsetRatio: 0,
   },
   tableSlot2: {
-    left: 41,
-    top: 79,
-    width: 34,
+    left: 44,
+    top: 80,
+    width: 32,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
@@ -170,26 +163,26 @@ export const STAGE_LAYOUT = {
   },
   tableSlot3: {
     left: 50,
-    top: 79,
-    width: 34,
+    top: 80,
+    width: 32,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
     visibleBottomOffsetRatio: 0,
   },
   tableSlot4: {
-    left: 59,
-    top: 79,
-    width: 34,
+    left: 56,
+    top: 80,
+    width: 32,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
     visibleBottomOffsetRatio: 0,
   },
   tableSlot5: {
-    left: 68,
-    top: 79,
-    width: 34,
+    left: 62,
+    top: 80,
+    width: 32,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,

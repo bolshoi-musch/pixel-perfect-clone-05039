@@ -111,11 +111,25 @@ export function KitchenStage2D({
       {/* Layer 5: столешница (CSS) */}
       <Countertop />
 
+      {/* Контактные плашки под предметами — на самой поверхности столешницы. */}
+      <ContactBase layout={STAGE_LAYOUT.stove} width={105} height={10} />
+      {equipmentOwned.includes("toaster") && (
+        <ContactBase layout={STAGE_LAYOUT.toaster} width={64} height={8} />
+      )}
+      {equipmentOwned.includes("kettle") && (
+        <ContactBase layout={STAGE_LAYOUT.kettle} width={66} height={8} />
+      )}
+      <ContactBase layout={STAGE_LAYOUT.bowl} width={78} height={8} />
+      <ContactBase layout={STAGE_LAYOUT.plate} width={92} height={8} />
+      <ContactBase layout={STAGE_LAYOUT.cup} width={44} height={7} />
+      <ContactBase layout={STAGE_LAYOUT.bell} width={34} height={6} />
+
       {/* ── Back row ─────────────────────────────────────── */}
       <StageObject
         layout={STAGE_LAYOUT.stove}
         label="Плита"
-        attention={activeTarget === "stove"} showHereLabel={showHereLabel}
+        attention={activeTarget === "stove"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("stove", "Плита")}
       >
@@ -127,7 +141,8 @@ export function KitchenStage2D({
         <StageObject
           layout={STAGE_LAYOUT.toaster}
           label="Тостер"
-          attention={activeTarget === "toaster"} showHereLabel={showHereLabel}
+          attention={activeTarget === "toaster"}
+          showHereLabel={showHereLabel}
           onHover={onHoverLabel}
           onClick={() => handleObject("toaster", "Тостер")}
         >
@@ -139,7 +154,8 @@ export function KitchenStage2D({
         <StageObject
           layout={STAGE_LAYOUT.kettle}
           label="Чайник"
-          attention={activeTarget === "kettle"} showHereLabel={showHereLabel}
+          attention={activeTarget === "kettle"}
+          showHereLabel={showHereLabel}
           onHover={onHoverLabel}
           onClick={() => handleObject("kettle", "Чайник")}
         >
@@ -155,7 +171,8 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.bowl}
         label="Миска"
-        attention={activeTarget === "bowl"} showHereLabel={showHereLabel}
+        attention={activeTarget === "bowl"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("bowl", "Миска")}
       >
@@ -165,7 +182,8 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.plate}
         label="Тарелка"
-        attention={activeTarget === "plate"} showHereLabel={showHereLabel}
+        attention={activeTarget === "plate"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("plate", "Тарелка")}
       >
@@ -175,7 +193,8 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.cup}
         label="Чашка"
-        attention={activeTarget === "cup"} showHereLabel={showHereLabel}
+        attention={activeTarget === "cup"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("cup", "Чашка")}
       >
@@ -186,14 +205,15 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.bell}
         label="Звонок"
-        attention={activeTarget === "bell"} showHereLabel={showHereLabel}
+        attention={activeTarget === "bell"}
+        showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => onBellRing()}
       >
         <BellSprite pulse={activeTarget === "bell"} widthPx={STAGE_LAYOUT.bell.width} />
       </StageObject>
 
-      {/* ── Table slots (5 шт, на передней кромке столешницы) ── */}
+      {/* ── Table slots ── */}
       {TABLE_SLOT_IDS_2D.map((id, i) => {
         const layout = STAGE_LAYOUT[id];
         const slot = slots[i];
@@ -263,7 +283,8 @@ function Background() {
 }
 
 /**
- * Компактная столешница. Верх ~44%, низ ~79%. Никаких отдельных тумб.
+ * Простая фронтальная рабочая поверхность — без перспективной трапеции.
+ * Одна горизонтальная полка-прилавок: предметы стоят на ней по общей линии.
  */
 function Countertop() {
   return (
@@ -275,43 +296,68 @@ function Countertop() {
       }}
     >
       <div
-        className="relative h-full"
+        className="relative h-full overflow-hidden rounded-t-[28px]"
         style={{
           width: `${COUNTERTOP_WIDTH_PCT}%`,
           maxWidth: `${COUNTERTOP_MAX_WIDTH_PX}px`,
+          background:
+            "linear-gradient(180deg, #c99762 0%, #b47f4d 72%, #8a5a32 100%)",
+          boxShadow:
+            "inset 0 8px 16px rgba(255,230,190,0.28), inset 0 -10px 20px rgba(0,0,0,0.20)",
         }}
       >
-        {/* Поверхность стола (трапеция) */}
+        {/* Тонкая горизонтальная "слоистость" */}
         <div
-          className="relative h-full w-full"
+          className="absolute inset-0 opacity-[0.16]"
           style={{
-            clipPath: "polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%)",
-            background:
-              "linear-gradient(180deg, #c79a6b 0%, #b3865a 55%, #966a40 100%)",
-            boxShadow:
-              "inset 0 6px 14px rgba(255, 230, 200, 0.35), inset 0 -10px 24px rgba(0,0,0,0.25)",
+            backgroundImage:
+              "repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 18px)",
           }}
-        >
-          {/* Лёгкая текстура «дерева» */}
-          <div
-            className="absolute inset-0 opacity-25 mix-blend-overlay"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 14px)",
-            }}
-          />
-          {/* Передний кант */}
-          <div
-            className="absolute inset-x-0 bottom-0 h-3"
-            style={{
-              background:
-                "linear-gradient(180deg, #7a5532 0%, #5a3d22 100%)",
-              boxShadow: "0 6px 12px rgba(0,0,0,0.35)",
-            }}
-          />
-        </div>
+        />
+        {/* Передний край стола */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-5"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(95,55,25,0.55), rgba(55,32,18,0.7))",
+          }}
+        />
       </div>
     </div>
+  );
+}
+
+/**
+ * Контактная плашка под предметом — плоское пятно на самой столешнице.
+ * Это не парящая в воздухе тень, а маленькая подставка ровно в точке,
+ * куда attach-нут предмет (left%, top% — нижний центр спрайта).
+ */
+function ContactBase({
+  layout,
+  width,
+  height = 8,
+}: {
+  layout: StageObjectLayout;
+  width: number;
+  height?: number;
+}) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute"
+      style={{
+        left: `${layout.left}%`,
+        top: `${layout.top}%`,
+        width,
+        height,
+        zIndex: Math.max(1, layout.zIndex - 1),
+        transform: "translate(-50%, -50%)",
+        borderRadius: 999,
+        background:
+          "linear-gradient(180deg, rgba(80,45,22,0.18), rgba(80,45,22,0.08))",
+        boxShadow: "inset 0 1px 1px rgba(255,255,255,0.14)",
+      }}
+    />
   );
 }
 
@@ -356,19 +402,12 @@ function StageObject({
         transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
       }}
     >
-      {layout.shadowWidth > 0 && (
-        <ContactShadow
-          width={layout.shadowWidth}
-          visibleBottomOffsetPx={offsetPx}
-        />
-      )}
-      {attention && <ActiveContactHalo width={layout.shadowWidth || layout.width} visibleBottomOffsetPx={offsetPx} />}
       <button
         type="button"
         onClick={onClick}
         onPointerEnter={() => onHover(label)}
         onPointerLeave={() => onHover(null)}
-        className={`pointer-events-auto relative z-[1] inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${attention ? "animate-pulse" : ""}`}
+        className={`pointer-events-auto relative z-[1] inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${attention ? "drop-shadow-[0_0_12px_rgba(255,180,70,0.85)] animate-pulse" : ""}`}
         aria-label={label}
       >
         {children}
@@ -424,62 +463,6 @@ function SlotAnchor({
   );
 }
 
-/**
- * Маленькая контактная тень прямо под видимой нижней точкой предмета.
- * После transform контейнер опущен на visibleBottomOffsetPx, поэтому тень
- * поднимается на эту же величину вверх от нижней кромки контейнера.
- * Без drop-shadow на самом спрайте — иначе получаем двойную тень и
- * усиление ощущения «парения».
- */
-function ContactShadow({
-  width,
-  visibleBottomOffsetPx,
-}: {
-  width: number;
-  visibleBottomOffsetPx: number;
-}) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-      style={{
-        bottom: Math.max(0, visibleBottomOffsetPx - 1),
-        width,
-        height: Math.max(4, width * 0.09),
-        background:
-          "radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.07) 55%, transparent 80%)",
-        borderRadius: "50%",
-        filter: "blur(1px)",
-        zIndex: 0,
-      }}
-    />
-  );
-}
-
-function ActiveContactHalo({
-  width,
-  visibleBottomOffsetPx,
-}: {
-  width: number;
-  visibleBottomOffsetPx: number;
-}) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-      style={{
-        bottom: Math.max(0, visibleBottomOffsetPx - 4),
-        width: Math.max(42, width * 1.2),
-        height: Math.max(8, width * 0.14),
-        background:
-          "radial-gradient(ellipse at center, color-mix(in oklab, var(--primary) 42%, transparent) 0%, color-mix(in oklab, var(--primary) 18%, transparent) 48%, transparent 78%)",
-        borderRadius: "50%",
-        filter: "blur(1px)",
-        zIndex: 0,
-      }}
-    />
-  );
-}
 
 function SpriteImg({
   src,
