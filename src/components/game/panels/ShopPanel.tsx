@@ -87,8 +87,10 @@ function ProductsTab() {
     if (ok) {
       log(`Куплено: ${name} (+1) за ${price} ₽`);
       flash(`${id}|${quality}`);
+      toast.success(`Куплено: ${name}`, { description: `−${price} ₽` });
     } else {
       log(`Не хватает денег для покупки: ${name}`);
+      toast.error("Не хватает денег", { description: name });
     }
   };
 
