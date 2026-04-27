@@ -29,7 +29,6 @@ import {
   COUNTERTOP_MAX_WIDTH_PX,
   type StageObjectLayout,
 } from "./stage-layout";
-import { normalizeHintMode } from "@/game/hint-content";
 import { useHintMode } from "@/game/hint-mode";
 
 interface KitchenStage2DProps {
