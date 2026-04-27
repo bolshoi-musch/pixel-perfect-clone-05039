@@ -663,24 +663,26 @@ function TableSlot2D({
     }
   };
 
-  // Спокойный фон. Слот заметнее когда hover, ИЛИ когда у игрока выбран продукт и слот пуст.
+  // Если слот пуст и продукт не выбран — почти невидим.
+  // Если выбран ингредиент — мягкая тёплая подсветка пустых слотов.
+  // Если слот занят — мягкий светлый овал.
   const bg = ing
     ? hover
-      ? "rgba(255,255,255,0.45)"
-      : "rgba(255,255,255,0.28)"
+      ? "rgba(255,250,235,0.55)"
+      : "rgba(255,250,235,0.38)"
     : highlight
-      ? "rgba(255,210,140,0.45)"
+      ? "rgba(255,210,140,0.40)"
       : hover
-        ? "rgba(255,255,255,0.22)"
-        : "rgba(255,255,255,0.10)";
+        ? "rgba(255,255,255,0.18)"
+        : "rgba(0,0,0,0.10)";
 
   const borderColor = ing
     ? quality === "premium"
-      ? "rgba(212,161,60,0.9)"
-      : "rgba(94,58,24,0.55)"
-    : highlight
       ? "rgba(212,161,60,0.85)"
-      : "rgba(94,58,24,0.25)";
+      : "rgba(94,58,24,0.45)"
+    : highlight
+      ? "rgba(212,161,60,0.65)"
+      : "rgba(0,0,0,0.10)";
 
   return (
     <button
@@ -692,11 +694,11 @@ function TableSlot2D({
         setHover(false);
       }}
       onPointerEnter={() => setHover(true)}
-      className="pointer-events-auto relative flex h-14 w-14 flex-col items-center justify-center rounded-xl transition"
+      className="pointer-events-auto relative flex h-11 w-11 flex-col items-center justify-center rounded-full transition"
       style={{
         background: bg,
-        border: `1.5px solid ${borderColor}`,
-        backdropFilter: "blur(2px)",
+        border: `1px solid ${borderColor}`,
+        boxShadow: ing ? "inset 0 1px 2px rgba(255,255,255,0.5)" : "none",
       }}
       aria-label={ing ? `Слот ${index + 1}: ${ing.name}` : `Пустой слот ${index + 1}`}
     >
