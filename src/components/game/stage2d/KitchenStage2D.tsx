@@ -427,15 +427,22 @@ function SlotAnchor({
  * Компактная тень — кладётся прямо под anchor (bottom: 0 от обёртки).
  * Маленькая и мягкая, чтобы предмет не «летал».
  */
-function GroundShadow({ width }: { width: number }) {
+function GroundShadow({
+  width,
+  bottomOffsetPx = 0,
+}: {
+  width: number;
+  bottomOffsetPx?: number;
+}) {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute left-1/2 -translate-x-1/2"
       style={{
-        // anchor находится в bottom: 0 контейнера StageObject (после translateY(-100%)).
-        // Тень кладём чуть выше нижней кромки контейнера, прямо под предметом.
-        bottom: -2,
+        // anchor (visible bottom of sprite) находится на bottom: bottomOffsetPx
+        // от нижней кромки контейнера StageObject (контейнер сдвинут вниз
+        // на эту величину, чтобы PNG-паддинг не «вешал» предмет в воздух).
+        bottom: bottomOffsetPx - 2,
         width,
         height: Math.max(6, width * 0.14),
         background:
