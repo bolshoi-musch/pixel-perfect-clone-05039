@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useGame } from "@/game/store";
 import { INGREDIENTS, EQUIPMENT } from "@/game/data";
 import type { IngredientQuality } from "@/game/types";
+
+/** Categorise equipment for the shop UI: appliances vs dish/cookware. */
+const COOKWARE_IDS = new Set(["bowl", "plate", "cup", "pan", "pot", "knife"]);
+function equipmentCategory(id: string): "appliance" | "cookware" {
+  return COOKWARE_IDS.has(id) ? "cookware" : "appliance";
+}
 
 export type ShopTab = "products" | "equipment" | "upgrades";
 
