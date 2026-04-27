@@ -43,16 +43,17 @@ export function selectKitchenVisualState(
   if (prepared.has("egg_mix")) bowl = "mix";
   else if (prepared.has("egg_in_bowl")) bowl = "egg";
 
-  // Plate
+  // Plate — омлет только после явного шага plate (plated_omelet),
+  // не после omelet_cooked (это ещё на сковороде).
   let plate: PlateVisualState = "empty";
-  if (prepared.has("plated_omelet") || prepared.has("omelet_cooked")) plate = "omelet";
+  if (prepared.has("plated_omelet")) plate = "omelet";
   else if (prepared.has("toast_ready")) plate = "toast";
 
-  // Cup
+  // Cup — hot_water это кипяток в чайнике, не в чашке.
+  // Чашка показывает заварку только после tea_brew, чай — после tea_pour.
   let cup: CupVisualState = "empty";
   if (prepared.has("tea_brewed")) cup = "tea";
   else if (prepared.has("tea_with_leaves")) cup = "leaves";
-  else if (prepared.has("hot_water")) cup = "water";
 
   // Kettle
   let kettle: KettleVisualState = "idle";
