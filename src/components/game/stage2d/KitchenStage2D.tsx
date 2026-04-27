@@ -283,7 +283,8 @@ function Background() {
 }
 
 /**
- * Компактная столешница. Верх ~44%, низ ~79%. Никаких отдельных тумб.
+ * Простая фронтальная рабочая поверхность — без перспективной трапеции.
+ * Одна горизонтальная полка-прилавок: предметы стоят на ней по общей линии.
  */
 function Countertop() {
   return (
@@ -295,43 +296,68 @@ function Countertop() {
       }}
     >
       <div
-        className="relative h-full"
+        className="relative h-full overflow-hidden rounded-t-[28px]"
         style={{
           width: `${COUNTERTOP_WIDTH_PCT}%`,
           maxWidth: `${COUNTERTOP_MAX_WIDTH_PX}px`,
+          background:
+            "linear-gradient(180deg, #c99762 0%, #b47f4d 72%, #8a5a32 100%)",
+          boxShadow:
+            "inset 0 8px 16px rgba(255,230,190,0.28), inset 0 -10px 20px rgba(0,0,0,0.20)",
         }}
       >
-        {/* Поверхность стола (трапеция) */}
+        {/* Тонкая горизонтальная "слоистость" */}
         <div
-          className="relative h-full w-full"
+          className="absolute inset-0 opacity-[0.16]"
           style={{
-            clipPath: "polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%)",
-            background:
-              "linear-gradient(180deg, #c79a6b 0%, #b3865a 55%, #966a40 100%)",
-            boxShadow:
-              "inset 0 6px 14px rgba(255, 230, 200, 0.35), inset 0 -10px 24px rgba(0,0,0,0.25)",
+            backgroundImage:
+              "repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 18px)",
           }}
-        >
-          {/* Лёгкая текстура «дерева» */}
-          <div
-            className="absolute inset-0 opacity-25 mix-blend-overlay"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 14px)",
-            }}
-          />
-          {/* Передний кант */}
-          <div
-            className="absolute inset-x-0 bottom-0 h-3"
-            style={{
-              background:
-                "linear-gradient(180deg, #7a5532 0%, #5a3d22 100%)",
-              boxShadow: "0 6px 12px rgba(0,0,0,0.35)",
-            }}
-          />
-        </div>
+        />
+        {/* Передний край стола */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-5"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(95,55,25,0.55), rgba(55,32,18,0.7))",
+          }}
+        />
       </div>
     </div>
+  );
+}
+
+/**
+ * Контактная плашка под предметом — плоское пятно на самой столешнице.
+ * Это не парящая в воздухе тень, а маленькая подставка ровно в точке,
+ * куда attach-нут предмет (left%, top% — нижний центр спрайта).
+ */
+function ContactBase({
+  layout,
+  width,
+  height = 8,
+}: {
+  layout: StageObjectLayout;
+  width: number;
+  height?: number;
+}) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute"
+      style={{
+        left: `${layout.left}%`,
+        top: `${layout.top}%`,
+        width,
+        height,
+        zIndex: Math.max(1, layout.zIndex - 1),
+        transform: "translate(-50%, -50%)",
+        borderRadius: 999,
+        background:
+          "linear-gradient(180deg, rgba(80,45,22,0.18), rgba(80,45,22,0.08))",
+        boxShadow: "inset 0 1px 1px rgba(255,255,255,0.14)",
+      }}
+    />
   );
 }
 
