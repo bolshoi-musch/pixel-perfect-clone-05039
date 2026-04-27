@@ -463,62 +463,6 @@ function SlotAnchor({
   );
 }
 
-/**
- * Маленькая контактная тень прямо под видимой нижней точкой предмета.
- * После transform контейнер опущен на visibleBottomOffsetPx, поэтому тень
- * поднимается на эту же величину вверх от нижней кромки контейнера.
- * Без drop-shadow на самом спрайте — иначе получаем двойную тень и
- * усиление ощущения «парения».
- */
-function ContactShadow({
-  width,
-  visibleBottomOffsetPx,
-}: {
-  width: number;
-  visibleBottomOffsetPx: number;
-}) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-      style={{
-        bottom: Math.max(0, visibleBottomOffsetPx - 1),
-        width,
-        height: Math.max(4, width * 0.09),
-        background:
-          "radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.07) 55%, transparent 80%)",
-        borderRadius: "50%",
-        filter: "blur(1px)",
-        zIndex: 0,
-      }}
-    />
-  );
-}
-
-function ActiveContactHalo({
-  width,
-  visibleBottomOffsetPx,
-}: {
-  width: number;
-  visibleBottomOffsetPx: number;
-}) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-      style={{
-        bottom: Math.max(0, visibleBottomOffsetPx - 4),
-        width: Math.max(42, width * 1.2),
-        height: Math.max(8, width * 0.14),
-        background:
-          "radial-gradient(ellipse at center, color-mix(in oklab, var(--primary) 42%, transparent) 0%, color-mix(in oklab, var(--primary) 18%, transparent) 48%, transparent 78%)",
-        borderRadius: "50%",
-        filter: "blur(1px)",
-        zIndex: 0,
-      }}
-    />
-  );
-}
 
 function SpriteImg({
   src,
