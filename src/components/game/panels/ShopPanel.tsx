@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useGame } from "@/game/store";
 import { INGREDIENTS, EQUIPMENT } from "@/game/data";
 import type { IngredientQuality } from "@/game/types";
+
+/** Categorise equipment for the shop UI: appliances vs dish/cookware. */
+const COOKWARE_IDS = new Set(["bowl", "plate", "cup", "pan", "pot", "knife"]);
+function equipmentCategory(id: string): "appliance" | "cookware" {
+  return COOKWARE_IDS.has(id) ? "cookware" : "appliance";
+}
 
 export type ShopTab = "products" | "equipment" | "upgrades";
 
@@ -80,8 +87,10 @@ function ProductsTab() {
     if (ok) {
       log(`Куплено: ${name} (+1) за ${price} ₽`);
       flash(`${id}|${quality}`);
+      toast.success(`Куплено: ${name}`, { description: `−${price} ₽` });
     } else {
       log(`Не хватает денег для покупки: ${name}`);
+      toast.error("Не хватает денег", { description: name });
     }
   };
 
@@ -182,57 +191,83 @@ function EquipmentTab() {
     if (ok) {
       log(`Куплено: ${name} за ${price} ₽`);
       flash(id);
+      toast.success(`Куплено: ${name}`, { description: `−${price} ₽` });
     } else {
       log(`Не хватает денег для покупки: ${name}`);
+      toast.error("Не хватает денег", { description: name });
     }
   };
 
-  return (
-    <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">
-        Купленная техника появляется на кухне (если для неё есть 3D-объект).
-      </p>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {EQUIPMENT.map((eq) => {
-          const isOwned = owned.includes(eq.id);
-          const canAfford = money >= eq.price;
-          const justBought = lastKey === eq.id;
-          return (
-            <li
-              key={eq.id}
-              className={`rounded-xl border p-3 transition ${
-                justBought
-                  ? "border-primary bg-primary/10 shadow-[0_0_0_2px_var(--primary)]"
-                  : isOwned
-                    ? "border-primary/40 bg-primary/5"
-                    : "border-border bg-background/60"
-              }`}
+  // Только то, что реально продаётся (price > 0).
+  const forSale = EQUIPMENT.filter((eq) => eq.price > 0);
+  const appliances = forSale.filter((eq) => equipmentCategory(eq.id) === "appliance");
+  const cookware = forSale.filter((eq) => equipmentCategory(eq.id) === "cookware");
+
+  const renderItem = (eq: (typeof EQUIPMENT)[number]) => {
+    const isOwned = owned.includes(eq.id);
+    const canAfford = money >= eq.price;
+    const justBought = lastKey === eq.id;
+    return (
+      <li
+        key={eq.id}
+        className={`rounded-xl border p-3 transition ${
+          justBought
+            ? "border-primary bg-primary/10 shadow-[0_0_0_2px_var(--primary)]"
+            : isOwned
+              ? "border-primary/40 bg-primary/5"
+              : "border-border bg-background/60"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium text-foreground">{eq.name}</span>
+          {isOwned ? (
+            <span className="text-xs font-semibold text-primary">✓ Куплено</span>
+          ) : (
+            <span className="text-xs text-muted-foreground">{eq.price} ₽</span>
+          )}
+        </div>
+        {!isOwned && (
+          <div className="mt-2">
+            <Button
+              size="sm"
+              variant={canAfford ? "default" : "secondary"}
+              disabled={!canAfford || justBought}
+              onClick={() => handleBuy(eq.id, eq.name, eq.price)}
+              className="w-full"
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-medium text-foreground">{eq.name}</span>
-                {isOwned ? (
-                  <span className="text-xs font-semibold text-primary">✓ На кухне</span>
-                ) : (
-                  <span className="text-xs text-muted-foreground">{eq.price} ₽</span>
-                )}
-              </div>
-              {!isOwned && (
-                <div className="mt-2">
-                  <Button
-                    size="sm"
-                    variant={canAfford ? "default" : "secondary"}
-                    disabled={!canAfford}
-                    onClick={() => handleBuy(eq.id, eq.name, eq.price)}
-                    className="w-full"
-                  >
-                    {canAfford ? "Купить" : "Не хватает денег"}
-                  </Button>
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+              {justBought ? "Куплено ✓" : canAfford ? "Купить" : "Не хватает денег"}
+            </Button>
+          </div>
+        )}
+      </li>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Купленная техника и посуда появляются на кухне автоматически.
+      </p>
+      {appliances.length > 0 && (
+        <section>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Техника
+          </h4>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {appliances.map(renderItem)}
+          </ul>
+        </section>
+      )}
+      {cookware.length > 0 && (
+        <section>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Посуда
+          </h4>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {cookware.map(renderItem)}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
@@ -254,8 +289,10 @@ function UpgradesTab() {
     if (ok) {
       log(`Плита улучшена до уровня ${stoveLevel + 1}`);
       flash("stove_upgrade");
+      toast.success(`Плита улучшена до ур. ${stoveLevel + 1}`, { description: `−${price} ₽` });
     } else {
       log(`Не хватает денег для улучшения плиты`);
+      toast.error("Не хватает денег", { description: "Улучшение плиты" });
     }
   };
 

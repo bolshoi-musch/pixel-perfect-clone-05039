@@ -33,9 +33,14 @@ export function InventoryPanel({ onOpenShop }: Props) {
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        Выбери продукт и нажми по нужному инструменту (миска, плита, чашка…) — ингредиент
-        используется напрямую. Покупка продуктов — в Магазине.
+        Выбери продукт, затем нажми по нужному предмету на кухне (миска, чашка, плита…).
+        Покупка продуктов — в Магазине.
       </p>
+      {pick && (
+        <div className="rounded-lg border border-primary/40 bg-primary/10 p-2 text-xs text-primary">
+          ✓ Выбран продукт. Теперь нажми на подсвеченный предмет на кухне или на свободный слот.
+        </div>
+      )}
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {inventory.map((entry) => {
           const ing = INGREDIENTS_BY_ID.get(entry.ingredient_id);
@@ -49,22 +54,30 @@ export function InventoryPanel({ onOpenShop }: Props) {
                 onClick={() => setPick(active ? null : key)}
                 className={`w-full rounded-xl border p-3 text-left transition ${
                   active
-                    ? "border-primary bg-primary/10 shadow-[var(--shadow-soft)]"
+                    ? "border-primary bg-primary/15 shadow-[0_0_0_2px_var(--primary)] ring-2 ring-primary/40"
                     : "border-border bg-background/60 hover:bg-accent"
                 }`}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="font-medium text-foreground">{ing.name}</span>
-                  <span className="rounded-md bg-accent px-2 py-0.5 text-xs text-accent-foreground">
+                  <span className="rounded-md bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">
                     ×{entry.count}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {entry.quality === "premium" ? "Премиум" : "Обычный"}
+                <p className="mt-1 text-[11px]">
+                  <span
+                    className={
+                      entry.quality === "premium"
+                        ? "rounded bg-amber-500/15 px-1.5 py-0.5 font-semibold text-amber-600"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {entry.quality === "premium" ? "★ Премиум" : "Обычный"}
+                  </span>
                 </p>
                 {active && (
-                  <p className="mt-1 text-[11px] font-medium text-primary">
-                    Выбран — кликните слот
+                  <p className="mt-1 text-[11px] font-semibold text-primary">
+                    ✓ Выбран
                   </p>
                 )}
               </button>
