@@ -1,16 +1,16 @@
-// 2.5D-сцена кухни. Чистый React + CSS + inline SVG, без Three.js.
-// Слои:
-//   1. background  — стены/пол/контр-топ
-//   2. equipment   — плита/чайник/тостер/блендер/рисоварка (фон)
-//   3. table       — стол с 5 слотами и рабочей зоной
-//   4. vessels     — миска/тарелка/чашка (на столе)
-//   5. trigger     — звонок (передний план)
-//   6. hotspots    — кликабельные зоны + hover labels
+// 2.5D-сцена кухни. PNG-ассеты из Isometric Kitchen Sprites + аккуратные overlay-слои
+// для food-состояний (желток, омлет, заварка, чай). Никаких ассетов из второго пака.
 //
-// Колбэки совместимы с KitchenScene: onObjectAction(equipment_id, label) и onBellRing().
+// Слои (z-index):
+//   0  background  — стены / пол / фартук
+//   5  counter row — изо-counter-модули (рабочая поверхность)
+//   10 equipment   — плита (слева), чайник (сзади-справа), доп. техника
+//   20 vessels     — миска / тарелка / чашка (центральная зона)
+//   30 bell        — небольшой звонок справа в зоне подачи
+//   40 slots       — спокойные слоты на переднем крае стола (поверх counter, ниже HUD)
 //
-// Подсветка целевого объекта берётся из текущего шага через order-engine + expectedEquipmentForStep.
-// Визуальные состояния (bowl/plate/cup/kettle/stove) берутся из selectKitchenVisualState.
+// Кликабельность через <Hotspot>: PNG получает мягкое свечение/масштаб при ховере
+// и пульс-кольцо когда это активная цель шага.
 
 import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/game/store";
@@ -25,7 +25,7 @@ import {
   type PlateVisualState,
   type StoveVisualState,
 } from "@/game/derived-state";
-import { getItemVisual } from "@/game/item-visuals";
+import { STAGE_ASSETS } from "./stage-assets";
 
 interface KitchenStage2DProps {
   onHoverLabel: (label: string | null) => void;
@@ -50,6 +50,7 @@ export function KitchenStage2D({
   const log = useGame((s) => s.log);
   const setLastClickedTarget = useGame((s) => s.setLastClickedTarget);
   const setPick = useActivePick((s) => s.setPick);
+  const activePick = useActivePick((s) => s.pick);
 
   const orderProgress = useOrderEngine((s) => s.progress);
 
@@ -94,75 +95,74 @@ export function KitchenStage2D({
     eatFromTable(index);
   };
 
+  // Слоты «выделяются» только когда выбран ингредиент в Продуктах.
+  const slotsActive = activePick !== null;
+
   return (
     <div className="absolute inset-0 select-none overflow-hidden">
-      {/* === Layer 1: Background — стены, пол, кафельный фартук === */}
+      {/* Layer 0: background */}
       <Background />
 
-      {/* === Layer 2: Equipment row (back wall) === */}
-      <div className="absolute inset-x-0 top-[18%] z-10 flex justify-center">
-        <div className="flex w-full max-w-5xl items-end justify-between gap-2 px-6">
+      {/* Layer 5: counter row — единая кухонная поверхность из изо-модулей */}
+      <CounterRow />
+
+      {/* Layer 10: equipment — плита слева, чайник справа-сзади, доп. техника */}
+      <div className="absolute inset-x-0 top-[10%] z-10 flex justify-center pointer-events-none">
+        <div className="flex w-full max-w-6xl items-end justify-between px-[6%]">
+          {/* Левая зона: плита */}
           <Hotspot
             label="Плита"
             attention={activeTarget === "stove"}
             onHover={onHoverLabel}
             onClick={() => handleObject("stove", "Плита")}
           >
-            <StoveSprite state={visual.stove} />
+            <SpriteImg
+              src={STAGE_ASSETS.stove}
+              alt="Плита"
+              className="h-[230px] w-auto"
+            />
+            {visual.stove === "active" && <FlameOverlay />}
           </Hotspot>
 
-          {equipmentOwned.includes("kettle") && (
-            <Hotspot
-              label="Чайник"
-              attention={activeTarget === "kettle"}
-              onHover={onHoverLabel}
-              onClick={() => handleObject("kettle", "Чайник")}
-            >
-              <KettleSprite state={visual.kettle} />
-            </Hotspot>
-          )}
+          {/* Центральная зона: тостер если куплен */}
+          <div className="flex items-end gap-3">
+            {equipmentOwned.includes("toaster") && (
+              <Hotspot
+                label="Тостер"
+                attention={activeTarget === "toaster"}
+                onHover={onHoverLabel}
+                onClick={() => handleObject("toaster", "Тостер")}
+              >
+                <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" className="h-[110px] w-auto" />
+              </Hotspot>
+            )}
+          </div>
 
-          {equipmentOwned.includes("toaster") && (
-            <Hotspot
-              label="Тостер"
-              attention={activeTarget === "toaster"}
-              onHover={onHoverLabel}
-              onClick={() => handleObject("toaster", "Тостер")}
-            >
-              <ToasterSprite />
-            </Hotspot>
-          )}
-
-          {equipmentOwned.includes("blender") && (
-            <Hotspot
-              label="Блендер"
-              attention={activeTarget === "blender"}
-              onHover={onHoverLabel}
-              onClick={() => handleObject("blender", "Блендер")}
-            >
-              <BlenderSprite />
-            </Hotspot>
-          )}
-
-          {equipmentOwned.includes("rice_cooker") && (
-            <Hotspot
-              label="Рисоварка"
-              attention={activeTarget === "rice_cooker"}
-              onHover={onHoverLabel}
-              onClick={() => handleObject("rice_cooker", "Рисоварка")}
-            >
-              <RiceCookerSprite />
-            </Hotspot>
-          )}
+          {/* Правая зона: чайник */}
+          <div className="flex items-end gap-3">
+            {equipmentOwned.includes("kettle") && (
+              <Hotspot
+                label="Чайник"
+                attention={activeTarget === "kettle"}
+                onHover={onHoverLabel}
+                onClick={() => handleObject("kettle", "Чайник")}
+              >
+                <div className="relative">
+                  <SpriteImg src={STAGE_ASSETS.kettle} alt="Чайник" className="h-[140px] w-auto" />
+                  {(visual.kettle === "boiling" || visual.kettle === "ready") && <SteamOverlay />}
+                  {visual.kettle === "ready" && (
+                    <span className="absolute right-1 top-1 h-3 w-3 rounded-full bg-orange-500 shadow ring-2 ring-orange-200 animate-pulse" />
+                  )}
+                </div>
+              </Hotspot>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* === Layer 3: Table — стол с дощатой текстурой === */}
-      <Table />
-
-      {/* === Layer 4: Vessels (миска, тарелка, чашка) — на столе === */}
-      <div className="absolute inset-x-0 bottom-[36%] z-20 flex justify-center">
-        <div className="flex w-full max-w-3xl items-end justify-around px-10">
+      {/* Layer 20: vessels — миска, тарелка, чашка в центральной рабочей зоне */}
+      <div className="absolute inset-x-0 bottom-[34%] z-20 flex justify-center pointer-events-none">
+        <div className="flex w-full max-w-3xl items-end justify-around px-12">
           <Hotspot
             label="Миска"
             attention={activeTarget === "bowl"}
@@ -192,33 +192,21 @@ export function KitchenStage2D({
         </div>
       </div>
 
-      {/* === Layer 5: Bell + Work surface (передний край стола) === */}
-      <div className="absolute inset-x-0 bottom-[20%] z-30 flex justify-center">
-        <div className="flex w-full max-w-4xl items-end justify-between px-12">
-          <Hotspot
-            label="Рабочая зона"
-            attention={activeTarget === "work_surface"}
-            onHover={onHoverLabel}
-            onClick={() => handleObject("work_surface", "Рабочая зона")}
-            subtle
-          >
-            <WorkSurfaceSprite />
-          </Hotspot>
-
-          <Hotspot
-            label="Звонок"
-            attention={activeTarget === "bell"}
-            onHover={onHoverLabel}
-            onClick={() => onBellRing()}
-          >
-            <BellSprite pulse={activeTarget === "bell"} />
-          </Hotspot>
-        </div>
+      {/* Layer 30: bell — маленький, справа в зоне подачи */}
+      <div className="absolute right-[6%] bottom-[28%] z-30 pointer-events-none">
+        <Hotspot
+          label="Звонок"
+          attention={activeTarget === "bell"}
+          onHover={onHoverLabel}
+          onClick={() => onBellRing()}
+        >
+          <BellSprite pulse={activeTarget === "bell"} />
+        </Hotspot>
       </div>
 
-      {/* === Layer 6: Table slots === */}
-      <div className="absolute inset-x-0 bottom-[6%] z-30 flex justify-center px-4">
-        <div className="flex w-full max-w-3xl items-center justify-between gap-2">
+      {/* Layer 40: table slots — спокойная полоса на переднем крае */}
+      <div className="absolute inset-x-0 bottom-[7%] z-40 flex justify-center px-4 pointer-events-none">
+        <div className="flex w-full max-w-2xl items-center justify-between gap-2">
           {slots.map((slot, i) => (
             <TableSlot2D
               key={i}
@@ -226,6 +214,7 @@ export function KitchenStage2D({
               ingredient_id={slot.ingredient_id}
               quality={slot.quality}
               category={slot.category}
+              highlight={slotsActive && !slot.ingredient_id}
               onShortClick={handleSlotShortClick}
               onLongPress={handleSlotLongPress}
             />
@@ -236,68 +225,67 @@ export function KitchenStage2D({
   );
 }
 
-/* ──────────────────────────── Background & Table ─────────────────────────── */
+/* ──────────────────────────── Background & Counter ─────────────────────────── */
 
 function Background() {
   return (
     <div className="absolute inset-0 z-0">
       {/* Стена */}
       <div
-        className="absolute inset-x-0 top-0 h-[55%]"
+        className="absolute inset-x-0 top-0 h-[58%]"
         style={{
           background:
-            "linear-gradient(180deg, #f1e2c4 0%, #ead5ad 60%, #d8bf8e 100%)",
+            "linear-gradient(180deg, #f6e9cf 0%, #ecd6ad 60%, #d6bd8c 100%)",
         }}
       />
-      {/* Кафельный фартук */}
+      {/* Кафельный фартук — еле заметный */}
       <div
-        className="absolute inset-x-0 top-[40%] h-[18%] opacity-50"
+        className="absolute inset-x-0 top-[42%] h-[16%] opacity-30"
         style={{
           backgroundImage:
-            "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)",
+            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
           backgroundSize: "44px 28px",
           backgroundPosition: "center",
         }}
       />
       {/* Пол */}
       <div
-        className="absolute inset-x-0 bottom-0 h-[45%]"
+        className="absolute inset-x-0 bottom-0 h-[42%]"
         style={{
           background:
-            "linear-gradient(180deg, #b3946a 0%, #8a6d48 60%, #6e5436 100%)",
+            "linear-gradient(180deg, #b09372 0%, #8b6e4d 60%, #6e553a 100%)",
         }}
       />
-      {/* Лёгкий виньетинг */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.18) 100%)",
+            "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.22) 100%)",
         }}
       />
     </div>
   );
 }
 
-function Table() {
+/**
+ * Counter row — несколько копий counter01_a.png, выложенных в линию,
+ * чтобы вся техника и посуда стояли на единой кухонной поверхности.
+ */
+function CounterRow() {
   return (
-    <div className="absolute inset-x-0 bottom-0 z-10 flex justify-center">
-      <div
-        className="h-[45%] w-full max-w-6xl"
-        style={{
-          background:
-            "linear-gradient(180deg, #c69a68 0%, #a87a4c 35%, #8a5e36 100%)",
-          boxShadow:
-            "inset 0 6px 12px rgba(255,255,255,0.18), inset 0 -10px 16px rgba(0,0,0,0.25)",
-          backgroundImage: `repeating-linear-gradient(
-            90deg,
-            transparent 0px,
-            transparent 90px,
-            rgba(0,0,0,0.08) 90px,
-            rgba(0,0,0,0.08) 91px
-          )`,
-        }}
-      />
+    <div className="absolute inset-x-0 bottom-[18%] z-[5] flex justify-center pointer-events-none">
+      <div className="flex w-full max-w-[1100px] items-end justify-center -space-x-12">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <img
+            key={i}
+            src={STAGE_ASSETS.counter}
+            alt=""
+            aria-hidden
+            className="h-[260px] w-auto select-none"
+            draggable={false}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -307,14 +295,12 @@ function Table() {
 function Hotspot({
   label,
   attention,
-  subtle,
   onHover,
   onClick,
   children,
 }: {
   label: string;
   attention?: boolean;
-  subtle?: boolean;
   onHover: (l: string | null) => void;
   onClick: () => void;
   children: React.ReactNode;
@@ -325,285 +311,242 @@ function Hotspot({
       onClick={onClick}
       onPointerEnter={() => onHover(label)}
       onPointerLeave={() => onHover(null)}
-      className={`group pointer-events-auto relative cursor-pointer rounded-2xl p-2 transition ${
-        attention
-          ? "ring-4 ring-primary/80 ring-offset-2 ring-offset-transparent animate-pulse"
-          : subtle
-            ? "ring-1 ring-border/40 hover:ring-border"
-            : "hover:ring-2 hover:ring-foreground/30"
+      className={`group pointer-events-auto relative inline-flex cursor-pointer items-end justify-center rounded-xl p-1 transition-transform hover:scale-[1.03] ${
+        attention ? "drop-shadow-[0_0_18px_rgba(255,170,60,0.85)]" : ""
       }`}
       aria-label={label}
     >
+      {attention && (
+        <span
+          className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-amber-400/80 animate-pulse"
+          aria-hidden
+        />
+      )}
       {children}
     </button>
   );
 }
 
-/* ──────────────────────────── Sprites (SVG) ─────────────────────────── */
-
-function StoveSprite({ state }: { state: StoveVisualState }) {
-  const burner = state === "active" ? "#ff7a3a" : "#3a3a3a";
+function SpriteImg({
+  src,
+  alt,
+  className,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
   return (
-    <svg width="140" height="120" viewBox="0 0 140 120" aria-hidden>
-      {/* Корпус */}
-      <rect x="6" y="20" width="128" height="92" rx="8" fill="#cfcfd2" stroke="#6e6e72" strokeWidth="2" />
-      {/* Задняя панель */}
-      <rect x="6" y="6" width="128" height="22" rx="6" fill="#9d9da3" stroke="#6e6e72" strokeWidth="2" />
-      {/* Регуляторы */}
-      <circle cx="30" cy="17" r="4" fill="#2a2a2e" />
-      <circle cx="55" cy="17" r="4" fill="#2a2a2e" />
-      <circle cx="85" cy="17" r="4" fill="#2a2a2e" />
-      <circle cx="110" cy="17" r="4" fill="#2a2a2e" />
-      {/* Конфорки */}
-      <circle cx="40" cy="60" r="16" fill="#1a1a1e" />
-      <circle cx="40" cy="60" r="11" fill={burner} />
-      <circle cx="100" cy="60" r="16" fill="#1a1a1e" />
-      <circle cx="100" cy="60" r="11" fill="#3a3a3a" />
-      {/* Дверца духовки */}
-      <rect x="14" y="84" width="112" height="22" rx="3" fill="#8d8d92" stroke="#5a5a5e" strokeWidth="1.5" />
-      <rect x="42" y="92" width="56" height="6" rx="2" fill="#2a2a2e" />
-      {state === "active" && (
-        <g>
-          <ellipse cx="40" cy="48" rx="6" ry="3" fill="#ffb070" opacity="0.7">
-            <animate attributeName="cy" values="48;42;48" dur="1.2s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.7;0.2;0.7" dur="1.2s" repeatCount="indefinite" />
-          </ellipse>
-        </g>
-      )}
-    </svg>
+    <img
+      src={src}
+      alt={alt}
+      draggable={false}
+      className={`pointer-events-none select-none object-contain ${className ?? ""}`}
+      style={{ filter: "drop-shadow(0 6px 6px rgba(0,0,0,0.28))" }}
+    />
   );
 }
 
-function KettleSprite({ state }: { state: KettleVisualState }) {
-  const showSteam = state === "boiling" || state === "ready";
+/* ──────────────────────────── Overlays (steam, flame) ─────────────────────────── */
+
+function SteamOverlay() {
   return (
-    <svg width="110" height="110" viewBox="0 0 110 110" aria-hidden>
-      {/* Корпус */}
-      <path
-        d="M22 50 Q22 38 36 36 L74 36 Q88 38 88 50 L88 86 Q88 96 78 96 L32 96 Q22 96 22 86 Z"
-        fill="#d6d6db"
-        stroke="#5a5a5e"
-        strokeWidth="2"
-      />
-      {/* Носик */}
-      <path d="M22 56 L8 50 L8 56 L22 64 Z" fill="#c0c0c5" stroke="#5a5a5e" strokeWidth="2" />
-      {/* Ручка */}
-      <path
-        d="M55 36 Q55 18 70 18 Q85 18 85 36"
-        fill="none"
-        stroke="#5a5a5e"
-        strokeWidth="3"
-      />
-      {/* Крышка */}
-      <ellipse cx="55" cy="36" rx="22" ry="5" fill="#9d9da3" stroke="#5a5a5e" strokeWidth="2" />
-      <circle cx="55" cy="33" r="3" fill="#5a5a5e" />
-      {/* Индикатор готовности */}
-      {state === "ready" && (
-        <circle cx="55" cy="70" r="6" fill="#ff7a3a">
-          <animate attributeName="opacity" values="1;0.4;1" dur="1.4s" repeatCount="indefinite" />
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2"
+      width="60"
+      height="60"
+      viewBox="0 0 60 60"
+    >
+      <g opacity="0.75" fill="#ffffff">
+        <circle cx="22" cy="40" r="5">
+          <animate attributeName="cy" values="40;6;40" dur="2.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.8;0;0.8" dur="2.2s" repeatCount="indefinite" />
         </circle>
-      )}
-      {/* Пар */}
-      {showSteam && (
-        <g opacity="0.7">
-          <circle cx="6" cy="38" r="4" fill="#ffffff">
-            <animate attributeName="cy" values="38;22;38" dur="2s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.7;0;0.7" dur="2s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="14" cy="32" r="3" fill="#ffffff">
-            <animate attributeName="cy" values="32;14;32" dur="2.4s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.7;0;0.7" dur="2.4s" repeatCount="indefinite" />
-          </circle>
-        </g>
-      )}
+        <circle cx="36" cy="44" r="4">
+          <animate attributeName="cy" values="44;10;44" dur="2.6s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="2.6s" repeatCount="indefinite" />
+        </circle>
+      </g>
     </svg>
   );
 }
+
+function FlameOverlay() {
+  return (
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute left-[28%] top-[34%]"
+      width="40"
+      height="40"
+      viewBox="0 0 40 40"
+    >
+      <ellipse cx="20" cy="22" rx="7" ry="4" fill="#ff7a3a" opacity="0.8">
+        <animate attributeName="ry" values="4;6;4" dur="0.9s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="0.9s" repeatCount="indefinite" />
+      </ellipse>
+    </svg>
+  );
+}
+
+/* ──────────────────────────── Vessels with PNG + overlays ─────────────────────────── */
+
+/**
+ * Все vessel-спрайты:
+ *   — снизу настоящий PNG из ISO-пака,
+ *   — сверху небольшой overlay внутри ободка для содержимого.
+ * Размеры подобраны так, чтобы overlay аккуратно лёг внутрь миски/тарелки/чашки.
+ */
 
 function BowlSprite({ state }: { state: BowlVisualState }) {
-  const fill =
-    state === "mix" ? "#f3c95b" : state === "egg" ? "#fff0d0" : "transparent";
   return (
-    <svg width="120" height="80" viewBox="0 0 120 80" aria-hidden>
-      {/* Содержимое */}
+    <div className="relative">
+      <SpriteImg src={STAGE_ASSETS.bowl} alt="Миска" className="h-[110px] w-auto" />
+      {/* Overlay — внутри ободка миски (PNG: ~176×134, ободок ~центр-верх) */}
       {state !== "empty" && (
-        <ellipse cx="60" cy="40" rx="44" ry="10" fill={fill} stroke="#b88a30" strokeWidth="1" />
+        <svg
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          viewBox="0 0 176 134"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {/* Жидкость в миске (mix = взбитое, egg = просто содержимое) */}
+          <ellipse
+            cx="88"
+            cy="62"
+            rx="46"
+            ry="9"
+            fill={state === "mix" ? "#f3c84e" : "#fff1c8"}
+            stroke={state === "mix" ? "#c79318" : "#d8b86a"}
+            strokeWidth="1"
+          />
+          {state === "egg" && (
+            <ellipse cx="88" cy="60" rx="11" ry="5" fill="#f6c945" />
+          )}
+        </svg>
       )}
-      {state === "egg" && (
-        <ellipse cx="60" cy="38" rx="10" ry="6" fill="#f7c948" />
-      )}
-      {/* Корпус миски */}
-      <path
-        d="M10 40 Q10 70 60 72 Q110 70 110 40 Z"
-        fill="#e9e3d6"
-        stroke="#7a6a48"
-        strokeWidth="2"
-      />
-      {/* Ободок */}
-      <ellipse cx="60" cy="40" rx="50" ry="8" fill="none" stroke="#7a6a48" strokeWidth="2" />
-    </svg>
+    </div>
   );
 }
 
 function PlateSprite({ state }: { state: PlateVisualState }) {
   return (
-    <svg width="130" height="60" viewBox="0 0 130 60" aria-hidden>
-      {/* Тарелка */}
-      <ellipse cx="65" cy="36" rx="60" ry="18" fill="#f6f2e8" stroke="#7a6a48" strokeWidth="2" />
-      <ellipse cx="65" cy="34" rx="48" ry="13" fill="#ffffff" stroke="#c8b890" strokeWidth="1.2" />
-      {/* Содержимое */}
-      {state === "omelet" && (
-        <>
-          <ellipse cx="65" cy="32" rx="40" ry="9" fill="#f7c948" stroke="#c79a18" strokeWidth="1.2" />
-          <ellipse cx="55" cy="30" rx="6" ry="2.5" fill="#ffe082" />
-          <ellipse cx="78" cy="34" rx="5" ry="2" fill="#ffe082" />
-        </>
+    <div className="relative">
+      <SpriteImg src={STAGE_ASSETS.plate} alt="Тарелка" className="h-[100px] w-auto" />
+      {state !== "empty" && (
+        <svg
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          viewBox="0 0 176 134"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {state === "omelet" && (
+            <>
+              {/* Неровный овал омлета */}
+              <path
+                d="M48 64 Q56 48 92 50 Q128 52 132 70 Q126 84 90 84 Q56 82 48 64 Z"
+                fill="#f5c84a"
+                stroke="#c89318"
+                strokeWidth="1.2"
+              />
+              <ellipse cx="78" cy="62" rx="6" ry="2.5" fill="#ffe27a" />
+              <ellipse cx="106" cy="72" rx="5" ry="2" fill="#ffe27a" />
+            </>
+          )}
+          {state === "toast" && (
+            <>
+              <rect x="56" y="50" width="64" height="28" rx="4" fill="#d09e58" stroke="#8a5a25" strokeWidth="1.2" />
+              <rect x="62" y="56" width="52" height="16" rx="2" fill="#e9b870" />
+            </>
+          )}
+        </svg>
       )}
-      {state === "toast" && (
-        <>
-          <rect x="40" y="22" width="50" height="20" rx="4" fill="#d2a05a" stroke="#8a5b25" strokeWidth="1.2" />
-          <rect x="44" y="26" width="42" height="12" rx="2" fill="#e8b870" />
-        </>
-      )}
-    </svg>
+    </div>
   );
 }
 
 function CupSprite({ state }: { state: CupVisualState }) {
-  const liquid =
-    state === "tea"
-      ? "#7a3f1f"
-      : state === "water"
-        ? "#cfe7f2"
-        : state === "leaves"
-          ? "#3f5d2a"
-          : null;
   return (
-    <svg width="90" height="100" viewBox="0 0 90 100" aria-hidden>
-      {/* Ручка */}
-      <path
-        d="M62 40 Q86 40 86 58 Q86 76 62 76"
-        fill="none"
-        stroke="#7a6a48"
-        strokeWidth="3"
-      />
-      {/* Корпус чашки */}
-      <path
-        d="M14 32 L14 80 Q14 92 28 92 L56 92 Q70 92 70 80 L70 32 Z"
-        fill="#ffffff"
-        stroke="#7a6a48"
-        strokeWidth="2"
-      />
-      {/* Содержимое */}
-      {liquid && (
-        <rect
-          x="18"
-          y={state === "leaves" ? 60 : 40}
-          width="48"
-          height={state === "leaves" ? 8 : 48}
-          rx="4"
-          fill={liquid}
-          opacity={state === "water" ? 0.85 : 1}
-        />
+    <div className="relative">
+      <SpriteImg src={STAGE_ASSETS.cup} alt="Чашка" className="h-[90px] w-auto" />
+      {state !== "empty" && (
+        <svg
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          viewBox="0 0 72 71"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {state === "tea" && (
+            <ellipse cx="33" cy="22" rx="17" ry="4" fill="#7a3a1a" />
+          )}
+          {state === "leaves" && (
+            <>
+              <ellipse cx="33" cy="22" rx="16" ry="3.5" fill="#3d5a2a" opacity="0.55" />
+              <circle cx="27" cy="22" r="1.6" fill="#243819" />
+              <circle cx="34" cy="21" r="1.6" fill="#243819" />
+              <circle cx="40" cy="23" r="1.6" fill="#243819" />
+            </>
+          )}
+        </svg>
       )}
-      {state === "leaves" && (
-        <>
-          <circle cx="28" cy="64" r="2" fill="#2a3f1a" />
-          <circle cx="40" cy="62" r="2" fill="#2a3f1a" />
-          <circle cx="52" cy="65" r="2" fill="#2a3f1a" />
-        </>
-      )}
-      {/* Ободок */}
-      <ellipse cx="42" cy="32" rx="28" ry="5" fill="#f3efe0" stroke="#7a6a48" strokeWidth="2" />
-      {/* Пар при готовом чае */}
       {state === "tea" && (
-        <g opacity="0.75">
-          <circle cx="34" cy="24" r="2.5" fill="#ffffff">
-            <animate attributeName="cy" values="24;6;24" dur="2.2s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.7;0;0.7" dur="2.2s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="50" cy="22" r="2" fill="#ffffff">
-            <animate attributeName="cy" values="22;4;22" dur="2.6s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.7;0;0.7" dur="2.6s" repeatCount="indefinite" />
-          </circle>
-        </g>
+        <svg
+          aria-hidden
+          className="pointer-events-none absolute -top-4 left-1/2 -translate-x-1/2"
+          width="40"
+          height="40"
+          viewBox="0 0 40 40"
+        >
+          <g opacity="0.7" fill="#ffffff">
+            <circle cx="14" cy="28" r="2.5">
+              <animate attributeName="cy" values="28;6;28" dur="2.4s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.7;0;0.7" dur="2.4s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="24" cy="30" r="2">
+              <animate attributeName="cy" values="30;8;30" dur="2.8s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.7;0;0.7" dur="2.8s" repeatCount="indefinite" />
+            </circle>
+          </g>
+        </svg>
       )}
-    </svg>
+    </div>
   );
 }
 
+/* ──────────────────────────── Bell (SVG, временно) ─────────────────────────── */
+
 function BellSprite({ pulse }: { pulse?: boolean }) {
   return (
-    <svg width="64" height="74" viewBox="0 0 64 74" aria-hidden className={pulse ? "drop-shadow-md" : ""}>
-      {/* Кнопка-молоточек */}
-      <circle cx="32" cy="10" r="6" fill="#7a3f1f" stroke="#3a1d0e" strokeWidth="1.5" />
-      {/* Купол */}
+    <svg
+      width="44"
+      height="50"
+      viewBox="0 0 64 74"
+      aria-hidden
+      className={pulse ? "drop-shadow-md" : ""}
+      style={{ filter: "drop-shadow(0 4px 4px rgba(0,0,0,0.25))" }}
+    >
+      <circle cx="32" cy="10" r="5" fill="#7a3f1f" stroke="#3a1d0e" strokeWidth="1.2" />
       <path
         d="M10 44 Q10 18 32 18 Q54 18 54 44 Z"
         fill="#d4a13c"
         stroke="#8a5e1a"
         strokeWidth="2"
       />
-      {/* Блик */}
       <path d="M18 38 Q22 26 32 24" fill="none" stroke="#fde7a0" strokeWidth="2" strokeLinecap="round" />
-      {/* Подставка */}
-      <ellipse cx="32" cy="50" rx="26" ry="6" fill="#a87a2a" stroke="#5e3f10" strokeWidth="2" />
-      <rect x="6" y="50" width="52" height="6" rx="2" fill="#7e5418" stroke="#3e2a08" strokeWidth="1.5" />
+      <ellipse cx="32" cy="50" rx="26" ry="6" fill="#a87a2a" stroke="#5e3f10" strokeWidth="1.5" />
+      <rect x="6" y="50" width="52" height="6" rx="2" fill="#7e5418" stroke="#3e2a08" strokeWidth="1.2" />
     </svg>
   );
 }
 
-function ToasterSprite() {
-  return (
-    <svg width="100" height="80" viewBox="0 0 100 80" aria-hidden>
-      <rect x="10" y="20" width="80" height="50" rx="6" fill="#c47d4a" stroke="#5e3a18" strokeWidth="2" />
-      <rect x="22" y="14" width="22" height="10" rx="2" fill="#3a1d0e" />
-      <rect x="56" y="14" width="22" height="10" rx="2" fill="#3a1d0e" />
-      <circle cx="78" cy="58" r="3" fill="#3a1d0e" />
-    </svg>
-  );
-}
-
-function BlenderSprite() {
-  return (
-    <svg width="80" height="110" viewBox="0 0 80 110" aria-hidden>
-      <rect x="22" y="60" width="36" height="40" rx="4" fill="#9d9da3" stroke="#5a5a5e" strokeWidth="2" />
-      <rect x="14" y="14" width="52" height="50" rx="4" fill="#cfe7f2" stroke="#5a5a5e" strokeWidth="2" opacity="0.85" />
-      <circle cx="40" cy="86" r="4" fill="#3a3a3e" />
-    </svg>
-  );
-}
-
-function RiceCookerSprite() {
-  return (
-    <svg width="100" height="80" viewBox="0 0 100 80" aria-hidden>
-      <ellipse cx="50" cy="68" rx="42" ry="8" fill="#5a5a5e" />
-      <path d="M10 40 Q10 26 30 22 L70 22 Q90 26 90 40 L90 62 L10 62 Z" fill="#e9e3d6" stroke="#5a5a5e" strokeWidth="2" />
-      <ellipse cx="50" cy="22" rx="22" ry="5" fill="#cfcfd2" stroke="#5a5a5e" strokeWidth="2" />
-      <circle cx="50" cy="50" r="4" fill="#ff7a3a" />
-    </svg>
-  );
-}
-
-function WorkSurfaceSprite() {
-  return (
-    <div
-      className="h-12 w-28 rounded-md border-2 border-dashed border-foreground/30"
-      style={{
-        background:
-          "repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0 6px, transparent 6px 12px)",
-      }}
-    />
-  );
-}
-
-/* ──────────────────────────── Table slot ─────────────────────────── */
+/* ──────────────────────────── Table slot (спокойный) ─────────────────────────── */
 
 function TableSlot2D({
   index,
   ingredient_id,
   quality,
   category,
+  highlight,
   onShortClick,
   onLongPress,
 }: {
@@ -611,12 +554,12 @@ function TableSlot2D({
   ingredient_id: string | null;
   quality: "basic" | "premium" | null;
   category: string | null;
+  highlight: boolean;
   onShortClick: (i: number) => void;
   onLongPress: (i: number) => void;
 }) {
   const ing = ingredient_id ? INGREDIENTS_BY_ID.get(ingredient_id) : null;
   const isEdibleRaw = category === "raw";
-  const visual = ingredient_id ? getItemVisual(ingredient_id) : null;
 
   const pressStartRef = useRef<number | null>(null);
   const longFiredRef = useRef(false);
@@ -668,13 +611,24 @@ function TableSlot2D({
     }
   };
 
+  // Спокойный фон. Слот заметнее когда hover, ИЛИ когда у игрока выбран продукт и слот пуст.
   const bg = ing
     ? hover
-      ? "rgba(255,255,255,0.5)"
-      : "rgba(255,255,255,0.35)"
-    : hover
-      ? "rgba(255,255,255,0.3)"
-      : "rgba(255,255,255,0.15)";
+      ? "rgba(255,255,255,0.45)"
+      : "rgba(255,255,255,0.28)"
+    : highlight
+      ? "rgba(255,210,140,0.45)"
+      : hover
+        ? "rgba(255,255,255,0.22)"
+        : "rgba(255,255,255,0.10)";
+
+  const borderColor = ing
+    ? quality === "premium"
+      ? "rgba(212,161,60,0.9)"
+      : "rgba(94,58,24,0.55)"
+    : highlight
+      ? "rgba(212,161,60,0.85)"
+      : "rgba(94,58,24,0.25)";
 
   return (
     <button
@@ -686,49 +640,54 @@ function TableSlot2D({
         setHover(false);
       }}
       onPointerEnter={() => setHover(true)}
-      className="pointer-events-auto relative flex h-20 w-20 flex-col items-center justify-center rounded-full border-2 transition"
+      className="pointer-events-auto relative flex h-14 w-14 flex-col items-center justify-center rounded-xl transition"
       style={{
         background: bg,
-        borderColor: quality === "premium" ? "#d4a13c" : "rgba(94,58,24,0.55)",
-        borderStyle: ing ? "solid" : "dashed",
+        border: `1.5px solid ${borderColor}`,
+        backdropFilter: "blur(2px)",
       }}
       aria-label={ing ? `Слот ${index + 1}: ${ing.name}` : `Пустой слот ${index + 1}`}
     >
-      {/* Number */}
-      <span className="absolute left-1 top-0.5 text-[10px] font-semibold text-foreground/60">
-        {index + 1}
-      </span>
-
-      {/* Content */}
       {ing && (
         <div className="flex flex-col items-center gap-0.5">
-          <div
-            className="h-7 w-7 rounded-full border border-foreground/20"
-            style={{ background: visual?.color ?? "#cccccc" }}
-          />
-          <span className="px-1 text-[9px] font-medium leading-tight text-foreground/80 truncate max-w-[64px]">
+          <span className="text-[14px] leading-none">
+            {iconForCategory(category, ing.name)}
+          </span>
+          <span className="px-1 text-[8px] font-medium leading-tight text-foreground/80 truncate max-w-[50px]">
             {ing.name}
           </span>
         </div>
       )}
 
-      {/* Long-press progress ring */}
       {progress > 0 && (
-        <svg className="pointer-events-none absolute inset-0" viewBox="0 0 80 80">
+        <svg className="pointer-events-none absolute inset-0" viewBox="0 0 56 56">
           <circle
-            cx="40"
-            cy="40"
-            r="36"
+            cx="28"
+            cy="28"
+            r="24"
             fill="none"
             stroke="oklch(0.65 0.16 38)"
-            strokeWidth="3"
-            strokeDasharray={`${2 * Math.PI * 36 * progress} ${2 * Math.PI * 36}`}
-            strokeDashoffset={(2 * Math.PI * 36) / 4}
-            transform="rotate(-90 40 40)"
+            strokeWidth="2.5"
+            strokeDasharray={`${2 * Math.PI * 24 * progress} ${2 * Math.PI * 24}`}
+            strokeDashoffset={(2 * Math.PI * 24) / 4}
+            transform="rotate(-90 28 28)"
             strokeLinecap="round"
           />
         </svg>
       )}
     </button>
   );
+}
+
+/** Простая иконка по категории, чтобы не показывать большой текст. */
+function iconForCategory(category: string | null, name: string): string {
+  if (!category) return "•";
+  const n = name.toLowerCase();
+  if (n.includes("яйц")) return "🥚";
+  if (n.includes("чай") || n.includes("заварк")) return "🍃";
+  if (n.includes("хлеб")) return "🍞";
+  if (n.includes("молок")) return "🥛";
+  if (n.includes("помидор") || n.includes("томат")) return "🍅";
+  if (n.includes("сыр")) return "🧀";
+  return "•";
 }
