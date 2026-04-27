@@ -25,8 +25,11 @@ import {
   TABLE_SLOT_IDS_2D,
   COUNTERTOP_TOP_PCT,
   COUNTERTOP_BOTTOM_PCT,
+  COUNTERTOP_WIDTH_PCT,
+  COUNTERTOP_MAX_WIDTH_PX,
   type StageObjectLayout,
 } from "./stage-layout";
+import { useHintMode } from "@/game/hint-mode";
 
 interface KitchenStage2DProps {
   onHoverLabel: (label: string | null) => void;
@@ -54,6 +57,8 @@ export function KitchenStage2D({
   const activePick = useActivePick((s) => s.pick);
 
   const orderProgress = useOrderEngine((s) => s.progress);
+  const hintMode = useHintMode((s) => s.mode);
+  const showHereLabel = hintMode !== "minimal";
 
   const { activeTarget, activeStepId } = (() => {
     if (!orderProgress) return { activeTarget: null as string | null, activeStepId: null as string | null };
@@ -110,7 +115,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.stove}
         label="Плита"
-        attention={activeTarget === "stove"}
+        attention={activeTarget === "stove"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("stove", "Плита")}
       >
@@ -122,7 +127,7 @@ export function KitchenStage2D({
         <StageObject
           layout={STAGE_LAYOUT.toaster}
           label="Тостер"
-          attention={activeTarget === "toaster"}
+          attention={activeTarget === "toaster"} showHereLabel={showHereLabel}
           onHover={onHoverLabel}
           onClick={() => handleObject("toaster", "Тостер")}
         >
@@ -134,7 +139,7 @@ export function KitchenStage2D({
         <StageObject
           layout={STAGE_LAYOUT.kettle}
           label="Чайник"
-          attention={activeTarget === "kettle"}
+          attention={activeTarget === "kettle"} showHereLabel={showHereLabel}
           onHover={onHoverLabel}
           onClick={() => handleObject("kettle", "Чайник")}
         >
@@ -150,7 +155,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.bowl}
         label="Миска"
-        attention={activeTarget === "bowl"}
+        attention={activeTarget === "bowl"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("bowl", "Миска")}
       >
@@ -160,7 +165,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.plate}
         label="Тарелка"
-        attention={activeTarget === "plate"}
+        attention={activeTarget === "plate"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("plate", "Тарелка")}
       >
@@ -170,7 +175,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.cup}
         label="Чашка"
-        attention={activeTarget === "cup"}
+        attention={activeTarget === "cup"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("cup", "Чашка")}
       >
@@ -181,7 +186,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.bell}
         label="Звонок"
-        attention={activeTarget === "bell"}
+        attention={activeTarget === "bell"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => onBellRing()}
       >
@@ -269,7 +274,13 @@ function Countertop() {
         height: `${COUNTERTOP_BOTTOM_PCT - COUNTERTOP_TOP_PCT}%`,
       }}
     >
-      <div className="relative h-full w-[88%] max-w-[980px]">
+      <div
+        className="relative h-full"
+        style={{
+          width: `${COUNTERTOP_WIDTH_PCT}%`,
+          maxWidth: `${COUNTERTOP_MAX_WIDTH_PX}px`,
+        }}
+      >
         {/* Поверхность стола (трапеция) */}
         <div
           className="relative h-full w-full"
@@ -317,6 +328,7 @@ function StageObject({
   layout,
   label,
   attention,
+  showHereLabel,
   onHover,
   onClick,
   children,
@@ -324,6 +336,7 @@ function StageObject({
   layout: StageObjectLayout;
   label: string;
   attention?: boolean;
+  showHereLabel?: boolean;
   onHover: (l: string | null) => void;
   onClick: () => void;
   children: React.ReactNode;
@@ -346,13 +359,37 @@ function StageObject({
         onPointerEnter={() => onHover(label)}
         onPointerLeave={() => onHover(null)}
         className={`pointer-events-auto relative inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${
-          attention ? "drop-shadow-[0_0_10px_rgba(255,180,70,0.95)] animate-pulse" : ""
+          attention
+            ? "drop-shadow-[0_0_14px_rgba(255,196,90,0.95)] [filter:drop-shadow(0_0_18px_rgba(255,180,70,0.85))_drop-shadow(0_0_6px_rgba(255,220,140,0.9))] animate-pulse"
+            : ""
         }`}
         aria-label={label}
       >
         {children}
       </button>
+      {attention && showHereLabel && <HereLabel />}
       {layout.shadowWidth > 0 && <GroundShadow width={layout.shadowWidth} />}
+    </div>
+  );
+}
+
+/**
+ * Маленькая подпись "Сюда" над активным объектом со стрелкой вниз.
+ * Показывается только в detailed/normal hint mode.
+ */
+function HereLabel() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 -top-7 -translate-x-1/2 flex flex-col items-center"
+      style={{ zIndex: 50 }}
+    >
+      <span className="rounded-full bg-primary/95 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-md animate-pulse">
+        Сюда
+      </span>
+      <svg width="10" height="6" viewBox="0 0 10 6" className="-mt-px">
+        <path d="M0 0 L10 0 L5 6 Z" fill="currentColor" className="text-primary" />
+      </svg>
     </div>
   );
 }
@@ -681,14 +718,15 @@ function TableSlot2D({
   };
 
   // Видимость:
-  //  - есть ингредиент → виден заметно (тёплый овал);
-  //  - выбран pick, слот пуст → мягко подсвечен;
-  //  - иначе → почти невидим (opacity ~0.05).
+  //  - есть ингредиент → виден заметно (тёплый овал, opacity 1);
+  //  - выбран pick, слот пуст → подсвечен (0.35);
+  //  - hover на пустой → 0.20;
+  //  - иначе → невидим (opacity 0), чтобы стартовый экран не пестрил кружками.
   const occupied = !!ing;
-  let opacity = 0.05;
+  let opacity = 0;
   if (occupied) opacity = 1;
-  else if (highlight) opacity = 0.32;
-  else if (hover) opacity = 0.18;
+  else if (highlight) opacity = 0.35;
+  else if (hover) opacity = 0.2;
 
   const bg = occupied
     ? "rgba(255,248,225,0.85)"
