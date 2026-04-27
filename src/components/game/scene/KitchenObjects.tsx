@@ -244,12 +244,7 @@ export function Kettle({ onClick, onHover, attention }: EquipProps) {
       attention={attention}
       attentionRadius={0.32}
     >
-      <ModelAsset
-        path={MODEL_ASSETS.kitchen.kettle}
-        scale={0.45}
-        position={[0, -0.13, 0]}
-        fallback={<KettleFallback />}
-      />
+      <KettleFallback />
     </Clickable>
   );
 }
