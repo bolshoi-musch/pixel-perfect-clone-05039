@@ -57,6 +57,8 @@ export function KitchenStage2D({
   const activePick = useActivePick((s) => s.pick);
 
   const orderProgress = useOrderEngine((s) => s.progress);
+  const hintMode = useHintMode((s) => s.mode);
+  const showHereLabel = hintMode !== "minimal";
 
   const { activeTarget, activeStepId } = (() => {
     if (!orderProgress) return { activeTarget: null as string | null, activeStepId: null as string | null };
