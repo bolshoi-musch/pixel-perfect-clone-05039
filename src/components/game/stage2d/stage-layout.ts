@@ -21,6 +21,20 @@ export interface StageObjectLayout {
   anchor: StageAnchor;
   /** Ширина овальной тени под предметом. */
   shadowWidth: number;
+  /**
+   * Сколько прозрачного пространства снизу у PNG относительно его исходной ширины.
+   * Нужно, чтобы anchor bottom-center ставился по видимой нижней точке предмета,
+   * а не по нижней границе всего PNG-файла.
+   *
+   * Формула:
+   *   visibleBottomOffsetPx = visibleBottomOffsetRatio * layout.width
+   *
+   * KitchenStage2D сдвигает контейнер вниз на эту величину, так что
+   * (left, top) совпадает с ВИДИМОЙ нижней точкой предмета (где он касается
+   * стола), а тень кладётся туда же. Без этого PNG с прозрачным нижним
+   * паддингом выглядят «летающими».
+   */
+  visibleBottomOffsetRatio?: number;
 }
 
 /**
