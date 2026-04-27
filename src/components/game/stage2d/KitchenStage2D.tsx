@@ -341,6 +341,7 @@ function StageObject({
   onClick: () => void;
   children: React.ReactNode;
 }) {
+  const offsetPx = (layout.visibleBottomOffsetRatio ?? 0) * layout.width;
   return (
     <div
       className="pointer-events-none absolute"
@@ -349,8 +350,10 @@ function StageObject({
         top: `${layout.top}%`,
         width: layout.width,
         zIndex: layout.zIndex,
-        // anchor bottom-center: точка (left, top) = нижняя центральная точка
-        transform: "translate(-50%, -100%)",
+        // anchor bottom-center с компенсацией прозрачного нижнего паддинга PNG:
+        // (left, top) = ВИДИМАЯ нижняя центральная точка предмета (где он
+        // касается стола), а не нижняя граница PNG-файла.
+        transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
       }}
     >
       <button
@@ -368,7 +371,9 @@ function StageObject({
         {children}
       </button>
       {attention && showHereLabel && <HereLabel />}
-      {layout.shadowWidth > 0 && <GroundShadow width={layout.shadowWidth} />}
+      {layout.shadowWidth > 0 && (
+        <GroundShadow width={layout.shadowWidth} bottomOffsetPx={offsetPx} />
+      )}
     </div>
   );
 }
@@ -402,6 +407,7 @@ function SlotAnchor({
   layout: StageObjectLayout;
   children: React.ReactNode;
 }) {
+  const offsetPx = (layout.visibleBottomOffsetRatio ?? 0) * layout.width;
   return (
     <div
       className="pointer-events-none absolute"
@@ -410,7 +416,7 @@ function SlotAnchor({
         top: `${layout.top}%`,
         width: layout.width,
         zIndex: layout.zIndex,
-        transform: "translate(-50%, -100%)",
+        transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
       }}
     >
       {children}
@@ -422,15 +428,22 @@ function SlotAnchor({
  * Компактная тень — кладётся прямо под anchor (bottom: 0 от обёртки).
  * Маленькая и мягкая, чтобы предмет не «летал».
  */
-function GroundShadow({ width }: { width: number }) {
+function GroundShadow({
+  width,
+  bottomOffsetPx = 0,
+}: {
+  width: number;
+  bottomOffsetPx?: number;
+}) {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute left-1/2 -translate-x-1/2"
       style={{
-        // anchor находится в bottom: 0 контейнера StageObject (после translateY(-100%)).
-        // Тень кладём чуть выше нижней кромки контейнера, прямо под предметом.
-        bottom: -2,
+        // anchor (visible bottom of sprite) находится на bottom: bottomOffsetPx
+        // от нижней кромки контейнера StageObject (контейнер сдвинут вниз
+        // на эту величину, чтобы PNG-паддинг не «вешал» предмет в воздух).
+        bottom: bottomOffsetPx - 2,
         width,
         height: Math.max(6, width * 0.14),
         background:
