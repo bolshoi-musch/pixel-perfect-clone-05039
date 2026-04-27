@@ -1,16 +1,16 @@
-// 2.5D-сцена кухни. PNG-ассеты из Isometric Kitchen Sprites + аккуратные overlay-слои
-// для food-состояний (желток, омлет, заварка, чай). Никаких ассетов из второго пака.
+// 2.5D-сцена кухни. PNG-ассеты из Isometric Kitchen Sprites + CSS-столешница.
+// Никаких ассетов из второго пака. counter.png больше не используется как ряд тумб.
 //
 // Слои (z-index):
-//   0  background  — стены / пол / фартук
-//   5  counter row — изо-counter-модули (рабочая поверхность)
-//   10 equipment   — плита (слева), чайник (сзади-справа), доп. техника
-//   20 vessels     — миска / тарелка / чашка (центральная зона)
-//   30 bell        — небольшой звонок справа в зоне подачи
-//   40 slots       — спокойные слоты на переднем крае стола (поверх counter, ниже HUD)
+//   0  background  — стены, фартук, пол
+//   5  countertop  — единая CSS-столешница (передний край + поверхность)
+//   10 back row    — плита слева, чайник справа (на задней линии стола)
+//   20 work row    — миска, тарелка, чашка (рабочий ряд)
+//   30 bell        — маленький звонок справа в зоне подачи
+//   40 slots       — компактные овалы на самой столешнице, под HUD
 //
-// Кликабельность через <Hotspot>: PNG получает мягкое свечение/масштаб при ховере
-// и пульс-кольцо когда это активная цель шага.
+// Подсветка активной цели — мягкий drop-shadow glow вокруг САМОГО предмета,
+// без больших прямоугольных рамок и пунктирных зон.
 
 import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/game/store";
@@ -103,73 +103,73 @@ export function KitchenStage2D({
       {/* Layer 0: background */}
       <Background />
 
-      {/* Layer 5: counter row — единая кухонная поверхность из изо-модулей */}
-      <CounterRow />
+      {/* Layer 5: единая CSS-столешница */}
+      <Countertop />
 
-      {/* Layer 10: equipment — плита слева, чайник справа-сзади, доп. техника */}
-      <div className="absolute inset-x-0 top-[10%] z-10 flex justify-center pointer-events-none">
-        <div className="flex w-full max-w-6xl items-end justify-between px-[6%]">
-          {/* Левая зона: плита */}
+      {/* Layer 10: задняя линия — плита слева, чайник справа.
+          Базовая линия совпадает с верхним краем столешницы (~bottom 44%). */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[40%] z-10">
+        <div className="mx-auto flex w-full max-w-5xl items-end justify-between px-[10%]">
           <Hotspot
             label="Плита"
             attention={activeTarget === "stove"}
             onHover={onHoverLabel}
             onClick={() => handleObject("stove", "Плита")}
           >
-            <SpriteImg
-              src={STAGE_ASSETS.stove}
-              alt="Плита"
-              className="h-[230px] w-auto"
-            />
-            {visual.stove === "active" && <FlameOverlay />}
+            <div className="relative">
+              <SpriteImg src={STAGE_ASSETS.stove} alt="Плита" className="h-[170px] w-auto" />
+              {visual.stove === "active" && <FlameOverlay />}
+              <GroundShadow width={140} />
+            </div>
           </Hotspot>
 
-          {/* Центральная зона: тостер если куплен */}
-          <div className="flex items-end gap-3">
-            {equipmentOwned.includes("toaster") && (
-              <Hotspot
-                label="Тостер"
-                attention={activeTarget === "toaster"}
-                onHover={onHoverLabel}
-                onClick={() => handleObject("toaster", "Тостер")}
-              >
-                <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" className="h-[110px] w-auto" />
-              </Hotspot>
-            )}
-          </div>
+          {equipmentOwned.includes("toaster") && (
+            <Hotspot
+              label="Тостер"
+              attention={activeTarget === "toaster"}
+              onHover={onHoverLabel}
+              onClick={() => handleObject("toaster", "Тостер")}
+            >
+              <div className="relative">
+                <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" className="h-[90px] w-auto" />
+                <GroundShadow width={80} />
+              </div>
+            </Hotspot>
+          )}
 
-          {/* Правая зона: чайник */}
-          <div className="flex items-end gap-3">
-            {equipmentOwned.includes("kettle") && (
-              <Hotspot
-                label="Чайник"
-                attention={activeTarget === "kettle"}
-                onHover={onHoverLabel}
-                onClick={() => handleObject("kettle", "Чайник")}
-              >
-                <div className="relative">
-                  <SpriteImg src={STAGE_ASSETS.kettle} alt="Чайник" className="h-[140px] w-auto" />
-                  {(visual.kettle === "boiling" || visual.kettle === "ready") && <SteamOverlay />}
-                  {visual.kettle === "ready" && (
-                    <span className="absolute right-1 top-1 h-3 w-3 rounded-full bg-orange-500 shadow ring-2 ring-orange-200 animate-pulse" />
-                  )}
-                </div>
-              </Hotspot>
-            )}
-          </div>
+          {equipmentOwned.includes("kettle") && (
+            <Hotspot
+              label="Чайник"
+              attention={activeTarget === "kettle"}
+              onHover={onHoverLabel}
+              onClick={() => handleObject("kettle", "Чайник")}
+            >
+              <div className="relative">
+                <SpriteImg src={STAGE_ASSETS.kettle} alt="Чайник" className="h-[120px] w-auto" />
+                {(visual.kettle === "boiling" || visual.kettle === "ready") && <SteamOverlay />}
+                {visual.kettle === "ready" && (
+                  <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-orange-500 shadow ring-2 ring-orange-200 animate-pulse" />
+                )}
+                <GroundShadow width={90} />
+              </div>
+            </Hotspot>
+          )}
         </div>
       </div>
 
-      {/* Layer 20: vessels — миска, тарелка, чашка в центральной рабочей зоне */}
-      <div className="absolute inset-x-0 bottom-[34%] z-20 flex justify-center pointer-events-none">
-        <div className="flex w-full max-w-3xl items-end justify-around px-12">
+      {/* Layer 20: рабочий ряд — миска / тарелка / чашка на передней половине стола */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[26%] z-20">
+        <div className="mx-auto flex w-full max-w-2xl items-end justify-around px-10">
           <Hotspot
             label="Миска"
             attention={activeTarget === "bowl"}
             onHover={onHoverLabel}
             onClick={() => handleObject("bowl", "Миска")}
           >
-            <BowlSprite state={visual.bowl} />
+            <div className="relative">
+              <BowlSprite state={visual.bowl} />
+              <GroundShadow width={90} />
+            </div>
           </Hotspot>
 
           <Hotspot
@@ -178,7 +178,10 @@ export function KitchenStage2D({
             onHover={onHoverLabel}
             onClick={() => handleObject("plate", "Тарелка")}
           >
-            <PlateSprite state={visual.plate} />
+            <div className="relative">
+              <PlateSprite state={visual.plate} />
+              <GroundShadow width={95} />
+            </div>
           </Hotspot>
 
           <Hotspot
@@ -187,26 +190,33 @@ export function KitchenStage2D({
             onHover={onHoverLabel}
             onClick={() => handleObject("cup", "Чашка")}
           >
-            <CupSprite state={visual.cup} />
+            <div className="relative">
+              <CupSprite state={visual.cup} />
+              <GroundShadow width={70} />
+            </div>
           </Hotspot>
         </div>
       </div>
 
       {/* Layer 30: bell — маленький, справа в зоне подачи */}
-      <div className="absolute right-[6%] bottom-[28%] z-30 pointer-events-none">
+      <div className="pointer-events-none absolute right-[7%] bottom-[24%] z-30">
         <Hotspot
           label="Звонок"
           attention={activeTarget === "bell"}
           onHover={onHoverLabel}
           onClick={() => onBellRing()}
         >
-          <BellSprite pulse={activeTarget === "bell"} />
+          <div className="relative">
+            <BellSprite pulse={activeTarget === "bell"} />
+            <GroundShadow width={50} />
+          </div>
         </Hotspot>
       </div>
 
-      {/* Layer 40: table slots — спокойная полоса на переднем крае */}
-      <div className="absolute inset-x-0 bottom-[7%] z-40 flex justify-center px-4 pointer-events-none">
-        <div className="flex w-full max-w-2xl items-center justify-between gap-2">
+      {/* Layer 40: table slots — компактные овалы на переднем крае столешницы.
+          Стоят НАД нижним меню (bottom 18%, не заходят в HUD), маленькие. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[18%] z-40 px-6">
+        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-2">
           {slots.map((slot, i) => (
             <TableSlot2D
               key={i}
@@ -225,7 +235,7 @@ export function KitchenStage2D({
   );
 }
 
-/* ──────────────────────────── Background & Counter ─────────────────────────── */
+/* ──────────────────────────── Background & Countertop ─────────────────────────── */
 
 function Background() {
   return (
@@ -240,10 +250,10 @@ function Background() {
       />
       {/* Кафельный фартук — еле заметный */}
       <div
-        className="absolute inset-x-0 top-[42%] h-[16%] opacity-30"
+        className="absolute inset-x-0 top-[42%] h-[16%] opacity-25"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+            "linear-gradient(rgba(255,255,255,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.55) 1px, transparent 1px)",
           backgroundSize: "44px 28px",
           backgroundPosition: "center",
         }}
@@ -268,23 +278,50 @@ function Background() {
 }
 
 /**
- * Counter row — несколько копий counter01_a.png, выложенных в линию,
- * чтобы вся техника и посуда стояли на единой кухонной поверхности.
+ * Единая столешница — CSS-слой. Никаких повторяющихся cabinet PNG.
+ * Поверхность стола занимает середину экрана, у неё есть передний край и тень.
  */
-function CounterRow() {
+function Countertop() {
   return (
-    <div className="absolute inset-x-0 bottom-[18%] z-[5] flex justify-center pointer-events-none">
-      <div className="flex w-full max-w-[1100px] items-end justify-center -space-x-12">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <img
-            key={i}
-            src={STAGE_ASSETS.counter}
-            alt=""
-            aria-hidden
-            className="h-[260px] w-auto select-none"
-            draggable={false}
+    <div className="pointer-events-none absolute inset-x-0 bottom-[16%] z-[5] flex justify-center">
+      <div className="relative w-[92%] max-w-[1100px]">
+        {/* Поверхность стола (трапеция: уже сзади, шире спереди) */}
+        <div
+          className="relative h-[260px] w-full"
+          style={{
+            clipPath: "polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%)",
+            background:
+              "linear-gradient(180deg, #c79a6b 0%, #b3865a 55%, #966a40 100%)",
+            boxShadow:
+              "inset 0 6px 14px rgba(255, 230, 200, 0.35), inset 0 -10px 24px rgba(0,0,0,0.25)",
+          }}
+        >
+          {/* Лёгкая текстура «дерева» */}
+          <div
+            className="absolute inset-0 opacity-25 mix-blend-overlay"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 14px)",
+            }}
           />
-        ))}
+          {/* Передний кант */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-3"
+            style={{
+              background:
+                "linear-gradient(180deg, #7a5532 0%, #5a3d22 100%)",
+              boxShadow: "0 6px 12px rgba(0,0,0,0.35)",
+            }}
+          />
+        </div>
+        {/* Мягкая теневая полоса под столом */}
+        <div
+          className="pointer-events-none absolute inset-x-[6%] -bottom-2 h-4 rounded-full"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, transparent 70%)",
+          }}
+        />
       </div>
     </div>
   );
@@ -305,25 +342,40 @@ function Hotspot({
   onClick: () => void;
   children: React.ReactNode;
 }) {
+  // Подсветка — только мягкий glow на самом контенте, без прямоугольной рамки.
   return (
     <button
       type="button"
       onClick={onClick}
       onPointerEnter={() => onHover(label)}
       onPointerLeave={() => onHover(null)}
-      className={`group pointer-events-auto relative inline-flex cursor-pointer items-end justify-center rounded-xl p-1 transition-transform hover:scale-[1.03] ${
-        attention ? "drop-shadow-[0_0_18px_rgba(255,170,60,0.85)]" : ""
+      className={`pointer-events-auto relative inline-flex cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${
+        attention
+          ? "drop-shadow-[0_0_14px_rgba(255,180,70,0.95)] animate-pulse"
+          : ""
       }`}
       aria-label={label}
     >
-      {attention && (
-        <span
-          className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-amber-400/80 animate-pulse"
-          aria-hidden
-        />
-      )}
       {children}
     </button>
+  );
+}
+
+/** Мягкая овальная тень, которую кладём под спрайт, чтобы он «стоял». */
+function GroundShadow({ width }: { width: number }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+      style={{
+        bottom: -6,
+        width,
+        height: Math.max(8, width * 0.18),
+        background:
+          "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.12) 50%, transparent 75%)",
+        borderRadius: "50%",
+      }}
+    />
   );
 }
 
@@ -342,7 +394,7 @@ function SpriteImg({
       alt={alt}
       draggable={false}
       className={`pointer-events-none select-none object-contain ${className ?? ""}`}
-      style={{ filter: "drop-shadow(0 6px 6px rgba(0,0,0,0.28))" }}
+      style={{ filter: "drop-shadow(0 3px 3px rgba(0,0,0,0.18))" }}
     />
   );
 }
@@ -611,24 +663,26 @@ function TableSlot2D({
     }
   };
 
-  // Спокойный фон. Слот заметнее когда hover, ИЛИ когда у игрока выбран продукт и слот пуст.
+  // Если слот пуст и продукт не выбран — почти невидим.
+  // Если выбран ингредиент — мягкая тёплая подсветка пустых слотов.
+  // Если слот занят — мягкий светлый овал.
   const bg = ing
     ? hover
-      ? "rgba(255,255,255,0.45)"
-      : "rgba(255,255,255,0.28)"
+      ? "rgba(255,250,235,0.55)"
+      : "rgba(255,250,235,0.38)"
     : highlight
-      ? "rgba(255,210,140,0.45)"
+      ? "rgba(255,210,140,0.40)"
       : hover
-        ? "rgba(255,255,255,0.22)"
-        : "rgba(255,255,255,0.10)";
+        ? "rgba(255,255,255,0.18)"
+        : "rgba(0,0,0,0.10)";
 
   const borderColor = ing
     ? quality === "premium"
-      ? "rgba(212,161,60,0.9)"
-      : "rgba(94,58,24,0.55)"
-    : highlight
       ? "rgba(212,161,60,0.85)"
-      : "rgba(94,58,24,0.25)";
+      : "rgba(94,58,24,0.45)"
+    : highlight
+      ? "rgba(212,161,60,0.65)"
+      : "rgba(0,0,0,0.10)";
 
   return (
     <button
@@ -640,21 +694,18 @@ function TableSlot2D({
         setHover(false);
       }}
       onPointerEnter={() => setHover(true)}
-      className="pointer-events-auto relative flex h-14 w-14 flex-col items-center justify-center rounded-xl transition"
+      className="pointer-events-auto relative flex h-11 w-11 flex-col items-center justify-center rounded-full transition"
       style={{
         background: bg,
-        border: `1.5px solid ${borderColor}`,
-        backdropFilter: "blur(2px)",
+        border: `1px solid ${borderColor}`,
+        boxShadow: ing ? "inset 0 1px 2px rgba(255,255,255,0.5)" : "none",
       }}
       aria-label={ing ? `Слот ${index + 1}: ${ing.name}` : `Пустой слот ${index + 1}`}
     >
       {ing && (
         <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[14px] leading-none">
+          <span className="text-[16px] leading-none">
             {iconForCategory(category, ing.name)}
-          </span>
-          <span className="px-1 text-[8px] font-medium leading-tight text-foreground/80 truncate max-w-[50px]">
-            {ing.name}
           </span>
         </div>
       )}
