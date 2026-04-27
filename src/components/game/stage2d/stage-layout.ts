@@ -46,7 +46,7 @@ export interface StageObjectLayout {
  * не перекрывая нижнее меню.
  */
 export const COUNTERTOP_TOP_PCT = 42;
-export const COUNTERTOP_BOTTOM_PCT = 80;
+export const COUNTERTOP_BOTTOM_PCT = 81;
 
 /**
  * Внутренняя ширина CSS-столешницы (% от сцены и max-width в px).
