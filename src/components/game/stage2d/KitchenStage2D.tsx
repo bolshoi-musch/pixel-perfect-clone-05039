@@ -1,16 +1,12 @@
 // 2.5D-сцена кухни. PNG-ассеты из Isometric Kitchen Sprites + CSS-столешница.
-// Никаких ассетов из второго пака. counter.png больше не используется как ряд тумб.
+// Все позиции предметов читаются из stage-layout.ts (anchor: bottom-center),
+// никаких произвольных inline left/bottom внутри JSX.
 //
-// Слои (z-index):
-//   0  background  — стены, фартук, пол
-//   5  countertop  — единая CSS-столешница (передний край + поверхность)
-//   10 back row    — плита слева, чайник справа (на задней линии стола)
-//   20 work row    — миска, тарелка, чашка (рабочий ряд)
-//   30 bell        — маленький звонок справа в зоне подачи
-//   40 slots       — компактные овалы на самой столешнице, под HUD
-//
-// Подсветка активной цели — мягкий drop-shadow glow вокруг САМОГО предмета,
-// без больших прямоугольных рамок и пунктирных зон.
+// Принцип anchor "bottom-center":
+//   StageObject рендерит абсолютный контейнер с координатами (left%, top%),
+//   а внутри использует transform: translate(-50%, -100%), так что
+//   ИМЕННО НИЖНЯЯ ЦЕНТРАЛЬНАЯ ТОЧКА спрайта попадает в (left, top).
+//   Тень кладётся прямо под этим anchor.
 
 import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/game/store";
@@ -21,11 +17,16 @@ import {
   selectKitchenVisualState,
   type BowlVisualState,
   type CupVisualState,
-  type KettleVisualState,
   type PlateVisualState,
-  type StoveVisualState,
 } from "@/game/derived-state";
 import { STAGE_ASSETS } from "./stage-assets";
+import {
+  STAGE_LAYOUT,
+  TABLE_SLOT_IDS_2D,
+  COUNTERTOP_TOP_PCT,
+  COUNTERTOP_BOTTOM_PCT,
+  type StageObjectLayout,
+} from "./stage-layout";
 
 interface KitchenStage2DProps {
   onHoverLabel: (label: string | null) => void;
@@ -95,142 +96,117 @@ export function KitchenStage2D({
     eatFromTable(index);
   };
 
-  // Слоты «выделяются» только когда выбран ингредиент в Продуктах.
   const slotsActive = activePick !== null;
 
   return (
     <div className="absolute inset-0 select-none overflow-hidden">
-      {/* Layer 0: background */}
+      {/* Layer 0: фон — стены, фартук, пол */}
       <Background />
 
-      {/* Layer 5: единая CSS-столешница */}
+      {/* Layer 5: столешница (CSS) */}
       <Countertop />
 
-      {/* Layer 10: задняя линия — плита слева, чайник справа.
-          Базовая линия совпадает с верхним краем столешницы (~bottom 44%). */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-[40%] z-10">
-        <div className="mx-auto flex w-full max-w-5xl items-end justify-between px-[10%]">
-          <Hotspot
-            label="Плита"
-            attention={activeTarget === "stove"}
-            onHover={onHoverLabel}
-            onClick={() => handleObject("stove", "Плита")}
-          >
-            <div className="relative">
-              <SpriteImg src={STAGE_ASSETS.stove} alt="Плита" className="h-[170px] w-auto" />
-              {visual.stove === "active" && <FlameOverlay />}
-              <GroundShadow width={140} />
-            </div>
-          </Hotspot>
+      {/* ── Back row ─────────────────────────────────────── */}
+      <StageObject
+        layout={STAGE_LAYOUT.stove}
+        label="Плита"
+        attention={activeTarget === "stove"}
+        onHover={onHoverLabel}
+        onClick={() => handleObject("stove", "Плита")}
+      >
+        <SpriteImg src={STAGE_ASSETS.stove} alt="Плита" widthPx={STAGE_LAYOUT.stove.width} />
+        {visual.stove === "active" && <FlameOverlay />}
+      </StageObject>
 
-          {equipmentOwned.includes("toaster") && (
-            <Hotspot
-              label="Тостер"
-              attention={activeTarget === "toaster"}
-              onHover={onHoverLabel}
-              onClick={() => handleObject("toaster", "Тостер")}
-            >
-              <div className="relative">
-                <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" className="h-[90px] w-auto" />
-                <GroundShadow width={80} />
-              </div>
-            </Hotspot>
-          )}
-
-          {equipmentOwned.includes("kettle") && (
-            <Hotspot
-              label="Чайник"
-              attention={activeTarget === "kettle"}
-              onHover={onHoverLabel}
-              onClick={() => handleObject("kettle", "Чайник")}
-            >
-              <div className="relative">
-                <SpriteImg src={STAGE_ASSETS.kettle} alt="Чайник" className="h-[120px] w-auto" />
-                {(visual.kettle === "boiling" || visual.kettle === "ready") && <SteamOverlay />}
-                {visual.kettle === "ready" && (
-                  <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-orange-500 shadow ring-2 ring-orange-200 animate-pulse" />
-                )}
-                <GroundShadow width={90} />
-              </div>
-            </Hotspot>
-          )}
-        </div>
-      </div>
-
-      {/* Layer 20: рабочий ряд — миска / тарелка / чашка на передней половине стола */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-[26%] z-20">
-        <div className="mx-auto flex w-full max-w-2xl items-end justify-around px-10">
-          <Hotspot
-            label="Миска"
-            attention={activeTarget === "bowl"}
-            onHover={onHoverLabel}
-            onClick={() => handleObject("bowl", "Миска")}
-          >
-            <div className="relative">
-              <BowlSprite state={visual.bowl} />
-              <GroundShadow width={90} />
-            </div>
-          </Hotspot>
-
-          <Hotspot
-            label="Тарелка"
-            attention={activeTarget === "plate"}
-            onHover={onHoverLabel}
-            onClick={() => handleObject("plate", "Тарелка")}
-          >
-            <div className="relative">
-              <PlateSprite state={visual.plate} />
-              <GroundShadow width={95} />
-            </div>
-          </Hotspot>
-
-          <Hotspot
-            label="Чашка"
-            attention={activeTarget === "cup"}
-            onHover={onHoverLabel}
-            onClick={() => handleObject("cup", "Чашка")}
-          >
-            <div className="relative">
-              <CupSprite state={visual.cup} />
-              <GroundShadow width={70} />
-            </div>
-          </Hotspot>
-        </div>
-      </div>
-
-      {/* Layer 30: bell — маленький, справа в зоне подачи */}
-      <div className="pointer-events-none absolute right-[7%] bottom-[24%] z-30">
-        <Hotspot
-          label="Звонок"
-          attention={activeTarget === "bell"}
+      {equipmentOwned.includes("toaster") && (
+        <StageObject
+          layout={STAGE_LAYOUT.toaster}
+          label="Тостер"
+          attention={activeTarget === "toaster"}
           onHover={onHoverLabel}
-          onClick={() => onBellRing()}
+          onClick={() => handleObject("toaster", "Тостер")}
         >
-          <div className="relative">
-            <BellSprite pulse={activeTarget === "bell"} />
-            <GroundShadow width={50} />
-          </div>
-        </Hotspot>
-      </div>
+          <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" widthPx={STAGE_LAYOUT.toaster.width} />
+        </StageObject>
+      )}
 
-      {/* Layer 40: table slots — компактные овалы на переднем крае столешницы.
-          Стоят НАД нижним меню (bottom 18%, не заходят в HUD), маленькие. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-[18%] z-40 px-6">
-        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-2">
-          {slots.map((slot, i) => (
+      {equipmentOwned.includes("kettle") && (
+        <StageObject
+          layout={STAGE_LAYOUT.kettle}
+          label="Чайник"
+          attention={activeTarget === "kettle"}
+          onHover={onHoverLabel}
+          onClick={() => handleObject("kettle", "Чайник")}
+        >
+          <SpriteImg src={STAGE_ASSETS.kettle} alt="Чайник" widthPx={STAGE_LAYOUT.kettle.width} />
+          {(visual.kettle === "boiling" || visual.kettle === "ready") && <SteamOverlay />}
+          {visual.kettle === "ready" && (
+            <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-orange-500 shadow ring-2 ring-orange-200 animate-pulse" />
+          )}
+        </StageObject>
+      )}
+
+      {/* ── Work row ─────────────────────────────────────── */}
+      <StageObject
+        layout={STAGE_LAYOUT.bowl}
+        label="Миска"
+        attention={activeTarget === "bowl"}
+        onHover={onHoverLabel}
+        onClick={() => handleObject("bowl", "Миска")}
+      >
+        <BowlSprite state={visual.bowl} widthPx={STAGE_LAYOUT.bowl.width} />
+      </StageObject>
+
+      <StageObject
+        layout={STAGE_LAYOUT.plate}
+        label="Тарелка"
+        attention={activeTarget === "plate"}
+        onHover={onHoverLabel}
+        onClick={() => handleObject("plate", "Тарелка")}
+      >
+        <PlateSprite state={visual.plate} widthPx={STAGE_LAYOUT.plate.width} />
+      </StageObject>
+
+      <StageObject
+        layout={STAGE_LAYOUT.cup}
+        label="Чашка"
+        attention={activeTarget === "cup"}
+        onHover={onHoverLabel}
+        onClick={() => handleObject("cup", "Чашка")}
+      >
+        <CupSprite state={visual.cup} widthPx={STAGE_LAYOUT.cup.width} />
+      </StageObject>
+
+      {/* ── Bell на столе ─────────────────────────────────── */}
+      <StageObject
+        layout={STAGE_LAYOUT.bell}
+        label="Звонок"
+        attention={activeTarget === "bell"}
+        onHover={onHoverLabel}
+        onClick={() => onBellRing()}
+      >
+        <BellSprite pulse={activeTarget === "bell"} widthPx={STAGE_LAYOUT.bell.width} />
+      </StageObject>
+
+      {/* ── Table slots (5 шт, на передней кромке столешницы) ── */}
+      {TABLE_SLOT_IDS_2D.map((id, i) => {
+        const layout = STAGE_LAYOUT[id];
+        const slot = slots[i];
+        return (
+          <SlotAnchor key={id} layout={layout}>
             <TableSlot2D
-              key={i}
               index={i}
               ingredient_id={slot.ingredient_id}
               quality={slot.quality}
               category={slot.category}
+              size={layout.width}
               highlight={slotsActive && !slot.ingredient_id}
               onShortClick={handleSlotShortClick}
               onLongPress={handleSlotLongPress}
             />
-          ))}
-        </div>
-      </div>
+          </SlotAnchor>
+        );
+      })}
     </div>
   );
 }
@@ -242,26 +218,30 @@ function Background() {
     <div className="absolute inset-0 z-0">
       {/* Стена */}
       <div
-        className="absolute inset-x-0 top-0 h-[58%]"
+        className="absolute inset-x-0 top-0"
         style={{
+          height: `${COUNTERTOP_TOP_PCT + 4}%`,
           background:
             "linear-gradient(180deg, #f6e9cf 0%, #ecd6ad 60%, #d6bd8c 100%)",
         }}
       />
-      {/* Кафельный фартук — еле заметный */}
+      {/* Фартук — еле заметная сетка */}
       <div
-        className="absolute inset-x-0 top-[42%] h-[16%] opacity-25"
+        className="absolute inset-x-0 opacity-20"
         style={{
+          top: `${COUNTERTOP_TOP_PCT - 14}%`,
+          height: "14%",
           backgroundImage:
             "linear-gradient(rgba(255,255,255,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.55) 1px, transparent 1px)",
-          backgroundSize: "44px 28px",
+          backgroundSize: "44px 24px",
           backgroundPosition: "center",
         }}
       />
       {/* Пол */}
       <div
-        className="absolute inset-x-0 bottom-0 h-[42%]"
+        className="absolute inset-x-0 bottom-0"
         style={{
+          top: `${COUNTERTOP_BOTTOM_PCT}%`,
           background:
             "linear-gradient(180deg, #b09372 0%, #8b6e4d 60%, #6e553a 100%)",
         }}
@@ -270,7 +250,7 @@ function Background() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.22) 100%)",
+            "radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.22) 100%)",
         }}
       />
     </div>
@@ -278,18 +258,23 @@ function Background() {
 }
 
 /**
- * Единая столешница — CSS-слой. Никаких повторяющихся cabinet PNG.
- * Поверхность стола занимает середину экрана, у неё есть передний край и тень.
+ * Компактная столешница. Верх ~44%, низ ~79%. Никаких отдельных тумб.
  */
 function Countertop() {
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-[16%] z-[5] flex justify-center">
-      <div className="relative w-[92%] max-w-[1100px]">
-        {/* Поверхность стола (трапеция: уже сзади, шире спереди) */}
+    <div
+      className="pointer-events-none absolute inset-x-0 z-[5] flex justify-center"
+      style={{
+        top: `${COUNTERTOP_TOP_PCT}%`,
+        height: `${COUNTERTOP_BOTTOM_PCT - COUNTERTOP_TOP_PCT}%`,
+      }}
+    >
+      <div className="relative h-full w-[88%] max-w-[980px]">
+        {/* Поверхность стола (трапеция) */}
         <div
-          className="relative h-[260px] w-full"
+          className="relative h-full w-full"
           style={{
-            clipPath: "polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%)",
+            clipPath: "polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%)",
             background:
               "linear-gradient(180deg, #c79a6b 0%, #b3865a 55%, #966a40 100%)",
             boxShadow:
@@ -314,65 +299,105 @@ function Countertop() {
             }}
           />
         </div>
-        {/* Мягкая теневая полоса под столом */}
-        <div
-          className="pointer-events-none absolute inset-x-[6%] -bottom-2 h-4 rounded-full"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, transparent 70%)",
-          }}
-        />
       </div>
     </div>
   );
 }
 
-/* ──────────────────────────── Hotspot wrapper ─────────────────────────── */
+/* ──────────────────────────── StageObject (anchor bottom-center) ─────────────────────────── */
 
-function Hotspot({
+/**
+ * Универсальная обёртка для предмета сцены.
+ *  - читает позицию из layout (left%, top%);
+ *  - крепится anchor: нижняя центральная точка спрайта = (left, top);
+ *  - кладёт компактную тень прямо под anchor;
+ *  - подсветка active — мягкий glow на самом спрайте.
+ */
+function StageObject({
+  layout,
   label,
   attention,
   onHover,
   onClick,
   children,
 }: {
+  layout: StageObjectLayout;
   label: string;
   attention?: boolean;
   onHover: (l: string | null) => void;
   onClick: () => void;
   children: React.ReactNode;
 }) {
-  // Подсветка — только мягкий glow на самом контенте, без прямоугольной рамки.
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      onPointerEnter={() => onHover(label)}
-      onPointerLeave={() => onHover(null)}
-      className={`pointer-events-auto relative inline-flex cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${
-        attention
-          ? "drop-shadow-[0_0_14px_rgba(255,180,70,0.95)] animate-pulse"
-          : ""
-      }`}
-      aria-label={label}
+    <div
+      className="pointer-events-none absolute"
+      style={{
+        left: `${layout.left}%`,
+        top: `${layout.top}%`,
+        width: layout.width,
+        zIndex: layout.zIndex,
+        // anchor bottom-center: точка (left, top) = нижняя центральная точка
+        transform: "translate(-50%, -100%)",
+      }}
     >
-      {children}
-    </button>
+      <button
+        type="button"
+        onClick={onClick}
+        onPointerEnter={() => onHover(label)}
+        onPointerLeave={() => onHover(null)}
+        className={`pointer-events-auto relative inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${
+          attention ? "drop-shadow-[0_0_10px_rgba(255,180,70,0.95)] animate-pulse" : ""
+        }`}
+        aria-label={label}
+      >
+        {children}
+      </button>
+      {layout.shadowWidth > 0 && <GroundShadow width={layout.shadowWidth} />}
+    </div>
   );
 }
 
-/** Мягкая овальная тень, которую кладём под спрайт, чтобы он «стоял». */
+/** Аналог StageObject для слота — без button-обёртки и hover-glow. */
+function SlotAnchor({
+  layout,
+  children,
+}: {
+  layout: StageObjectLayout;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="pointer-events-none absolute"
+      style={{
+        left: `${layout.left}%`,
+        top: `${layout.top}%`,
+        width: layout.width,
+        zIndex: layout.zIndex,
+        transform: "translate(-50%, -100%)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Компактная тень — кладётся прямо под anchor (bottom: 0 от обёртки).
+ * Маленькая и мягкая, чтобы предмет не «летал».
+ */
 function GroundShadow({ width }: { width: number }) {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute left-1/2 -translate-x-1/2"
       style={{
-        bottom: -6,
+        // anchor находится в bottom: 0 контейнера StageObject (после translateY(-100%)).
+        // Тень кладём чуть выше нижней кромки контейнера, прямо под предметом.
+        bottom: -2,
         width,
-        height: Math.max(8, width * 0.18),
+        height: Math.max(6, width * 0.14),
         background:
-          "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.12) 50%, transparent 75%)",
+          "radial-gradient(ellipse at center, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.10) 55%, transparent 78%)",
         borderRadius: "50%",
       }}
     />
@@ -382,19 +407,23 @@ function GroundShadow({ width }: { width: number }) {
 function SpriteImg({
   src,
   alt,
-  className,
+  widthPx,
 }: {
   src: string;
   alt: string;
-  className?: string;
+  widthPx: number;
 }) {
   return (
     <img
       src={src}
       alt={alt}
       draggable={false}
-      className={`pointer-events-none select-none object-contain ${className ?? ""}`}
-      style={{ filter: "drop-shadow(0 3px 3px rgba(0,0,0,0.18))" }}
+      className="pointer-events-none block select-none object-contain"
+      style={{
+        width: widthPx,
+        height: "auto",
+        filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.18))",
+      }}
     />
   );
 }
@@ -441,20 +470,12 @@ function FlameOverlay() {
   );
 }
 
-/* ──────────────────────────── Vessels with PNG + overlays ─────────────────────────── */
+/* ──────────────────────────── Vessels ─────────────────────────── */
 
-/**
- * Все vessel-спрайты:
- *   — снизу настоящий PNG из ISO-пака,
- *   — сверху небольшой overlay внутри ободка для содержимого.
- * Размеры подобраны так, чтобы overlay аккуратно лёг внутрь миски/тарелки/чашки.
- */
-
-function BowlSprite({ state }: { state: BowlVisualState }) {
+function BowlSprite({ state, widthPx }: { state: BowlVisualState; widthPx: number }) {
   return (
-    <div className="relative">
-      <SpriteImg src={STAGE_ASSETS.bowl} alt="Миска" className="h-[110px] w-auto" />
-      {/* Overlay — внутри ободка миски (PNG: ~176×134, ободок ~центр-верх) */}
+    <div className="relative" style={{ width: widthPx }}>
+      <SpriteImg src={STAGE_ASSETS.bowl} alt="Миска" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
           aria-hidden
@@ -462,7 +483,6 @@ function BowlSprite({ state }: { state: BowlVisualState }) {
           viewBox="0 0 176 134"
           preserveAspectRatio="xMidYMid meet"
         >
-          {/* Жидкость в миске (mix = взбитое, egg = просто содержимое) */}
           <ellipse
             cx="88"
             cy="62"
@@ -472,19 +492,17 @@ function BowlSprite({ state }: { state: BowlVisualState }) {
             stroke={state === "mix" ? "#c79318" : "#d8b86a"}
             strokeWidth="1"
           />
-          {state === "egg" && (
-            <ellipse cx="88" cy="60" rx="11" ry="5" fill="#f6c945" />
-          )}
+          {state === "egg" && <ellipse cx="88" cy="60" rx="11" ry="5" fill="#f6c945" />}
         </svg>
       )}
     </div>
   );
 }
 
-function PlateSprite({ state }: { state: PlateVisualState }) {
+function PlateSprite({ state, widthPx }: { state: PlateVisualState; widthPx: number }) {
   return (
-    <div className="relative">
-      <SpriteImg src={STAGE_ASSETS.plate} alt="Тарелка" className="h-[100px] w-auto" />
+    <div className="relative" style={{ width: widthPx }}>
+      <SpriteImg src={STAGE_ASSETS.plate} alt="Тарелка" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
           aria-hidden
@@ -494,7 +512,6 @@ function PlateSprite({ state }: { state: PlateVisualState }) {
         >
           {state === "omelet" && (
             <>
-              {/* Неровный овал омлета */}
               <path
                 d="M48 64 Q56 48 92 50 Q128 52 132 70 Q126 84 90 84 Q56 82 48 64 Z"
                 fill="#f5c84a"
@@ -517,10 +534,10 @@ function PlateSprite({ state }: { state: PlateVisualState }) {
   );
 }
 
-function CupSprite({ state }: { state: CupVisualState }) {
+function CupSprite({ state, widthPx }: { state: CupVisualState; widthPx: number }) {
   return (
-    <div className="relative">
-      <SpriteImg src={STAGE_ASSETS.cup} alt="Чашка" className="h-[90px] w-auto" />
+    <div className="relative" style={{ width: widthPx }}>
+      <SpriteImg src={STAGE_ASSETS.cup} alt="Чашка" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
           aria-hidden
@@ -528,9 +545,7 @@ function CupSprite({ state }: { state: CupVisualState }) {
           viewBox="0 0 72 71"
           preserveAspectRatio="xMidYMid meet"
         >
-          {state === "tea" && (
-            <ellipse cx="33" cy="22" rx="17" ry="4" fill="#7a3a1a" />
-          )}
+          {state === "tea" && <ellipse cx="33" cy="22" rx="17" ry="4" fill="#7a3a1a" />}
           {state === "leaves" && (
             <>
               <ellipse cx="33" cy="22" rx="16" ry="3.5" fill="#3d5a2a" opacity="0.55" />
@@ -565,17 +580,17 @@ function CupSprite({ state }: { state: CupVisualState }) {
   );
 }
 
-/* ──────────────────────────── Bell (SVG, временно) ─────────────────────────── */
+/* ──────────────────────────── Bell (SVG) ─────────────────────────── */
 
-function BellSprite({ pulse }: { pulse?: boolean }) {
+function BellSprite({ pulse, widthPx }: { pulse?: boolean; widthPx: number }) {
   return (
     <svg
-      width="44"
-      height="50"
+      width={widthPx}
+      height={widthPx * 1.13}
       viewBox="0 0 64 74"
       aria-hidden
       className={pulse ? "drop-shadow-md" : ""}
-      style={{ filter: "drop-shadow(0 4px 4px rgba(0,0,0,0.25))" }}
+      style={{ filter: "drop-shadow(0 3px 3px rgba(0,0,0,0.25))" }}
     >
       <circle cx="32" cy="10" r="5" fill="#7a3f1f" stroke="#3a1d0e" strokeWidth="1.2" />
       <path
@@ -591,13 +606,14 @@ function BellSprite({ pulse }: { pulse?: boolean }) {
   );
 }
 
-/* ──────────────────────────── Table slot (спокойный) ─────────────────────────── */
+/* ──────────────────────────── Table slot ─────────────────────────── */
 
 function TableSlot2D({
   index,
   ingredient_id,
   quality,
   category,
+  size,
   highlight,
   onShortClick,
   onLongPress,
@@ -606,6 +622,7 @@ function TableSlot2D({
   ingredient_id: string | null;
   quality: "basic" | "premium" | null;
   category: string | null;
+  size: number;
   highlight: boolean;
   onShortClick: (i: number) => void;
   onLongPress: (i: number) => void;
@@ -663,26 +680,29 @@ function TableSlot2D({
     }
   };
 
-  // Если слот пуст и продукт не выбран — почти невидим.
-  // Если выбран ингредиент — мягкая тёплая подсветка пустых слотов.
-  // Если слот занят — мягкий светлый овал.
-  const bg = ing
-    ? hover
-      ? "rgba(255,250,235,0.55)"
-      : "rgba(255,250,235,0.38)"
-    : highlight
-      ? "rgba(255,210,140,0.40)"
-      : hover
-        ? "rgba(255,255,255,0.18)"
-        : "rgba(0,0,0,0.10)";
+  // Видимость:
+  //  - есть ингредиент → виден заметно (тёплый овал);
+  //  - выбран pick, слот пуст → мягко подсвечен;
+  //  - иначе → почти невидим (opacity ~0.05).
+  const occupied = !!ing;
+  let opacity = 0.05;
+  if (occupied) opacity = 1;
+  else if (highlight) opacity = 0.32;
+  else if (hover) opacity = 0.18;
 
-  const borderColor = ing
+  const bg = occupied
+    ? "rgba(255,248,225,0.85)"
+    : highlight
+      ? "rgba(255,210,140,0.55)"
+      : "rgba(255,255,255,0.35)";
+
+  const borderColor = occupied
     ? quality === "premium"
-      ? "rgba(212,161,60,0.85)"
+      ? "rgba(212,161,60,0.9)"
       : "rgba(94,58,24,0.45)"
     : highlight
-      ? "rgba(212,161,60,0.65)"
-      : "rgba(0,0,0,0.10)";
+      ? "rgba(212,161,60,0.55)"
+      : "transparent";
 
   return (
     <button
@@ -694,20 +714,21 @@ function TableSlot2D({
         setHover(false);
       }}
       onPointerEnter={() => setHover(true)}
-      className="pointer-events-auto relative flex h-11 w-11 flex-col items-center justify-center rounded-full transition"
+      className="pointer-events-auto relative flex items-center justify-center rounded-full transition"
       style={{
+        width: size,
+        height: size,
         background: bg,
         border: `1px solid ${borderColor}`,
-        boxShadow: ing ? "inset 0 1px 2px rgba(255,255,255,0.5)" : "none",
+        boxShadow: occupied ? "inset 0 1px 2px rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.2)" : "none",
+        opacity,
       }}
       aria-label={ing ? `Слот ${index + 1}: ${ing.name}` : `Пустой слот ${index + 1}`}
     >
       {ing && (
-        <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[16px] leading-none">
-            {iconForCategory(category, ing.name)}
-          </span>
-        </div>
+        <span className="text-[15px] leading-none">
+          {iconForCategory(category, ing.name)}
+        </span>
       )}
 
       {progress > 0 && (
@@ -730,7 +751,6 @@ function TableSlot2D({
   );
 }
 
-/** Простая иконка по категории, чтобы не показывать большой текст. */
 function iconForCategory(category: string | null, name: string): string {
   if (!category) return "•";
   const n = name.toLowerCase();
