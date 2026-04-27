@@ -25,8 +25,12 @@ import {
   TABLE_SLOT_IDS_2D,
   COUNTERTOP_TOP_PCT,
   COUNTERTOP_BOTTOM_PCT,
+  COUNTERTOP_WIDTH_PCT,
+  COUNTERTOP_MAX_WIDTH_PX,
   type StageObjectLayout,
 } from "./stage-layout";
+import { normalizeHintMode } from "@/game/hint-content";
+import { useHintMode } from "@/game/hint-mode";
 
 interface KitchenStage2DProps {
   onHoverLabel: (label: string | null) => void;
