@@ -103,73 +103,73 @@ export function KitchenStage2D({
       {/* Layer 0: background */}
       <Background />
 
-      {/* Layer 5: counter row — единая кухонная поверхность из изо-модулей */}
-      <CounterRow />
+      {/* Layer 5: единая CSS-столешница */}
+      <Countertop />
 
-      {/* Layer 10: equipment — плита слева, чайник справа-сзади, доп. техника */}
-      <div className="absolute inset-x-0 top-[10%] z-10 flex justify-center pointer-events-none">
-        <div className="flex w-full max-w-6xl items-end justify-between px-[6%]">
-          {/* Левая зона: плита */}
+      {/* Layer 10: задняя линия — плита слева, чайник справа.
+          Базовая линия совпадает с верхним краем столешницы (~bottom 44%). */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[40%] z-10">
+        <div className="mx-auto flex w-full max-w-5xl items-end justify-between px-[10%]">
           <Hotspot
             label="Плита"
             attention={activeTarget === "stove"}
             onHover={onHoverLabel}
             onClick={() => handleObject("stove", "Плита")}
           >
-            <SpriteImg
-              src={STAGE_ASSETS.stove}
-              alt="Плита"
-              className="h-[230px] w-auto"
-            />
-            {visual.stove === "active" && <FlameOverlay />}
+            <div className="relative">
+              <SpriteImg src={STAGE_ASSETS.stove} alt="Плита" className="h-[170px] w-auto" />
+              {visual.stove === "active" && <FlameOverlay />}
+              <GroundShadow width={140} />
+            </div>
           </Hotspot>
 
-          {/* Центральная зона: тостер если куплен */}
-          <div className="flex items-end gap-3">
-            {equipmentOwned.includes("toaster") && (
-              <Hotspot
-                label="Тостер"
-                attention={activeTarget === "toaster"}
-                onHover={onHoverLabel}
-                onClick={() => handleObject("toaster", "Тостер")}
-              >
-                <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" className="h-[110px] w-auto" />
-              </Hotspot>
-            )}
-          </div>
+          {equipmentOwned.includes("toaster") && (
+            <Hotspot
+              label="Тостер"
+              attention={activeTarget === "toaster"}
+              onHover={onHoverLabel}
+              onClick={() => handleObject("toaster", "Тостер")}
+            >
+              <div className="relative">
+                <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" className="h-[90px] w-auto" />
+                <GroundShadow width={80} />
+              </div>
+            </Hotspot>
+          )}
 
-          {/* Правая зона: чайник */}
-          <div className="flex items-end gap-3">
-            {equipmentOwned.includes("kettle") && (
-              <Hotspot
-                label="Чайник"
-                attention={activeTarget === "kettle"}
-                onHover={onHoverLabel}
-                onClick={() => handleObject("kettle", "Чайник")}
-              >
-                <div className="relative">
-                  <SpriteImg src={STAGE_ASSETS.kettle} alt="Чайник" className="h-[140px] w-auto" />
-                  {(visual.kettle === "boiling" || visual.kettle === "ready") && <SteamOverlay />}
-                  {visual.kettle === "ready" && (
-                    <span className="absolute right-1 top-1 h-3 w-3 rounded-full bg-orange-500 shadow ring-2 ring-orange-200 animate-pulse" />
-                  )}
-                </div>
-              </Hotspot>
-            )}
-          </div>
+          {equipmentOwned.includes("kettle") && (
+            <Hotspot
+              label="Чайник"
+              attention={activeTarget === "kettle"}
+              onHover={onHoverLabel}
+              onClick={() => handleObject("kettle", "Чайник")}
+            >
+              <div className="relative">
+                <SpriteImg src={STAGE_ASSETS.kettle} alt="Чайник" className="h-[120px] w-auto" />
+                {(visual.kettle === "boiling" || visual.kettle === "ready") && <SteamOverlay />}
+                {visual.kettle === "ready" && (
+                  <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-orange-500 shadow ring-2 ring-orange-200 animate-pulse" />
+                )}
+                <GroundShadow width={90} />
+              </div>
+            </Hotspot>
+          )}
         </div>
       </div>
 
-      {/* Layer 20: vessels — миска, тарелка, чашка в центральной рабочей зоне */}
-      <div className="absolute inset-x-0 bottom-[34%] z-20 flex justify-center pointer-events-none">
-        <div className="flex w-full max-w-3xl items-end justify-around px-12">
+      {/* Layer 20: рабочий ряд — миска / тарелка / чашка на передней половине стола */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[26%] z-20">
+        <div className="mx-auto flex w-full max-w-2xl items-end justify-around px-10">
           <Hotspot
             label="Миска"
             attention={activeTarget === "bowl"}
             onHover={onHoverLabel}
             onClick={() => handleObject("bowl", "Миска")}
           >
-            <BowlSprite state={visual.bowl} />
+            <div className="relative">
+              <BowlSprite state={visual.bowl} />
+              <GroundShadow width={90} />
+            </div>
           </Hotspot>
 
           <Hotspot
@@ -178,7 +178,10 @@ export function KitchenStage2D({
             onHover={onHoverLabel}
             onClick={() => handleObject("plate", "Тарелка")}
           >
-            <PlateSprite state={visual.plate} />
+            <div className="relative">
+              <PlateSprite state={visual.plate} />
+              <GroundShadow width={95} />
+            </div>
           </Hotspot>
 
           <Hotspot
@@ -187,26 +190,33 @@ export function KitchenStage2D({
             onHover={onHoverLabel}
             onClick={() => handleObject("cup", "Чашка")}
           >
-            <CupSprite state={visual.cup} />
+            <div className="relative">
+              <CupSprite state={visual.cup} />
+              <GroundShadow width={70} />
+            </div>
           </Hotspot>
         </div>
       </div>
 
       {/* Layer 30: bell — маленький, справа в зоне подачи */}
-      <div className="absolute right-[6%] bottom-[28%] z-30 pointer-events-none">
+      <div className="pointer-events-none absolute right-[7%] bottom-[24%] z-30">
         <Hotspot
           label="Звонок"
           attention={activeTarget === "bell"}
           onHover={onHoverLabel}
           onClick={() => onBellRing()}
         >
-          <BellSprite pulse={activeTarget === "bell"} />
+          <div className="relative">
+            <BellSprite pulse={activeTarget === "bell"} />
+            <GroundShadow width={50} />
+          </div>
         </Hotspot>
       </div>
 
-      {/* Layer 40: table slots — спокойная полоса на переднем крае */}
-      <div className="absolute inset-x-0 bottom-[7%] z-40 flex justify-center px-4 pointer-events-none">
-        <div className="flex w-full max-w-2xl items-center justify-between gap-2">
+      {/* Layer 40: table slots — компактные овалы на переднем крае столешницы.
+          Стоят НАД нижним меню (bottom 18%, не заходят в HUD), маленькие. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[18%] z-40 px-6">
+        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-2">
           {slots.map((slot, i) => (
             <TableSlot2D
               key={i}
