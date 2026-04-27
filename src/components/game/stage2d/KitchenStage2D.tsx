@@ -704,11 +704,8 @@ function TableSlot2D({
     >
       {ing && (
         <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[14px] leading-none">
+          <span className="text-[16px] leading-none">
             {iconForCategory(category, ing.name)}
-          </span>
-          <span className="px-1 text-[8px] font-medium leading-tight text-foreground/80 truncate max-w-[50px]">
-            {ing.name}
           </span>
         </div>
       )}
