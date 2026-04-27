@@ -289,8 +289,10 @@ function UpgradesTab() {
     if (ok) {
       log(`Плита улучшена до уровня ${stoveLevel + 1}`);
       flash("stove_upgrade");
+      toast.success(`Плита улучшена до ур. ${stoveLevel + 1}`, { description: `−${price} ₽` });
     } else {
       log(`Не хватает денег для улучшения плиты`);
+      toast.error("Не хватает денег", { description: "Улучшение плиты" });
     }
   };
 
