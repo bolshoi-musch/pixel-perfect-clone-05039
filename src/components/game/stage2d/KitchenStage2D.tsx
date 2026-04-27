@@ -235,7 +235,7 @@ export function KitchenStage2D({
   );
 }
 
-/* ──────────────────────────── Background & Counter ─────────────────────────── */
+/* ──────────────────────────── Background & Countertop ─────────────────────────── */
 
 function Background() {
   return (
@@ -250,10 +250,10 @@ function Background() {
       />
       {/* Кафельный фартук — еле заметный */}
       <div
-        className="absolute inset-x-0 top-[42%] h-[16%] opacity-30"
+        className="absolute inset-x-0 top-[42%] h-[16%] opacity-25"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+            "linear-gradient(rgba(255,255,255,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.55) 1px, transparent 1px)",
           backgroundSize: "44px 28px",
           backgroundPosition: "center",
         }}
@@ -278,23 +278,50 @@ function Background() {
 }
 
 /**
- * Counter row — несколько копий counter01_a.png, выложенных в линию,
- * чтобы вся техника и посуда стояли на единой кухонной поверхности.
+ * Единая столешница — CSS-слой. Никаких повторяющихся cabinet PNG.
+ * Поверхность стола занимает середину экрана, у неё есть передний край и тень.
  */
-function CounterRow() {
+function Countertop() {
   return (
-    <div className="absolute inset-x-0 bottom-[18%] z-[5] flex justify-center pointer-events-none">
-      <div className="flex w-full max-w-[1100px] items-end justify-center -space-x-12">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <img
-            key={i}
-            src={STAGE_ASSETS.counter}
-            alt=""
-            aria-hidden
-            className="h-[260px] w-auto select-none"
-            draggable={false}
+    <div className="pointer-events-none absolute inset-x-0 bottom-[16%] z-[5] flex justify-center">
+      <div className="relative w-[92%] max-w-[1100px]">
+        {/* Поверхность стола (трапеция: уже сзади, шире спереди) */}
+        <div
+          className="relative h-[260px] w-full"
+          style={{
+            clipPath: "polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%)",
+            background:
+              "linear-gradient(180deg, #c79a6b 0%, #b3865a 55%, #966a40 100%)",
+            boxShadow:
+              "inset 0 6px 14px rgba(255, 230, 200, 0.35), inset 0 -10px 24px rgba(0,0,0,0.25)",
+          }}
+        >
+          {/* Лёгкая текстура «дерева» */}
+          <div
+            className="absolute inset-0 opacity-25 mix-blend-overlay"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 14px)",
+            }}
           />
-        ))}
+          {/* Передний кант */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-3"
+            style={{
+              background:
+                "linear-gradient(180deg, #7a5532 0%, #5a3d22 100%)",
+              boxShadow: "0 6px 12px rgba(0,0,0,0.35)",
+            }}
+          />
+        </div>
+        {/* Мягкая теневая полоса под столом */}
+        <div
+          className="pointer-events-none absolute inset-x-[6%] -bottom-2 h-4 rounded-full"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, transparent 70%)",
+          }}
+        />
       </div>
     </div>
   );
@@ -315,25 +342,40 @@ function Hotspot({
   onClick: () => void;
   children: React.ReactNode;
 }) {
+  // Подсветка — только мягкий glow на самом контенте, без прямоугольной рамки.
   return (
     <button
       type="button"
       onClick={onClick}
       onPointerEnter={() => onHover(label)}
       onPointerLeave={() => onHover(null)}
-      className={`group pointer-events-auto relative inline-flex cursor-pointer items-end justify-center rounded-xl p-1 transition-transform hover:scale-[1.03] ${
-        attention ? "drop-shadow-[0_0_18px_rgba(255,170,60,0.85)]" : ""
+      className={`pointer-events-auto relative inline-flex cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${
+        attention
+          ? "drop-shadow-[0_0_14px_rgba(255,180,70,0.95)] animate-pulse"
+          : ""
       }`}
       aria-label={label}
     >
-      {attention && (
-        <span
-          className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-amber-400/80 animate-pulse"
-          aria-hidden
-        />
-      )}
       {children}
     </button>
+  );
+}
+
+/** Мягкая овальная тень, которую кладём под спрайт, чтобы он «стоял». */
+function GroundShadow({ width }: { width: number }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+      style={{
+        bottom: -6,
+        width,
+        height: Math.max(8, width * 0.18),
+        background:
+          "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.12) 50%, transparent 75%)",
+        borderRadius: "50%",
+      }}
+    />
   );
 }
 
