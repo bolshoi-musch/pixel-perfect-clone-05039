@@ -27,113 +27,122 @@ export interface StageObjectLayout {
  * Поверхность стола — задняя и передняя кромки в % высоты сцены.
  * Все объекты рабочей сцены должны лежать в этом диапазоне по top.
  */
-export const COUNTERTOP_TOP_PCT = 44; // верхний край столешницы
-export const COUNTERTOP_BOTTOM_PCT = 79; // передняя кромка столешницы (над нижним меню)
+export const COUNTERTOP_TOP_PCT = 46; // верхний край столешницы (задняя линия)
+export const COUNTERTOP_BOTTOM_PCT = 80; // передняя кромка столешницы (над нижним меню)
 
 /**
  * Layout всех объектов сцены. Координаты — точка опоры (нижняя кромка спрайта).
- * Задний ряд: stove, kettle. Рабочий ряд: bowl, plate, cup. На столе: bell.
+ *
+ * Композиция (cooking station, всё на одной столешнице, никто не висит):
+ *   Задний ряд (опорная точка ≈ задняя треть столешницы, ~58%):
+ *     stove (компактная плитка) ─ kettle ─ toaster
+ *   Рабочий ряд (опорная точка ≈ передняя треть столешницы, ~72%):
+ *     bowl ─ plate ─ cup
+ *   Звонок:
+ *     bell — справа на столе, рядом с чашкой
+ *
+ *   Слоты на самой передней кромке (~78%), не перекрывая нижнее меню (>= 80%).
  */
 export const STAGE_LAYOUT = {
-  // ── back row ─────────────────────────────────────────────
+  // ── back row (стоит на задней половине столешницы) ───────
   stove: {
-    left: 24,
-    top: 60, // нижняя точка плиты — на задней линии столешницы
-    width: 170,
+    left: 30,
+    top: 64, // нижняя точка плиты — на задней линии столешницы
+    width: 130, // компактная плитка, не напольная духовка
     zIndex: 10,
     anchor: "bottom-center",
-    shadowWidth: 130,
-  },
-  kettle: {
-    left: 72,
-    top: 60,
-    width: 120,
-    zIndex: 10,
-    anchor: "bottom-center",
-    shadowWidth: 90,
+    shadowWidth: 110,
   },
   toaster: {
-    left: 48,
-    top: 60,
-    width: 100,
+    left: 50,
+    top: 62,
+    width: 90,
     zIndex: 10,
     anchor: "bottom-center",
-    shadowWidth: 80,
+    shadowWidth: 70,
+  },
+  kettle: {
+    left: 70,
+    top: 64,
+    width: 95,
+    zIndex: 10,
+    anchor: "bottom-center",
+    shadowWidth: 75,
   },
 
   // ── work row (на столе, ближе к игроку) ──────────────────
   bowl: {
-    left: 37,
+    left: 36,
     top: 73,
-    width: 120,
+    width: 110,
     zIndex: 20,
     anchor: "bottom-center",
     shadowWidth: 90,
   },
   plate: {
-    left: 52,
+    left: 50,
     top: 73,
-    width: 130,
+    width: 120,
     zIndex: 20,
     anchor: "bottom-center",
-    shadowWidth: 100,
+    shadowWidth: 95,
   },
   cup: {
-    left: 66,
+    left: 64,
     top: 73,
-    width: 95,
+    width: 70,
     zIndex: 20,
     anchor: "bottom-center",
-    shadowWidth: 70,
+    shadowWidth: 55,
   },
 
   // ── service ─────────────────────────────────────────────
   bell: {
-    left: 82,
-    top: 76,
-    width: 55,
+    left: 76,
+    top: 74,
+    width: 50,
     zIndex: 30,
     anchor: "bottom-center",
-    shadowWidth: 45,
+    shadowWidth: 40,
   },
 
   // ── table slots (5 штук, на передней кромке столешницы) ─
   tableSlot1: {
-    left: 34,
-    top: 78,
-    width: 36,
+    left: 32,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
   },
   tableSlot2: {
-    left: 42,
-    top: 78,
-    width: 36,
+    left: 41,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
   },
   tableSlot3: {
     left: 50,
-    top: 78,
-    width: 36,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
   },
   tableSlot4: {
-    left: 58,
-    top: 78,
-    width: 36,
+    left: 59,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
   },
   tableSlot5: {
-    left: 66,
-    top: 78,
-    width: 36,
+    left: 68,
+    top: 79,
+    width: 34,
     zIndex: 40,
     anchor: "bottom-center",
     shadowWidth: 0,
