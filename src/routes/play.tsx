@@ -232,12 +232,21 @@ function PlayPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       <div className="absolute inset-0">
-        <KitchenScene
-          onHoverLabel={setHoverLabel}
-          onPickIngredient={handlePickIngredient}
-          onObjectAction={handleObjectAction}
-          onBellRing={handleBellRing}
-        />
+        {USE_2D_STAGE ? (
+          <KitchenStage2D
+            onHoverLabel={setHoverLabel}
+            onPickIngredient={handlePickIngredient}
+            onObjectAction={handleObjectAction}
+            onBellRing={handleBellRing}
+          />
+        ) : (
+          <KitchenScene
+            onHoverLabel={setHoverLabel}
+            onPickIngredient={handlePickIngredient}
+            onObjectAction={handleObjectAction}
+            onBellRing={handleBellRing}
+          />
+        )}
       </div>
 
       {/* HUD */}
