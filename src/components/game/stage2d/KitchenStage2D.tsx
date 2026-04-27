@@ -322,6 +322,7 @@ function StageObject({
   layout,
   label,
   attention,
+  showHereLabel,
   onHover,
   onClick,
   children,
@@ -329,6 +330,7 @@ function StageObject({
   layout: StageObjectLayout;
   label: string;
   attention?: boolean;
+  showHereLabel?: boolean;
   onHover: (l: string | null) => void;
   onClick: () => void;
   children: React.ReactNode;
@@ -351,13 +353,37 @@ function StageObject({
         onPointerEnter={() => onHover(label)}
         onPointerLeave={() => onHover(null)}
         className={`pointer-events-auto relative inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${
-          attention ? "drop-shadow-[0_0_10px_rgba(255,180,70,0.95)] animate-pulse" : ""
+          attention
+            ? "drop-shadow-[0_0_14px_rgba(255,196,90,0.95)] [filter:drop-shadow(0_0_18px_rgba(255,180,70,0.85))_drop-shadow(0_0_6px_rgba(255,220,140,0.9))] animate-pulse"
+            : ""
         }`}
         aria-label={label}
       >
         {children}
       </button>
+      {attention && showHereLabel && <HereLabel />}
       {layout.shadowWidth > 0 && <GroundShadow width={layout.shadowWidth} />}
+    </div>
+  );
+}
+
+/**
+ * Маленькая подпись "Сюда" над активным объектом со стрелкой вниз.
+ * Показывается только в detailed/normal hint mode.
+ */
+function HereLabel() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 -top-7 -translate-x-1/2 flex flex-col items-center"
+      style={{ zIndex: 50 }}
+    >
+      <span className="rounded-full bg-primary/95 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-md animate-pulse">
+        Сюда
+      </span>
+      <svg width="10" height="6" viewBox="0 0 10 6" className="-mt-px">
+        <path d="M0 0 L10 0 L5 6 Z" fill="currentColor" className="text-primary" />
+      </svg>
     </div>
   );
 }
