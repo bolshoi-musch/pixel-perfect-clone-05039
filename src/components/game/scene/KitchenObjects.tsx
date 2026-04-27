@@ -215,9 +215,6 @@ export function Plate({ onClick, onHover, attention, content }: EquipProps) {
 }
 
 export function Cup({ onClick, onHover, attention, content }: EquipProps) {
-  // Используем cup_tea, если есть готовый чай — это даёт сразу заполненную чашку.
-  const useTeaCup = content === "tea_brewed";
-  const path = useTeaCup ? MODEL_ASSETS.kitchen.cupTea : MODEL_ASSETS.kitchen.cup;
   return (
     <Clickable
       position={EQUIPMENT_POSITIONS.cup}
@@ -227,14 +224,8 @@ export function Cup({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.2}
     >
-      <ModelAsset
-        path={path}
-        scale={0.4}
-        position={[0, -0.07, 0]}
-        fallback={<CupFallback />}
-      />
-      {/* Для НЕ-tea_brewed состояний (заварка, кипяток) показываем overlay поверх cup. */}
-      {content && !useTeaCup && (
+      <CupFallback />
+      {content && (
         <group position={[0, 0.06, 0]}>
           <ItemShape itemId={content} scale={0.85} />
         </group>
