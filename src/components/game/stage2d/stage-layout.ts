@@ -74,6 +74,8 @@ export const COUNTERTOP_MAX_WIDTH_PX = 860;
  */
 export const STAGE_LAYOUT = {
   // ── back row (стоит на задней половине столешницы) ───────
+  // visibleBottomOffsetRatio замерен по альфе PNG (bbox.bottom_pad / sprite_width):
+  //   stove ≈ 0.166, kettle ≈ 0.083, toaster ≈ 0.034.
   stove: {
     left: 34,
     top: 62,
@@ -81,6 +83,7 @@ export const STAGE_LAYOUT = {
     zIndex: 10,
     anchor: "bottom-center",
     shadowWidth: 150,
+    visibleBottomOffsetRatio: 0.166,
   },
   toaster: {
     left: 50,
@@ -89,6 +92,7 @@ export const STAGE_LAYOUT = {
     zIndex: 10,
     anchor: "bottom-center",
     shadowWidth: 90,
+    visibleBottomOffsetRatio: 0.034,
   },
   kettle: {
     left: 66,
@@ -97,9 +101,11 @@ export const STAGE_LAYOUT = {
     zIndex: 10,
     anchor: "bottom-center",
     shadowWidth: 100,
+    visibleBottomOffsetRatio: 0.083,
   },
 
   // ── work row (на столе, ближе к игроку) ──────────────────
+  // bowl/plate/cup стоят на столе почти без прозрачного хвоста снизу.
   bowl: {
     left: 41,
     top: 73,
@@ -107,6 +113,7 @@ export const STAGE_LAYOUT = {
     zIndex: 20,
     anchor: "bottom-center",
     shadowWidth: 120,
+    visibleBottomOffsetRatio: 0.028,
   },
   plate: {
     left: 52,
@@ -115,6 +122,7 @@ export const STAGE_LAYOUT = {
     zIndex: 20,
     anchor: "bottom-center",
     shadowWidth: 130,
+    visibleBottomOffsetRatio: 0.011,
   },
   cup: {
     left: 63,
@@ -123,9 +131,11 @@ export const STAGE_LAYOUT = {
     zIndex: 20,
     anchor: "bottom-center",
     shadowWidth: 78,
+    visibleBottomOffsetRatio: 0.042,
   },
 
   // ── service ─────────────────────────────────────────────
+  // bell — SVG, без прозрачного паддинга.
   bell: {
     left: 72,
     top: 75,
@@ -133,6 +143,7 @@ export const STAGE_LAYOUT = {
     zIndex: 30,
     anchor: "bottom-center",
     shadowWidth: 46,
+    visibleBottomOffsetRatio: 0,
   },
 
   // ── table slots (5 штук, на передней кромке столешницы) ─
