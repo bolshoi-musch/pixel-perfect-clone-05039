@@ -402,19 +402,12 @@ function StageObject({
         transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
       }}
     >
-      {layout.shadowWidth > 0 && (
-        <ContactShadow
-          width={layout.shadowWidth}
-          visibleBottomOffsetPx={offsetPx}
-        />
-      )}
-      {attention && <ActiveContactHalo width={layout.shadowWidth || layout.width} visibleBottomOffsetPx={offsetPx} />}
       <button
         type="button"
         onClick={onClick}
         onPointerEnter={() => onHover(label)}
         onPointerLeave={() => onHover(null)}
-        className={`pointer-events-auto relative z-[1] inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${attention ? "animate-pulse" : ""}`}
+        className={`pointer-events-auto relative z-[1] inline-flex w-full cursor-pointer items-end justify-center bg-transparent p-0 transition-transform hover:scale-[1.04] focus:outline-none ${attention ? "drop-shadow-[0_0_12px_rgba(255,180,70,0.85)] animate-pulse" : ""}`}
         aria-label={label}
       >
         {children}
