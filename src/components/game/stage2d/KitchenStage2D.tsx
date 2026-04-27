@@ -372,7 +372,10 @@ function StageObject({
       </button>
       {attention && showHereLabel && <HereLabel />}
       {layout.shadowWidth > 0 && (
-        <GroundShadow width={layout.shadowWidth} bottomOffsetPx={offsetPx} />
+        <ContactShadow
+          width={layout.shadowWidth}
+          visibleBottomOffsetPx={offsetPx}
+        />
       )}
     </div>
   );
@@ -425,30 +428,31 @@ function SlotAnchor({
 }
 
 /**
- * Компактная тень — кладётся прямо под anchor (bottom: 0 от обёртки).
- * Маленькая и мягкая, чтобы предмет не «летал».
+ * Маленькая контактная тень прямо под видимой нижней точкой предмета.
+ * После transform контейнер опущен на visibleBottomOffsetPx, поэтому тень
+ * поднимается на эту же величину вверх от нижней кромки контейнера.
+ * Без drop-shadow на самом спрайте — иначе получаем двойную тень и
+ * усиление ощущения «парения».
  */
-function GroundShadow({
+function ContactShadow({
   width,
-  bottomOffsetPx = 0,
+  visibleBottomOffsetPx,
 }: {
   width: number;
-  bottomOffsetPx?: number;
+  visibleBottomOffsetPx: number;
 }) {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute left-1/2 -translate-x-1/2"
       style={{
-        // anchor (visible bottom of sprite) находится на bottom: bottomOffsetPx
-        // от нижней кромки контейнера StageObject (контейнер сдвинут вниз
-        // на эту величину, чтобы PNG-паддинг не «вешал» предмет в воздух).
-        bottom: bottomOffsetPx - 2,
+        bottom: Math.max(0, visibleBottomOffsetPx - 1),
         width,
-        height: Math.max(6, width * 0.14),
+        height: Math.max(4, width * 0.09),
         background:
-          "radial-gradient(ellipse at center, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.10) 55%, transparent 78%)",
+          "radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.07) 55%, transparent 80%)",
         borderRadius: "50%",
+        filter: "blur(1px)",
       }}
     />
   );
@@ -472,7 +476,7 @@ function SpriteImg({
       style={{
         width: widthPx,
         height: "auto",
-        filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.18))",
+        filter: "none",
       }}
     />
   );
