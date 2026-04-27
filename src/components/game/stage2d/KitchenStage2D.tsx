@@ -718,14 +718,15 @@ function TableSlot2D({
   };
 
   // Видимость:
-  //  - есть ингредиент → виден заметно (тёплый овал);
-  //  - выбран pick, слот пуст → мягко подсвечен;
-  //  - иначе → почти невидим (opacity ~0.05).
+  //  - есть ингредиент → виден заметно (тёплый овал, opacity 1);
+  //  - выбран pick, слот пуст → подсвечен (0.35);
+  //  - hover на пустой → 0.20;
+  //  - иначе → невидим (opacity 0), чтобы стартовый экран не пестрил кружками.
   const occupied = !!ing;
-  let opacity = 0.05;
+  let opacity = 0;
   if (occupied) opacity = 1;
-  else if (highlight) opacity = 0.32;
-  else if (hover) opacity = 0.18;
+  else if (highlight) opacity = 0.35;
+  else if (hover) opacity = 0.2;
 
   const bg = occupied
     ? "rgba(255,248,225,0.85)"
