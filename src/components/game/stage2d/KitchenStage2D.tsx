@@ -450,6 +450,32 @@ function ContactShadow({
           "radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.07) 55%, transparent 80%)",
         borderRadius: "50%",
         filter: "blur(1px)",
+        zIndex: 0,
+      }}
+    />
+  );
+}
+
+function ActiveContactHalo({
+  width,
+  visibleBottomOffsetPx,
+}: {
+  width: number;
+  visibleBottomOffsetPx: number;
+}) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+      style={{
+        bottom: Math.max(0, visibleBottomOffsetPx - 4),
+        width: Math.max(42, width * 1.2),
+        height: Math.max(8, width * 0.14),
+        background:
+          "radial-gradient(ellipse at center, color-mix(in oklab, var(--primary) 42%, transparent) 0%, color-mix(in oklab, var(--primary) 18%, transparent) 48%, transparent 78%)",
+        borderRadius: "50%",
+        filter: "blur(1px)",
+        zIndex: 0,
       }}
     />
   );
@@ -640,8 +666,7 @@ function BellSprite({ pulse, widthPx }: { pulse?: boolean; widthPx: number }) {
       height={widthPx * 1.13}
       viewBox="0 0 64 74"
       aria-hidden
-      className={pulse ? "drop-shadow-md" : ""}
-      style={{ filter: "drop-shadow(0 3px 3px rgba(0,0,0,0.25))" }}
+      className={pulse ? "animate-pulse" : ""}
     >
       <circle cx="32" cy="10" r="5" fill="#7a3f1f" stroke="#3a1d0e" strokeWidth="1.2" />
       <path
