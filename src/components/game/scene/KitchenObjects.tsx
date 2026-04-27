@@ -184,12 +184,7 @@ export function Bowl({ onClick, onHover, attention, content }: EquipProps) {
       attention={attention}
       attentionRadius={0.28}
     >
-      <ModelAsset
-        path={MODEL_ASSETS.kitchen.bowl}
-        scale={0.45}
-        position={[0, -0.07, 0]}
-        fallback={<BowlFallback />}
-      />
+      <BowlFallback />
       {content && (
         <group position={[0, 0.07, 0]}>
           <ItemShape itemId={content} scale={1.1} />
