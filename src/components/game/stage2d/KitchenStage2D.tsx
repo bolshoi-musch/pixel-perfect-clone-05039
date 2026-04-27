@@ -274,7 +274,13 @@ function Countertop() {
         height: `${COUNTERTOP_BOTTOM_PCT - COUNTERTOP_TOP_PCT}%`,
       }}
     >
-      <div className="relative h-full w-[88%] max-w-[980px]">
+      <div
+        className="relative h-full"
+        style={{
+          width: `${COUNTERTOP_WIDTH_PCT}%`,
+          maxWidth: `${COUNTERTOP_MAX_WIDTH_PX}px`,
+        }}
+      >
         {/* Поверхность стола (трапеция) */}
         <div
           className="relative h-full w-full"
