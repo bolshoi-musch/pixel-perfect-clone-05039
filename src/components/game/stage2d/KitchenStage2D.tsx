@@ -115,7 +115,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.stove}
         label="Плита"
-        attention={activeTarget === "stove"}
+        attention={activeTarget === "stove"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("stove", "Плита")}
       >
@@ -127,7 +127,7 @@ export function KitchenStage2D({
         <StageObject
           layout={STAGE_LAYOUT.toaster}
           label="Тостер"
-          attention={activeTarget === "toaster"}
+          attention={activeTarget === "toaster"} showHereLabel={showHereLabel}
           onHover={onHoverLabel}
           onClick={() => handleObject("toaster", "Тостер")}
         >
@@ -139,7 +139,7 @@ export function KitchenStage2D({
         <StageObject
           layout={STAGE_LAYOUT.kettle}
           label="Чайник"
-          attention={activeTarget === "kettle"}
+          attention={activeTarget === "kettle"} showHereLabel={showHereLabel}
           onHover={onHoverLabel}
           onClick={() => handleObject("kettle", "Чайник")}
         >
@@ -155,7 +155,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.bowl}
         label="Миска"
-        attention={activeTarget === "bowl"}
+        attention={activeTarget === "bowl"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("bowl", "Миска")}
       >
@@ -165,7 +165,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.plate}
         label="Тарелка"
-        attention={activeTarget === "plate"}
+        attention={activeTarget === "plate"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("plate", "Тарелка")}
       >
@@ -175,7 +175,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.cup}
         label="Чашка"
-        attention={activeTarget === "cup"}
+        attention={activeTarget === "cup"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => handleObject("cup", "Чашка")}
       >
@@ -186,7 +186,7 @@ export function KitchenStage2D({
       <StageObject
         layout={STAGE_LAYOUT.bell}
         label="Звонок"
-        attention={activeTarget === "bell"}
+        attention={activeTarget === "bell"} showHereLabel={showHereLabel}
         onHover={onHoverLabel}
         onClick={() => onBellRing()}
       >
