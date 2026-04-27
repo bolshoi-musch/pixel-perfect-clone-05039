@@ -21,13 +21,32 @@ export interface Equipment {
 
 export type MinigameKind = "mix" | "window" | "roll_stub" | "chop_stub" | "hold";
 
+export type StepActionType = "combine" | "heat" | "mix" | "cut" | "form" | "serve" | "pour";
+
 export interface RecipeStep {
   id: string;
-  type: string; // e.g. "combine", "heat", "cut", "pour", "wait"
+  /** Семантический тип действия (см. StepActionType). Свободная строка для обратной совместимости. */
+  type: string;
   requires: string[]; // ingredient or equipment ids
   minigame: MinigameKind | null;
   output: string | null; // produced ingredient id (prepared/cooked)
   hints: string[];
+
+  // ---- Декларативные поля (опционально, для нового рефакторинга). ----
+  /** Короткое имя шага для UI. */
+  label?: string;
+  /** Основная подсказка одной строкой (UI fallback, если нет hint-content entry). */
+  hint?: string;
+  /** Каноничное действие. */
+  actionType?: StepActionType;
+  /** Целевой equipment_id, по которому игрок должен кликнуть. */
+  target?: string;
+  /** ID результирующего ингредиента (синоним output, для читаемости). */
+  result?: string;
+  /** Тип минигеймы (синоним minigame, без null — для читаемости). */
+  minigameType?: MinigameKind;
+  /** True для финального шага подачи (звонок). */
+  serveStep?: boolean;
 }
 
 export interface Recipe {
