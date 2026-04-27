@@ -122,7 +122,7 @@ function PlayPage() {
     }
     if (progress.finished) {
       const txt =
-        hintMode === "short"
+        hintMode === "normal"
           ? "Звонок"
           : "Нажми Звонок, чтобы подать заказ";
       return {
@@ -138,7 +138,7 @@ function PlayPage() {
     const entry = stepId ? STEP_HINTS[stepId] : undefined;
     const instruction =
       entry
-        ? hintMode === "short"
+        ? hintMode === "normal"
           ? entry.short
           : entry.detailed
         : (step?.hints?.[0] ?? "Следуй подсказкам в панели заказа");
@@ -159,7 +159,7 @@ function PlayPage() {
   const needsPick =
     guidance.requiresPickId !== null && pickedCanonical !== guidance.requiresPickId;
   // In Off mode we still allow soft hints on direct misuse, but hide the always-on highlight.
-  const productsHighlight = needsPick && hintMode !== "off";
+  const productsHighlight = needsPick && hintMode !== "minimal";
 
   // Bell HUD button is enabled when current step is "serve" or order finished
   const bellEnabled = guidance.isServe;
@@ -307,11 +307,11 @@ function PlayPage() {
       </header>
 
       {/* Главная подсказка: Следующее действие */}
-      {progress && hintMode !== "off" && (
+      {progress && hintMode !== "minimal" && (
         <div className="pointer-events-none absolute inset-x-0 top-28 z-10 px-4 text-center">
           <div
             className={`mx-auto inline-flex max-w-md flex-col items-center gap-1 rounded-2xl border shadow-[var(--shadow-warm)] backdrop-blur ${
-              hintMode === "short" ? "px-3 py-1.5" : "px-5 py-2.5"
+              hintMode === "normal" ? "px-3 py-1.5" : "px-5 py-2.5"
             } ${
               guidance.isServe
                 ? "animate-pulse border-primary bg-primary/95 text-primary-foreground"
@@ -323,7 +323,7 @@ function PlayPage() {
                 Следующее действие
               </span>
             )}
-            <span className={hintMode === "short" ? "text-xs font-semibold" : "text-sm font-semibold"}>
+            <span className={hintMode === "normal" ? "text-xs font-semibold" : "text-sm font-semibold"}>
               {guidance.instruction}
             </span>
             {hintMode === "detailed" && needsPick && !guidance.isServe && (
