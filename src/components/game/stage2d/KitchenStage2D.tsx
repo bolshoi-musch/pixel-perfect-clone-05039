@@ -341,6 +341,7 @@ function StageObject({
   onClick: () => void;
   children: React.ReactNode;
 }) {
+  const offsetPx = (layout.visibleBottomOffsetRatio ?? 0) * layout.width;
   return (
     <div
       className="pointer-events-none absolute"
@@ -349,8 +350,10 @@ function StageObject({
         top: `${layout.top}%`,
         width: layout.width,
         zIndex: layout.zIndex,
-        // anchor bottom-center: точка (left, top) = нижняя центральная точка
-        transform: "translate(-50%, -100%)",
+        // anchor bottom-center с компенсацией прозрачного нижнего паддинга PNG:
+        // (left, top) = ВИДИМАЯ нижняя центральная точка предмета (где он
+        // касается стола), а не нижняя граница PNG-файла.
+        transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
       }}
     >
       <button
@@ -368,7 +371,9 @@ function StageObject({
         {children}
       </button>
       {attention && showHereLabel && <HereLabel />}
-      {layout.shadowWidth > 0 && <GroundShadow width={layout.shadowWidth} />}
+      {layout.shadowWidth > 0 && (
+        <GroundShadow width={layout.shadowWidth} bottomOffsetPx={offsetPx} />
+      )}
     </div>
   );
 }
