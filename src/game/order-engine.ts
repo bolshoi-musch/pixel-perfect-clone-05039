@@ -250,6 +250,8 @@ export function expectedEquipmentForStep(step: RecipeStep): string | null {
   if (override) return override;
   // Serve step is finalized by the bell.
   if (step.type === "serve") return "bell";
+  // Authored target from steps.json — most reliable source of truth.
+  if (step.target) return step.target;
   // Heat steps → the heat appliance in requires (or stove fallback)
   if (step.minigame === "window") {
     const heat = step.requires.find((r) => HEAT_EQUIPMENT.has(r));
