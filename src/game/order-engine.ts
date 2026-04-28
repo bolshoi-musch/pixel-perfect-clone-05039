@@ -523,11 +523,11 @@ export function pickNextRecipe(): string | null {
   const lastId = lastReview?.recipe_id ?? null;
 
   let next: string | null;
-  if (!lastId || !TEST_RECIPE_POOL.includes(lastId)) {
-    next = TEST_RECIPE_POOL[0] ?? null;
+  if (!lastId || !available.includes(lastId)) {
+    next = available[0] ?? null;
   } else {
-    const idx = TEST_RECIPE_POOL.indexOf(lastId);
-    next = TEST_RECIPE_POOL[(idx + 1) % TEST_RECIPE_POOL.length] ?? null;
+    const idx = available.indexOf(lastId);
+    next = available[(idx + 1) % available.length] ?? null;
   }
   console.debug(`pickNextRecipe: last=${lastId ?? "none"}, next=${next ?? "none"}`);
   return next;
