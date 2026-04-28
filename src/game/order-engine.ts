@@ -76,6 +76,23 @@ function canonicalIngredient(id: string): string {
  */
 const IMPLICIT_EQUIPMENT = new Set(["pan"]);
 
+import type { PlacedEquipment } from "./types";
+
+function isPlacementSatisfied(flag: string, placed: PlacedEquipment): boolean {
+  if (flag === "pan_on_stove") return placed.pan_on_stove;
+  if (flag === "knife_board_on_work_area") return placed.knife_board_on_work_area;
+  return false;
+}
+
+const PLACEMENT_ERROR: Record<string, string> = {
+  pan_on_stove: "Нужна сковорода на плите",
+  knife_board_on_work_area: "Нужны нож и доска на рабочей зоне",
+};
+
+const PLACEMENT_HINT: Record<string, string> = {
+  pan_on_stove: "Открой Техника → поставь сковороду на плиту",
+  knife_board_on_work_area: "Открой Техника → поставь Нож и доску на рабочую зону",
+};
 
 export const useOrderEngine = create<OrderEngineState>((set, get) => ({
   progress: null,
