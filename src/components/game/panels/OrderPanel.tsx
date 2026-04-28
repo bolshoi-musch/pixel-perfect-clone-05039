@@ -1,6 +1,7 @@
 import { useGame } from "@/game/store";
 import { useOrderEngine } from "@/game/order-engine";
 import { RECIPES_BY_ID, STEPS_BY_ID, INGREDIENTS_BY_ID, EQUIPMENT_BY_ID } from "@/game/data";
+import { getRecipeAvailability } from "@/game/recipe-availability";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "../EmptyState";
 
@@ -12,6 +13,7 @@ export function OrderPanel({ onOpenShop }: Props) {
   const currentId = useGame((s) => s.current_order_recipe_id);
   const inventory = useGame((s) => s.inventory);
   const equipmentOwned = useGame((s) => s.equipment_owned);
+  const money = useGame((s) => s.money);
   const progress = useOrderEngine((s) => s.progress);
 
   if (!currentId) {
