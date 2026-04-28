@@ -38,9 +38,14 @@ function PlayPage() {
   const reviewsCount = useGame((s) => s.reviews.length);
   const avgRating = useGame(selectAvgRating);
   const log = useGame((s) => s.log);
-  const pickConsume = useActivePick((s) => s.consume);
   const pickValue = useActivePick((s) => s.pick);
   const setPick = useActivePick((s) => s.setPick);
+  /**
+   * Для совместимости со старым 3D-сценой: возвращаем pick как "id|quality".
+   * 2.5D-сцена использует pickValue напрямую.
+   */
+  const handlePickIngredient = (): string | null =>
+    pickValue ? `${pickValue.ingredient_id}|${pickValue.quality}` : null;
   const hintMode = useHintMode((s) => s.mode);
 
   const startOrder = useOrderEngine((s) => s.startOrder);
