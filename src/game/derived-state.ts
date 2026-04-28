@@ -1,14 +1,14 @@
 // Слой derived render state: из логической модели заказа вычисляет
 // визуальное состояние ключевых объектов кухни.
-// Используется и текущей 3D-сценой, и будущей 2.5D-сценой как единый источник.
 
 import type { OrderProgress } from "./order-engine";
 
-export type BowlVisualState = "empty" | "egg" | "mix";
+export type BowlVisualState = "empty" | "egg" | "eggs" | "mix";
 export type PlateVisualState = "empty" | "omelet" | "toast";
 export type CupVisualState = "empty" | "leaves" | "water" | "tea";
 export type KettleVisualState = "idle" | "boiling" | "ready";
 export type StoveVisualState = "idle" | "active";
+export type PanVisualState = "empty" | "raw" | "cooked";
 
 export interface KitchenVisualState {
   bowl: BowlVisualState;
@@ -16,6 +16,8 @@ export interface KitchenVisualState {
   cup: CupVisualState;
   kettle: KettleVisualState;
   stove: StoveVisualState;
+  /** Сковорода на плите: сырая смесь / готовый омлет / пусто. */
+  pan: PanVisualState;
 }
 
 const EMPTY: KitchenVisualState = {
@@ -24,15 +26,14 @@ const EMPTY: KitchenVisualState = {
   cup: "empty",
   kettle: "idle",
   stove: "idle",
+  pan: "empty",
 };
 
 /**
  * Чистая функция: prepared[] из OrderProgress → визуальные состояния.
- * Любое промежуточное «приготовленное» считается источником визуала.
  */
 export function selectKitchenVisualState(
   progress: OrderProgress | null,
-  /** ID активного шага — нужен только чтобы показать «активную» плиту/чайник во время минигеймы. */
   activeStepId: string | null = null,
 ): KitchenVisualState {
   if (!progress) return EMPTY;
@@ -40,42 +41,52 @@ export function selectKitchenVisualState(
 
   // Bowl
   let bowl: BowlVisualState = "empty";
-  if (prepared.has("egg_mix")) bowl = "mix";
-  else if (prepared.has("egg_in_bowl")) bowl = "egg";
+  if (prepared.has("beaten_eggs")) bowl = "mix";
+  else if (prepared.has("eggs_in_bowl")) bowl = "eggs";
+  else if (prepared.has("egg_in_bowl")) bowl = "egg"; // legacy
 
-  // Plate — омлет только после явного шага plate (plated_omelet),
-  // не после omelet_cooked (это ещё на сковороде).
+  // Plate — омлет только после явного шага plate.
   let plate: PlateVisualState = "empty";
   if (prepared.has("plated_omelet")) plate = "omelet";
   else if (prepared.has("toast_ready")) plate = "toast";
 
-  // Cup — hot_water это кипяток в чайнике, не в чашке.
-  // Чашка показывает заварку только после tea_brew, чай — после tea_pour.
+  // Cup — заварка только после tea_leaves_in_cup, чай — после tea_pour.
   let cup: CupVisualState = "empty";
   if (prepared.has("tea_brewed")) cup = "tea";
-  else if (prepared.has("tea_with_leaves")) cup = "leaves";
+  else if (prepared.has("tea_leaves_in_cup") || prepared.has("tea_with_leaves")) cup = "leaves";
 
   // Kettle
   let kettle: KettleVisualState = "idle";
   if (prepared.has("hot_water")) kettle = "ready";
   else if (activeStepId === "tea_boil") kettle = "boiling";
 
-  // Stove
-  const stove: StoveVisualState = activeStepId === "omelet_cook" ? "active" : "idle";
+  // Stove — активна во время варки/жарки.
+  const stove: StoveVisualState =
+    activeStepId === "omelet_cook" || activeStepId === "omelet_pour_pan" ? "active" : "idle";
 
-  return { bowl, plate, cup, kettle, stove };
+  // Pan — что лежит на сковороде.
+  let pan: PanVisualState = "empty";
+  if (prepared.has("omelet_cooked")) pan = "cooked";
+  else if (prepared.has("omelet_in_pan")) pan = "raw";
+
+  return { bowl, plate, cup, kettle, stove, pan };
 }
 
 /**
- * Маппинг визуальных состояний на «контентные» id, понятные текущему рендеру
- * (KitchenScene использует prepared-id для overlay внутри миски/чашки/тарелки).
- * Возвращает null, если объект пуст.
+ * Маппинг визуальных состояний на «контентные» id (для 3D overlay).
  */
 export function visualToContentId(
   visual: KitchenVisualState,
 ): { bowl: string | null; plate: string | null; cup: string | null } {
   return {
-    bowl: visual.bowl === "mix" ? "egg_mix" : visual.bowl === "egg" ? "egg_in_bowl" : null,
+    bowl:
+      visual.bowl === "mix"
+        ? "beaten_eggs"
+        : visual.bowl === "eggs"
+          ? "eggs_in_bowl"
+          : visual.bowl === "egg"
+            ? "egg_in_bowl"
+            : null,
     plate:
       visual.plate === "omelet"
         ? "plated_omelet"
@@ -86,7 +97,7 @@ export function visualToContentId(
       visual.cup === "tea"
         ? "tea_brewed"
         : visual.cup === "leaves"
-          ? "tea_with_leaves"
+          ? "tea_leaves_in_cup"
           : visual.cup === "water"
             ? "hot_water"
             : null,
