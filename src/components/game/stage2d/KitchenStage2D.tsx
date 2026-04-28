@@ -917,12 +917,12 @@ function CupSprite({ state, widthPx }: { state: CupVisualState; widthPx: number 
 
 /* ──────────────────────────── Bell (SVG) ─────────────────────────── */
 
-function BellSprite({ pulse, widthPx }: { pulse?: boolean; widthPx: number }) {
+function BellSprite({ pulse }: { pulse?: boolean; widthPx?: number }) {
   return (
     <svg
-      width={widthPx}
-      height={widthPx * 1.13}
+      width="100%"
       viewBox="0 0 64 74"
+      preserveAspectRatio="xMidYMax meet"
       aria-hidden
       className={pulse ? "animate-pulse" : ""}
     >
