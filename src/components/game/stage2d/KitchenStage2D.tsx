@@ -789,7 +789,7 @@ function SingleIngredient({ id }: { id: string }) {
 
 function BowlSprite({ state, widthPx }: { state: BowlVisualState; widthPx: number }) {
   return (
-    <div className="relative" style={{ width: widthPx }}>
+    <div className="relative" style={{ width: "100%" }}>
       <SpriteImg src={STAGE_ASSETS.bowl} alt="Миска" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
@@ -822,7 +822,7 @@ function BowlSprite({ state, widthPx }: { state: BowlVisualState; widthPx: numbe
 
 function PlateSprite({ state, widthPx }: { state: PlateVisualState; widthPx: number }) {
   return (
-    <div className="relative" style={{ width: widthPx }}>
+    <div className="relative" style={{ width: "100%" }}>
       <SpriteImg src={STAGE_ASSETS.plate} alt="Тарелка" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
@@ -871,7 +871,7 @@ function PlateSprite({ state, widthPx }: { state: PlateVisualState; widthPx: num
 
 function CupSprite({ state, widthPx }: { state: CupVisualState; widthPx: number }) {
   return (
-    <div className="relative" style={{ width: widthPx }}>
+    <div className="relative" style={{ width: "100%" }}>
       <SpriteImg src={STAGE_ASSETS.cup} alt="Чашка" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
