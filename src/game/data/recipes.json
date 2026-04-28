@@ -9,13 +9,13 @@
     "step_ids": ["tea_leaves_in_cup", "tea_boil", "tea_pour", "tea_serve"]
   },
   {
-    "id": "toast",
-    "name": "Тост",
-    "base_price": 35,
-    "t_fast": 30,
-    "t_ok": 55,
-    "required_equipment": ["toaster", "plate"],
-    "step_ids": ["toast_toast", "toast_serve"]
+    "id": "cheese_tomato_toast",
+    "name": "Сырный тост с помидором",
+    "base_price": 60,
+    "t_fast": 60,
+    "t_ok": 100,
+    "required_equipment": ["toaster", "knife", "cutting_board", "plate"],
+    "step_ids": ["ctt_bread_in_toaster", "ctt_toast", "ctt_chop_tomato", "ctt_assemble", "ctt_serve"]
   },
   {
     "id": "rice",
