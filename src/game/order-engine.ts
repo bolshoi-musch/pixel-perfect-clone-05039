@@ -119,6 +119,17 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
 
     // Check requirements: ingredients/preparedness/equipment ownership.
     const game = useGame.getState();
+
+    // 0) Placed equipment check (сковорода на плите и т.п.)
+    const placedReq = step.requiresEquipmentPlaced ?? [];
+    for (const flag of placedReq) {
+      if (flag === "pan_on_stove" && !game.placed_equipment.pan_on_stove) {
+        bumpError(set, get, "Нужна сковорода на плите");
+        useGame.getState().log("Открой Техника → поставь сковороду на плиту");
+        return { ok: false, reason: "missing", missing: ["pan_on_stove"] };
+      }
+    }
+
     const onTableCanonical = new Set(
       game.table_slots
         .map((s) => (s.ingredient_id ? canonicalIngredient(s.ingredient_id) : null))
