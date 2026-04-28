@@ -27,13 +27,17 @@ import { STAGE_ASSETS } from "./stage-assets";
 import {
   STAGE_LAYOUT,
   TABLE_SLOT_IDS_2D,
-  COUNTERTOP_TOP_PCT,
-  COUNTERTOP_BOTTOM_PCT,
-  COUNTERTOP_WIDTH_PCT,
-  COUNTERTOP_MAX_WIDTH_PX,
+  STAGE_W,
+  STAGE_H,
+  COUNTERTOP_TOP,
+  COUNTERTOP_BOTTOM,
   type StageObjectLayout,
 } from "./stage-layout";
 import { useHintMode } from "@/game/hint-mode";
+
+/** В % от STAGE_H — для слоёв фона/стола, которые лежат внутри сцены. */
+const TOP_PCT = (COUNTERTOP_TOP / STAGE_H) * 100;
+const BOTTOM_PCT = (COUNTERTOP_BOTTOM / STAGE_H) * 100;
 
 interface KitchenStage2DProps {
   onHoverLabel: (label: string | null) => void;
