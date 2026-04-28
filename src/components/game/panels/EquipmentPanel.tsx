@@ -13,6 +13,8 @@ export function EquipmentPanel({ onOpenShop, onClose }: Props) {
   const stoveLevel = useGame((s) => s.stove_level);
   const panOnStove = useGame((s) => s.placed_equipment.pan_on_stove);
   const setPanOnStove = useGame((s) => s.setPanOnStove);
+  const knifeBoardOnWorkArea = useGame((s) => s.placed_equipment.knife_board_on_work_area);
+  const setKnifeBoardOnWorkArea = useGame((s) => s.setKnifeBoardOnWorkArea);
   const log = useGame((s) => s.log);
 
   const ownedEq = EQUIPMENT.filter((e) => owned.includes(e.id));
