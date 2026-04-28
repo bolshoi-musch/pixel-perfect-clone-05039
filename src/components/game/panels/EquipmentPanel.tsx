@@ -33,6 +33,17 @@ export function EquipmentPanel({ onOpenShop, onClose }: Props) {
     log("Сковорода убрана с плиты");
   };
 
+  const handlePlaceKnifeBoard = () => {
+    setKnifeBoardOnWorkArea(true);
+    log("Нож и доска поставлены на рабочую зону");
+    onClose?.();
+  };
+
+  const handleRemoveKnifeBoard = () => {
+    setKnifeBoardOnWorkArea(false);
+    log("Нож и доска убраны с рабочей зоны");
+  };
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
