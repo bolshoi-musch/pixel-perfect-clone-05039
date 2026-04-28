@@ -68,6 +68,7 @@ export interface RecipeStep {
  */
 export interface PlacedEquipment {
   pan_on_stove: boolean;
+  knife_board_on_work_area: boolean;
 }
 
 export interface Recipe {
