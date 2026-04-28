@@ -121,13 +121,13 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
     // Check requirements: ingredients/preparedness/equipment ownership.
     const game = useGame.getState();
 
-    // 0) Placed equipment check (сковорода на плите и т.п.)
+    // 0) Placed equipment check (сковорода на плите, нож+доска на рабочей зоне)
     const placedReq = step.requiresEquipmentPlaced ?? [];
     for (const flag of placedReq) {
-      if (flag === "pan_on_stove" && !game.placed_equipment.pan_on_stove) {
-        bumpError(set, get, "Нужна сковорода на плите");
-        useGame.getState().log("Открой Техника → поставь сковороду на плиту");
-        return { ok: false, reason: "missing", missing: ["pan_on_stove"] };
+      if (!isPlacementSatisfied(flag, game.placed_equipment)) {
+        bumpError(set, get, PLACEMENT_ERROR[flag] ?? `Не размещено: ${flag}`);
+        useGame.getState().log(PLACEMENT_HINT[flag] ?? "Открой Техника");
+        return { ok: false, reason: "missing", missing: [flag] };
       }
     }
 
