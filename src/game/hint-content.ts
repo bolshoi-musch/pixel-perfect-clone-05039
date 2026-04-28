@@ -24,17 +24,22 @@ export interface HintEntry {
 }
 
 export const STEP_HINTS: Record<string, HintEntry> = {
-  omelet_crack: {
-    detailed: "Выбери Яйцо в Продуктах и нажми на Миску",
-    short: "Яйцо → Миска",
+  // ── Омлет (2 яйца + сковорода) ──
+  omelet_eggs_in_bowl: {
+    detailed: "Открой Продукты, возьми 2 Яйца и нажми на Миску",
+    short: "2 Яйца → Миска",
     pick: "egg",
   },
   omelet_mix: {
-    detailed: "Нажми на Миску и хорошо взбей",
+    detailed: "Нажми на Миску и хорошо взбей яйца",
     short: "Взбей",
   },
+  omelet_pour_pan: {
+    detailed: "Нажми на Плиту, чтобы вылить смесь на сковороду",
+    short: "Смесь → Сковорода",
+  },
   omelet_cook: {
-    detailed: "Нажми на Плиту и поймай готовность",
+    detailed: "Нажми на Плиту и поймай готовность омлета",
     short: "Плита",
   },
   omelet_plate: {
@@ -45,14 +50,16 @@ export const STEP_HINTS: Record<string, HintEntry> = {
     detailed: "Нажми Звонок, чтобы подать омлет",
     short: "Звонок",
   },
+
+  // ── Чай (4 шага) ──
+  tea_leaves_in_cup: {
+    detailed: "Открой Продукты, выбери Заварку и нажми на Чашку",
+    short: "Заварка → Чашка",
+    pick: "tea_leaves",
+  },
   tea_boil: {
     detailed: "Нажми на Чайник и поймай момент кипения",
     short: "Чайник",
-  },
-  tea_brew: {
-    detailed: "Выбери Заварку в Продуктах и нажми на Чашку",
-    short: "Заварка → Чашка",
-    pick: "tea_leaves",
   },
   tea_pour: {
     detailed: "Нажми на Чайник, чтобы налить кипяток в чашку",
