@@ -83,9 +83,21 @@ function migrate(raw: unknown): SaveData | null {
   }
   // v2 → v3: добавили placed_equipment.
   if (obj.version === 2) {
+    return migrate({
+      ...(obj as SaveData),
+      placed_equipment: { pan_on_stove: false, knife_board_on_work_area: false },
+      version: 3,
+    });
+  }
+  // v3 → v4: добавили knife_board_on_work_area.
+  if (obj.version === 3) {
+    const prev = (obj as SaveData).placed_equipment as Partial<{ pan_on_stove: boolean; knife_board_on_work_area: boolean }> | undefined;
     return {
       ...(obj as SaveData),
-      placed_equipment: { pan_on_stove: false },
+      placed_equipment: {
+        pan_on_stove: prev?.pan_on_stove ?? false,
+        knife_board_on_work_area: false,
+      },
       version: SAVE_VERSION,
     };
   }
