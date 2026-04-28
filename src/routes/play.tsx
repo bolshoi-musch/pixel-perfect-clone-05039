@@ -4,6 +4,7 @@ import { useGame, selectAvgRating } from "@/game/store";
 import { useActivePick } from "@/game/active-pick";
 import { useOrderEngine, pickNextRecipe, expectedEquipmentForStep } from "@/game/order-engine";
 import { RECIPES_BY_ID, INGREDIENTS_BY_ID, STEPS_BY_ID } from "@/game/data";
+import { getRecipeAvailability } from "@/game/recipe-availability";
 import { PanelDialog } from "@/components/game/PanelDialog";
 import { ShopPanel } from "@/components/game/panels/ShopPanel";
 import { InventoryPanel } from "@/components/game/panels/InventoryPanel";
@@ -90,7 +91,17 @@ function PlayPage() {
           if (next) {
             startOrder(next);
             orderInitRef.current = true;
-            log(`Новый заказ: ${RECIPES_BY_ID.get(next)?.name}`);
+            const recipeName = RECIPES_BY_ID.get(next)?.name;
+            log(`Новый заказ: ${recipeName}`);
+            const g = useGame.getState();
+            const av = getRecipeAvailability(next, {
+              money: g.money,
+              equipment_owned: g.equipment_owned,
+              inventory: g.inventory,
+            });
+            if (av.status === "affordable") {
+              log(`Нужно докупить на ${av.missingCost} ₽ — открой Магазин 🛒`);
+            }
           }
         },
         completionToast ? 1800 : 200,

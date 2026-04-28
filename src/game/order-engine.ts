@@ -8,6 +8,7 @@ import { useGame } from "./store";
 import { useActivePick } from "./active-pick";
 import { computeScore } from "./scoring";
 import { buildReview } from "./reviews";
+import { getRecipeAvailability } from "./recipe-availability";
 
 export interface OrderProgress {
   recipe_id: string;
@@ -510,11 +511,13 @@ export const TEST_RECIPE_POOL: readonly string[] = ["omelet", "tea", "cheese_tom
  */
 export function pickNextRecipe(): string | null {
   const game = useGame.getState();
-  const owned = new Set(game.equipment_owned);
+  // Рецепт может выпасть, если он либо ready (всё уже есть), либо affordable
+  // (денег хватит докупить недостающее). locked-рецепты в ротацию не попадают.
   const available = TEST_RECIPE_POOL.filter((id) => {
     const r = RECIPES_BY_ID.get(id);
     if (!r) return false;
-    return r.required_equipment.every((eq) => owned.has(eq));
+    const av = getRecipeAvailability(id, game);
+    return av.status === "ready" || av.status === "affordable";
   });
   if (available.length === 0) return null;
   const reviews = game.reviews;
