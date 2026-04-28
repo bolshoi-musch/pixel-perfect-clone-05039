@@ -602,14 +602,16 @@ function WorkAreaPreview({
   prepared: WorkAreaPreparedState;
 }) {
   const layout = STAGE_LAYOUT.workArea;
+  const leftPct = (layout.x / STAGE_W) * 100;
+  const topPct = (layout.y / STAGE_H) * 100;
 
   if (prepared === "tomato_slices") {
     return (
       <div
         className="pointer-events-none absolute"
         style={{
-          left: `${layout.left}%`,
-          top: `${layout.top}%`,
+          left: `${leftPct}%`,
+          top: `${topPct}%`,
           zIndex: layout.zIndex,
           transform: "translate(-50%, -100%)",
         }}
@@ -632,8 +634,8 @@ function WorkAreaPreview({
     <div
       className="pointer-events-none absolute"
       style={{
-        left: `${layout.left}%`,
-        top: `${layout.top}%`,
+        left: `${leftPct}%`,
+        top: `${topPct}%`,
         zIndex: layout.zIndex,
         transform: "translate(-50%, -100%)",
       }}
