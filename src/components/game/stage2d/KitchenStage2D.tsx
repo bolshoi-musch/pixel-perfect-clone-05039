@@ -20,6 +20,8 @@ import {
   type CupVisualState,
   type PlateVisualState,
   type PanVisualState,
+  type ToasterVisualState,
+  type WorkAreaPreparedState,
 } from "@/game/derived-state";
 import { STAGE_ASSETS } from "./stage-assets";
 import {
@@ -50,6 +52,7 @@ export function KitchenStage2D({
 }: KitchenStage2DProps) {
   const slots = useGame((s) => s.table_slots);
   const equipmentOwned = useGame((s) => s.equipment_owned);
+  const panOnStove = useGame((s) => s.placed_equipment.pan_on_stove);
   const placeFromInventory = useGame((s) => s.placeFromInventory);
   const pickupToInventory = useGame((s) => s.pickupToInventory);
   const eatFromTable = useGame((s) => s.eatFromTable);
@@ -135,7 +138,7 @@ export function KitchenStage2D({
       >
         <SpriteImg src={STAGE_ASSETS.stove} alt="Плита" widthPx={STAGE_LAYOUT.stove.width} />
         {visual.stove === "active" && <FlameOverlay />}
-        {visual.pan !== "empty" && <PanOverlay state={visual.pan} />}
+        {(panOnStove || visual.pan !== "empty") && <PanOverlay state={visual.pan} />}
       </StageObject>
 
       {equipmentOwned.includes("toaster") && (
@@ -148,6 +151,7 @@ export function KitchenStage2D({
           onClick={() => handleObject("toaster", "Тостер")}
         >
           <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" widthPx={STAGE_LAYOUT.toaster.width} />
+          {visual.toaster !== "empty" && <ToasterOverlay state={visual.toaster} />}
         </StageObject>
       )}
 
@@ -214,8 +218,8 @@ export function KitchenStage2D({
         <BellSprite pulse={activeTarget === "bell"} widthPx={STAGE_LAYOUT.bell.width} />
       </StageObject>
 
-      {/* ── Work area preview (показывает выбранный продукт) ── */}
-      <WorkAreaPreview pick={activePick} />
+      {/* ── Work area preview (показывает выбранный продукт или нарезку) ── */}
+      <WorkAreaPreview pick={activePick} prepared={visual.workAreaPrepared} />
 
       {/* ── Table slots ── */}
       {TABLE_SLOT_IDS_2D.map((id, i) => {
@@ -573,17 +577,44 @@ function PanOverlay({ state }: { state: PanVisualState }) {
 }
 
 /**
- * Превью выбранного продукта в рабочей области стола.
- * Появляется при activePick !== null. Это НЕ table slot — это «то, что
- * игрок сейчас держит» перед применением к шагу рецепта.
+ * Превью рабочей области:
+ *  - выбранный продукт (activePick) как объект на столе;
+ *  - либо нарезка (tomato_slices) после chop-шага.
  */
-function WorkAreaPreview({ pick }: { pick: ActivePick | null }) {
+function WorkAreaPreview({
+  pick,
+  prepared,
+}: {
+  pick: ActivePick | null;
+  prepared: WorkAreaPreparedState;
+}) {
+  const layout = STAGE_LAYOUT.workArea;
+
+  if (prepared === "tomato_slices") {
+    return (
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          left: `${layout.left}%`,
+          top: `${layout.top}%`,
+          zIndex: layout.zIndex,
+          transform: "translate(-50%, -100%)",
+        }}
+        aria-hidden
+      >
+        <div className="flex flex-col items-center gap-0.5">
+          <TomatoSlicesVisual />
+          <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
+            Помидор нарезан
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   if (!pick) return null;
   const ing = INGREDIENTS_BY_ID.get(pick.ingredient_id);
   if (!ing) return null;
-  const layout = STAGE_LAYOUT.workArea;
-  const icon = iconForIngredient(ing.id, ing.name);
-  const qualityBadge = pick.quality === "premium" ? "★ Премиум" : "Обычный";
   return (
     <div
       className="pointer-events-none absolute"
@@ -595,51 +626,147 @@ function WorkAreaPreview({ pick }: { pick: ActivePick | null }) {
       }}
       aria-hidden
     >
-      {/* Подложка-доска */}
-      <div
-        className="relative flex flex-col items-center gap-1 rounded-2xl border border-amber-900/30 bg-amber-100/85 px-3 py-2 shadow-md backdrop-blur"
-        style={{ minWidth: 110 }}
-      >
-        <div className="flex items-center gap-1.5">
-          <span className="text-2xl leading-none">{icon}</span>
-          <span className="text-base font-bold text-amber-900">×{pick.quantity}</span>
-        </div>
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-900/80">
-          {ing.name}
-        </span>
-        <span
-          className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
-            pick.quality === "premium"
-              ? "bg-amber-500/80 text-white"
-              : "bg-amber-900/15 text-amber-900"
-          }`}
-        >
-          {qualityBadge}
+      <div className="flex flex-col items-center gap-0.5">
+        <IngredientVisual id={pick.ingredient_id} quantity={pick.quantity} />
+        <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
+          {ing.name} ×{pick.quantity}
         </span>
       </div>
     </div>
   );
 }
 
-function iconForIngredient(id: string, name: string): string {
-  if (id.startsWith("egg")) return "🥚";
-  if (id === "tea_leaves") return "🍃";
-  if (id.startsWith("bread")) return "🍞";
-  if (id === "milk") return "🥛";
-  if (id === "tomato") return "🍅";
-  if (id === "cheese") return "🧀";
-  if (id === "cucumber") return "🥒";
-  if (id === "lettuce") return "🥬";
-  if (id === "berries") return "🫐";
-  if (id === "rice") return "🍚";
-  if (id === "pasta") return "🍝";
-  if (id === "flour") return "🌾";
-  if (id === "sugar") return "🍬";
-  if (id === "butter") return "🧈";
-  const n = name.toLowerCase();
-  if (n.includes("яйц")) return "🥚";
-  return "•";
+function TomatoSlicesVisual() {
+  return (
+    <svg width="60" height="32" viewBox="0 0 60 32" aria-hidden>
+      <circle cx="14" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="14" cy="20" r="4" fill="#ffb3b3" />
+      <circle cx="30" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="30" cy="20" r="4" fill="#ffb3b3" />
+      <circle cx="46" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="46" cy="20" r="4" fill="#ffb3b3" />
+    </svg>
+  );
 }
+
+/**
+ * Маленький overlay поверх тостера: ломтик хлеба внутри (bread) или
+ * готовый тост, торчащий сверху (ready).
+ */
+function ToasterOverlay({ state }: { state: ToasterVisualState }) {
+  return (
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+      style={{ top: state === "ready" ? "-20%" : "10%" }}
+      width="40"
+      height="40"
+      viewBox="0 0 40 40"
+    >
+      {state === "bread" && (
+        <rect x="14" y="10" width="12" height="18" rx="2" fill="#e9b870" stroke="#8a5a25" strokeWidth="1.2" />
+      )}
+      {state === "ready" && (
+        <>
+          <rect x="13" y="2" width="14" height="22" rx="2" fill="#c08a3a" stroke="#5e3a10" strokeWidth="1.2" />
+          <rect x="16" y="6" width="8" height="14" rx="1" fill="#e0a460" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+
+/**
+ * SVG-визуал продукта на рабочей области. Если PNG-ассета нет, рисуем
+ * простой узнаваемый SVG (яйцо, листья, помидор, сыр, хлеб).
+ */
+function IngredientVisual({ id, quantity }: { id: string; quantity: number }) {
+  const items: React.ReactNode[] = [];
+  const max = Math.min(quantity, 4);
+  for (let i = 0; i < max; i++) items.push(<SingleIngredient key={i} id={id} />);
+  return (
+    <div className="flex items-end justify-center gap-0.5" style={{ height: 44 }}>
+      {items}
+    </div>
+  );
+}
+
+function SingleIngredient({ id }: { id: string }) {
+  if (id.startsWith("egg")) {
+    const yolk = id === "egg_premium" ? "#f5a623" : "#f6c945";
+    return (
+      <svg width="32" height="40" viewBox="0 0 32 40" aria-hidden>
+        <ellipse cx="16" cy="22" rx="13" ry="17" fill="#fff8e8" stroke="#d8c79a" strokeWidth="1" />
+        <ellipse cx="16" cy="22" rx="5" ry="5" fill={yolk} opacity="0.35" />
+      </svg>
+    );
+  }
+  if (id === "tea_leaves") {
+    return (
+      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden>
+        <path d="M6 26 Q12 8 22 14 Q28 20 18 28 Q10 30 6 26 Z" fill="#3d5a2a" stroke="#243819" strokeWidth="1" />
+        <path d="M14 14 Q18 22 22 26" fill="none" stroke="#243819" strokeWidth="1" />
+        <path d="M20 8 Q26 12 24 18" fill="none" stroke="#5b8a3d" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  if (id.startsWith("bread")) {
+    return (
+      <svg width="38" height="34" viewBox="0 0 38 34" aria-hidden>
+        <path d="M4 14 Q4 4 19 4 Q34 4 34 14 L34 28 L4 28 Z" fill="#e9b870" stroke="#8a5a25" strokeWidth="1.2" />
+        <rect x="8" y="16" width="22" height="8" rx="2" fill="#f1cb8e" />
+      </svg>
+    );
+  }
+  if (id === "tomato") {
+    return (
+      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden>
+        <circle cx="18" cy="20" r="13" fill="#e23b3b" stroke="#8a1d1d" strokeWidth="1.2" />
+        <path d="M14 6 L18 10 L22 6 L20 10 L24 8 L20 12" fill="none" stroke="#3d6b2a" strokeWidth="2" strokeLinecap="round" />
+        <ellipse cx="14" cy="16" rx="3" ry="2" fill="#ff7373" opacity="0.6" />
+      </svg>
+    );
+  }
+  if (id === "cheese") {
+    return (
+      <svg width="38" height="32" viewBox="0 0 38 32" aria-hidden>
+        <path d="M4 26 L34 26 L30 8 L8 8 Z" fill="#f5d048" stroke="#a78212" strokeWidth="1.2" />
+        <circle cx="14" cy="18" r="2" fill="#fff3a8" />
+        <circle cx="22" cy="20" r="1.6" fill="#fff3a8" />
+        <circle cx="26" cy="14" r="1.4" fill="#fff3a8" />
+      </svg>
+    );
+  }
+  if (id === "cucumber") {
+    return (
+      <svg width="36" height="34" viewBox="0 0 36 34" aria-hidden>
+        <ellipse cx="18" cy="18" rx="13" ry="6" fill="#5fa83a" stroke="#2f5a1c" strokeWidth="1" transform="rotate(-25 18 18)" />
+      </svg>
+    );
+  }
+  if (id === "lettuce") {
+    return (
+      <svg width="36" height="32" viewBox="0 0 36 32" aria-hidden>
+        <path d="M6 24 Q4 12 18 8 Q32 12 30 24 Q24 28 18 26 Q12 28 6 24 Z" fill="#86c25a" stroke="#3a6a1c" strokeWidth="1" />
+      </svg>
+    );
+  }
+  if (id === "milk") {
+    return (
+      <svg width="28" height="38" viewBox="0 0 28 38" aria-hidden>
+        <path d="M8 6 L8 12 L4 16 L4 32 L24 32 L24 16 L20 12 L20 6 Z" fill="#fafafa" stroke="#777" strokeWidth="1" />
+      </svg>
+    );
+  }
+  // generic raw item
+  return (
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+      <circle cx="15" cy="18" r="10" fill="#d4a574" stroke="#8a5a25" strokeWidth="1" />
+    </svg>
+  );
+}
+
 
 
 
@@ -703,6 +830,20 @@ function PlateSprite({ state, widthPx }: { state: PlateVisualState; widthPx: num
             <>
               <rect x="56" y="50" width="64" height="28" rx="4" fill="#d09e58" stroke="#8a5a25" strokeWidth="1.2" />
               <rect x="62" y="56" width="52" height="16" rx="2" fill="#e9b870" />
+            </>
+          )}
+          {state === "cheese_tomato_toast" && (
+            <>
+              {/* Тост */}
+              <rect x="52" y="50" width="68" height="28" rx="4" fill="#c08a3a" stroke="#5e3a10" strokeWidth="1.2" />
+              <rect x="58" y="55" width="56" height="18" rx="2" fill="#e0a460" />
+              {/* Сыр поверх */}
+              <rect x="58" y="52" width="56" height="6" fill="#f5d048" opacity="0.9" />
+              {/* Помидор кружочки */}
+              <circle cx="72" cy="64" r="6" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="0.8" />
+              <circle cx="72" cy="64" r="2.5" fill="#ffb3b3" />
+              <circle cx="96" cy="64" r="6" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="0.8" />
+              <circle cx="96" cy="64" r="2.5" fill="#ffb3b3" />
             </>
           )}
         </svg>

@@ -55,6 +55,7 @@ const StepSchema = z
     requiredIngredients: z
       .array(z.object({ id: z.string(), quantity: z.number().int().positive() }))
       .optional(),
+    requiresEquipmentPlaced: z.array(z.string()).optional(),
   })
   .passthrough();
 

@@ -55,6 +55,19 @@ export interface RecipeStep {
    * из requires).
    */
   requiredIngredients?: { id: string; quantity: number }[];
+  /**
+   * Список placement-флагов, которые должны быть истинны (PlacedEquipment).
+   * Например ["pan_on_stove"] для шагов жарки омлета.
+   */
+  requiresEquipmentPlaced?: string[];
+}
+
+/**
+ * Размещённое оборудование, которое игрок поставил вручную.
+ * Сейчас единственный кейс — сковорода на плите.
+ */
+export interface PlacedEquipment {
+  pan_on_stove: boolean;
 }
 
 export interface Recipe {

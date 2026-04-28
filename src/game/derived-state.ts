@@ -4,11 +4,13 @@
 import type { OrderProgress } from "./order-engine";
 
 export type BowlVisualState = "empty" | "egg" | "eggs" | "mix";
-export type PlateVisualState = "empty" | "omelet" | "toast";
+export type PlateVisualState = "empty" | "omelet" | "toast" | "cheese_tomato_toast";
 export type CupVisualState = "empty" | "leaves" | "water" | "tea";
 export type KettleVisualState = "idle" | "boiling" | "ready";
 export type StoveVisualState = "idle" | "active";
 export type PanVisualState = "empty" | "raw" | "cooked";
+export type ToasterVisualState = "empty" | "bread" | "ready";
+export type WorkAreaPreparedState = "empty" | "tomato_slices";
 
 export interface KitchenVisualState {
   bowl: BowlVisualState;
@@ -16,8 +18,9 @@ export interface KitchenVisualState {
   cup: CupVisualState;
   kettle: KettleVisualState;
   stove: StoveVisualState;
-  /** Сковорода на плите: сырая смесь / готовый омлет / пусто. */
   pan: PanVisualState;
+  toaster: ToasterVisualState;
+  workAreaPrepared: WorkAreaPreparedState;
 }
 
 const EMPTY: KitchenVisualState = {
@@ -27,6 +30,8 @@ const EMPTY: KitchenVisualState = {
   kettle: "idle",
   stove: "idle",
   pan: "empty",
+  toaster: "empty",
+  workAreaPrepared: "empty",
 };
 
 /**
@@ -45,10 +50,11 @@ export function selectKitchenVisualState(
   else if (prepared.has("eggs_in_bowl")) bowl = "eggs";
   else if (prepared.has("egg_in_bowl")) bowl = "egg"; // legacy
 
-  // Plate — омлет только после явного шага plate.
+  // Plate — омлет, тост или собранный сырный тост.
   let plate: PlateVisualState = "empty";
-  if (prepared.has("plated_omelet")) plate = "omelet";
-  else if (prepared.has("toast_ready")) plate = "toast";
+  if (prepared.has("cheese_tomato_toast")) plate = "cheese_tomato_toast";
+  else if (prepared.has("plated_omelet")) plate = "omelet";
+  else if (prepared.has("toast_ready") || prepared.has("toasted_bread")) plate = "toast";
 
   // Cup — заварка только после tea_leaves_in_cup, чай — после tea_pour.
   let cup: CupVisualState = "empty";
@@ -69,7 +75,16 @@ export function selectKitchenVisualState(
   if (prepared.has("omelet_cooked")) pan = "cooked";
   else if (prepared.has("omelet_in_pan")) pan = "raw";
 
-  return { bowl, plate, cup, kettle, stove, pan };
+  // Toaster
+  let toaster: ToasterVisualState = "empty";
+  if (prepared.has("toasted_bread")) toaster = "ready";
+  else if (prepared.has("bread_in_toaster")) toaster = "bread";
+
+  // Work area — нарезанные продукты лежат на доске.
+  let workAreaPrepared: WorkAreaPreparedState = "empty";
+  if (prepared.has("tomato_slices")) workAreaPrepared = "tomato_slices";
+
+  return { bowl, plate, cup, kettle, stove, pan, toaster, workAreaPrepared };
 }
 
 /**

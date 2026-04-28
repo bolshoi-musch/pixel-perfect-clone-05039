@@ -119,6 +119,17 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
 
     // Check requirements: ingredients/preparedness/equipment ownership.
     const game = useGame.getState();
+
+    // 0) Placed equipment check (сковорода на плите и т.п.)
+    const placedReq = step.requiresEquipmentPlaced ?? [];
+    for (const flag of placedReq) {
+      if (flag === "pan_on_stove" && !game.placed_equipment.pan_on_stove) {
+        bumpError(set, get, "Нужна сковорода на плите");
+        useGame.getState().log("Открой Техника → поставь сковороду на плиту");
+        return { ok: false, reason: "missing", missing: ["pan_on_stove"] };
+      }
+    }
+
     const onTableCanonical = new Set(
       game.table_slots
         .map((s) => (s.ingredient_id ? canonicalIngredient(s.ingredient_id) : null))
@@ -477,6 +488,10 @@ const STEP_COMPLETION_LOG: Record<string, string> = {
   tea_leaves_in_cup: "Заварка в чашке. Вскипяти воду.",
   tea_boil: "Вода закипела. Налей кипяток в чашку.",
   tea_pour: "Чай готов к подаче. Позвони в звонок.",
+  ctt_bread_in_toaster: "Хлеб в тостере. Поймай готовность.",
+  ctt_toast: "Тост готов. Теперь нарежь помидор.",
+  ctt_chop_tomato: "Помидор нарезан. Собери тост на тарелке.",
+  ctt_assemble: "Тост собран. Позвони в звонок.",
 };
 
 
@@ -484,29 +499,35 @@ const STEP_COMPLETION_LOG: Record<string, string> = {
 
 /**
  * Test pool — only these recipes are issued in MVP/test mode.
- * Other recipes may exist in recipes.json but are intentionally ignored here.
+ * cheese_tomato_toast включается, только если у игрока куплен toaster.
  */
-export const TEST_RECIPE_POOL: readonly string[] = ["omelet", "tea"];
+export const TEST_RECIPE_POOL: readonly string[] = ["omelet", "tea", "cheese_tomato_toast"];
 
 /**
  * Pick the next recipe id (test mode):
- * - Strictly alternates within TEST_RECIPE_POOL based on the most recent review.
- * - First order: first item of the pool (omelet).
- * - After omelet → tea, after tea → omelet.
+ * - Strictly alternates within available pool based on the most recent review.
+ * - Recipes whose required_equipment is not all owned are filtered out.
  */
 export function pickNextRecipe(): string | null {
   const game = useGame.getState();
+  const owned = new Set(game.equipment_owned);
+  const available = TEST_RECIPE_POOL.filter((id) => {
+    const r = RECIPES_BY_ID.get(id);
+    if (!r) return false;
+    return r.required_equipment.every((eq) => owned.has(eq));
+  });
+  if (available.length === 0) return null;
   const reviews = game.reviews;
   // store.completeOrder prepends the new review, so reviews[0] is the most recent.
   const lastReview = reviews.length > 0 ? reviews[0] : null;
   const lastId = lastReview?.recipe_id ?? null;
 
   let next: string | null;
-  if (!lastId || !TEST_RECIPE_POOL.includes(lastId)) {
-    next = TEST_RECIPE_POOL[0] ?? null;
+  if (!lastId || !available.includes(lastId)) {
+    next = available[0] ?? null;
   } else {
-    const idx = TEST_RECIPE_POOL.indexOf(lastId);
-    next = TEST_RECIPE_POOL[(idx + 1) % TEST_RECIPE_POOL.length] ?? null;
+    const idx = available.indexOf(lastId);
+    next = available[(idx + 1) % available.length] ?? null;
   }
   console.debug(`pickNextRecipe: last=${lastId ?? "none"}, next=${next ?? "none"}`);
   return next;

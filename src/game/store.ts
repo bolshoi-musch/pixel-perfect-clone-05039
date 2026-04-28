@@ -51,6 +51,8 @@ interface GameState extends SaveData {
   buyEquipment: (id: string, price: number) => boolean;
   buyIngredient: (id: string, quality: IngredientQuality, price: number) => boolean;
   upgradeStove: (price: number) => boolean;
+  /** Поставить сковороду на плиту / снять. */
+  setPanOnStove: (placed: boolean) => void;
 
   setCurrentOrder: (recipe_id: string | null) => void;
   completeOrder: (recipe_id: string, stars: number, review: ReviewEntry, reward: number) => void;
@@ -286,6 +288,11 @@ export const useGame = create<GameState>((set, get) => ({
     return true;
   },
 
+  setPanOnStove: (placed) => {
+    set({ placed_equipment: { ...get().placed_equipment, pan_on_stove: placed } });
+    get().persist();
+  },
+
   setCurrentOrder: (recipe_id) => {
     set({ current_order_recipe_id: recipe_id });
     get().persist();
@@ -328,6 +335,7 @@ function extractSave(s: SaveData): SaveData {
     equipment_owned: s.equipment_owned,
     stove_level: s.stove_level,
     table_slots: s.table_slots,
+    placed_equipment: s.placed_equipment,
     current_order_recipe_id: s.current_order_recipe_id,
     rating_history: s.rating_history,
     reviews: s.reviews,

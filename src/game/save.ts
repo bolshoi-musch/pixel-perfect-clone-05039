@@ -6,10 +6,11 @@ import type {
   TableSlot,
   ReviewEntry,
   OnboardingFlags,
+  PlacedEquipment,
 } from "./types";
 
 export const SAVE_KEY = "kitchen.save.v1";
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface SaveData {
   version: number;
@@ -19,6 +20,8 @@ export interface SaveData {
   /** Уровень плиты 1..3 — расширяет green zone в WINDOW мини-игре. */
   stove_level: number;
   table_slots: TableSlot[]; // length 5
+  /** Какие предметы стоят на «месте» (placement). Сейчас — сковорода на плите. */
+  placed_equipment: PlacedEquipment;
   current_order_recipe_id: string | null;
   rating_history: number[]; // последние оценки (звёзды)
   reviews: ReviewEntry[]; // последние 20
@@ -50,9 +53,12 @@ export function makeInitialSave(): SaveData {
       "pan",
       "bowl",
       "kettle",
+      "knife",
+      "cutting_board",
     ],
     stove_level: 1,
     table_slots: Array.from({ length: 5 }, () => ({ ...EMPTY_SLOT })),
+    placed_equipment: { pan_on_stove: false },
     current_order_recipe_id: null,
     rating_history: [],
     reviews: [],
@@ -75,9 +81,13 @@ function migrate(raw: unknown): SaveData | null {
   }
   // v1 → v2: добавили stove_level.
   if (obj.version === 1) {
+    return migrate({ ...(obj as SaveData), stove_level: 1, version: 2 });
+  }
+  // v2 → v3: добавили placed_equipment.
+  if (obj.version === 2) {
     return {
       ...(obj as SaveData),
-      stove_level: 1,
+      placed_equipment: { pan_on_stove: false },
       version: SAVE_VERSION,
     };
   }

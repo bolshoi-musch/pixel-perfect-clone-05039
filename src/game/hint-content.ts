@@ -69,6 +69,31 @@ export const STEP_HINTS: Record<string, HintEntry> = {
     detailed: "Нажми Звонок, чтобы подать чай",
     short: "Звонок",
   },
+
+  // ── Сырный тост с помидором ──
+  ctt_bread_in_toaster: {
+    detailed: "Открой Продукты, выбери Хлеб и нажми на Тостер",
+    short: "Хлеб → Тостер",
+    pick: "bread",
+  },
+  ctt_toast: {
+    detailed: "Нажми на Тостер и поймай готовность",
+    short: "Тостер",
+  },
+  ctt_chop_tomato: {
+    detailed: "Открой Продукты, выбери Помидор и нажми на Рабочую зону",
+    short: "Помидор → Доска",
+    pick: "tomato",
+  },
+  ctt_assemble: {
+    detailed: "Открой Продукты, выбери Сыр и нажми на Тарелку",
+    short: "Сыр → Тарелка",
+    pick: "cheese",
+  },
+  ctt_serve: {
+    detailed: "Нажми Звонок, чтобы подать тост",
+    short: "Звонок",
+  },
 };
 
 export function getHintText(stepId: string | null, mode: HintMode): string | null {
