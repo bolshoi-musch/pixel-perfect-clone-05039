@@ -90,7 +90,17 @@ function PlayPage() {
           if (next) {
             startOrder(next);
             orderInitRef.current = true;
-            log(`Новый заказ: ${RECIPES_BY_ID.get(next)?.name}`);
+            const recipeName = RECIPES_BY_ID.get(next)?.name;
+            log(`Новый заказ: ${recipeName}`);
+            const g = useGame.getState();
+            const av = getRecipeAvailability(next, {
+              money: g.money,
+              equipment_owned: g.equipment_owned,
+              inventory: g.inventory,
+            });
+            if (av.status === "affordable") {
+              log(`Нужно докупить на ${av.missingCost} ₽ — открой Магазин 🛒`);
+            }
           }
         },
         completionToast ? 1800 : 200,
