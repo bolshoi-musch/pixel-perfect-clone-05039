@@ -80,9 +80,17 @@ export const STEP_HINTS: Record<string, HintEntry> = {
     detailed: "Нажми на Тостер и поймай готовность",
     short: "Тостер",
   },
+  ctt_toast_to_plate: {
+    detailed: "Нажми на Тарелку, чтобы переложить готовый тост",
+    short: "Тост → Тарелка",
+  },
+  ctt_place_knife_board: {
+    detailed: "Открой Техника и поставь Нож и доску на рабочую зону",
+    short: "Нож и доска → Рабочая зона",
+  },
   ctt_chop_tomato: {
     detailed: "Открой Продукты, выбери Помидор и нажми на Рабочую зону",
-    short: "Помидор → Доска",
+    short: "Помидор → Рабочая зона",
     pick: "tomato",
   },
   ctt_assemble: {
