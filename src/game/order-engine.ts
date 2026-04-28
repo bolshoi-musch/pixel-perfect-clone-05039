@@ -508,7 +508,8 @@ const STEP_COMPLETION_LOG: Record<string, string> = {
   tea_pour: "Чай готов к подаче. Позвони в звонок.",
   ctt_bread_in_toaster: "Хлеб в тостере. Поймай готовность.",
   ctt_toast: "Тост готов. Теперь нарежь помидор.",
-  ctt_chop_tomato: "Помидор нарезан. Собери тост на тарелке.",
+  ctt_chop_tomato: "Помидор нарезан. Положи его на тост.",
+  ctt_tomato_to_toast: "Помидор на тосте. Добавь сыр.",
   ctt_assemble: "Тост собран. Позвони в звонок.",
 };
 

@@ -4,7 +4,7 @@
 import type { OrderProgress } from "./order-engine";
 
 export type BowlVisualState = "empty" | "egg" | "eggs" | "mix";
-export type PlateVisualState = "empty" | "omelet" | "toast" | "cheese_tomato_toast";
+export type PlateVisualState = "empty" | "omelet" | "toast" | "toast_tomato" | "cheese_tomato_toast";
 export type CupVisualState = "empty" | "leaves" | "water" | "tea";
 export type KettleVisualState = "idle" | "boiling" | "ready";
 export type StoveVisualState = "idle" | "active";
@@ -50,9 +50,10 @@ export function selectKitchenVisualState(
   else if (prepared.has("eggs_in_bowl")) bowl = "eggs";
   else if (prepared.has("egg_in_bowl")) bowl = "egg"; // legacy
 
-  // Plate — омлет, тост (переложенный) или собранный сырный тост.
+  // Plate — омлет, тост (переложенный), тост с помидором или финальный сырный тост.
   let plate: PlateVisualState = "empty";
   if (prepared.has("cheese_tomato_toast")) plate = "cheese_tomato_toast";
+  else if (prepared.has("tomato_on_toast")) plate = "toast_tomato";
   else if (prepared.has("plated_omelet")) plate = "omelet";
   else if (prepared.has("toast_on_plate")) plate = "toast";
 
@@ -80,9 +81,11 @@ export function selectKitchenVisualState(
   if (prepared.has("toasted_bread")) toaster = "ready";
   else if (prepared.has("bread_in_toaster")) toaster = "bread";
 
-  // Work area — нарезанные продукты лежат на доске.
+  // Work area — нарезанные продукты лежат на доске, пока не перенесены на тост.
   let workAreaPrepared: WorkAreaPreparedState = "empty";
-  if (prepared.has("tomato_slices")) workAreaPrepared = "tomato_slices";
+  if (prepared.has("tomato_slices") && !prepared.has("tomato_on_toast")) {
+    workAreaPrepared = "tomato_slices";
+  }
 
   return { bowl, plate, cup, kettle, stove, pan, toaster, workAreaPrepared };
 }
