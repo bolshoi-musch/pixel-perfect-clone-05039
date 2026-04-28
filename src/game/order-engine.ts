@@ -351,13 +351,76 @@ function completeStep(
 
   // Consume raw ingredients: from table first, then from inventory (direct-consume).
   const game = useGame.getState();
-  const owned = new Set(game.equipment_owned);
+  const owned = new Set([...game.equipment_owned, ...IMPLICIT_EQUIPMENT]);
   const preparedSet = new Set(p.prepared);
   let consumed_basic = p.consumed_basic;
   let consumed_premium = p.consumed_premium;
 
   const newPrepared = [...p.prepared];
 
+  /**
+   * Списать N единиц ингредиента (canonical id) из стола/инвентаря.
+   * Стол первым, дальше инвентарь. Учитывает activePick для приоритета
+   * качества/конкретного entry.
+   */
+  const consumeIngredient = (canonicalId: string, count: number) => {
+    let need = count;
+    while (need > 0) {
+      const slotIdx = game.table_slots.findIndex(
+        (s) => s.ingredient_id && canonicalIngredient(s.ingredient_id) === canonicalId,
+      );
+      if (slotIdx >= 0) {
+        const slot = game.table_slots[slotIdx];
+        if (slot.quality === "premium") consumed_premium += 1;
+        else consumed_basic += 1;
+        game.clearTableSlot(slotIdx);
+        need -= 1;
+        continue;
+      }
+      // Inventory: prefer activePick id+quality, иначе premium-first.
+      const pick = useActivePick.getState().pick;
+      let pickedFrom: { id: string; quality: IngredientQuality } | null = null;
+      if (pick && canonicalIngredient(pick.ingredient_id) === canonicalId) {
+        const inv = game.inventory.find(
+          (e) => e.ingredient_id === pick.ingredient_id && e.quality === pick.quality && e.count > 0,
+        );
+        if (inv) pickedFrom = { id: inv.ingredient_id, quality: inv.quality };
+      }
+      if (!pickedFrom) {
+        const sortedInv = [...game.inventory].sort((a, b) =>
+          a.quality === b.quality ? 0 : a.quality === "premium" ? -1 : 1,
+        );
+        const match = sortedInv.find(
+          (e) => canonicalIngredient(e.ingredient_id) === canonicalId && e.count > 0,
+        );
+        if (match) pickedFrom = { id: match.ingredient_id, quality: match.quality };
+      }
+      if (!pickedFrom) break; // ничего не нашли — выходим
+      game.removeFromInventory(pickedFrom.id, pickedFrom.quality, 1);
+      if (pickedFrom.quality === "premium") consumed_premium += 1;
+      else consumed_basic += 1;
+      // Уменьшаем активный пик, если он совпал.
+      const pickNow = useActivePick.getState().pick;
+      if (
+        pickNow &&
+        pickNow.ingredient_id === pickedFrom.id &&
+        pickNow.quality === pickedFrom.quality
+      ) {
+        useActivePick.getState().consumeQuantity(1);
+      }
+      need -= 1;
+    }
+  };
+
+  // 1) requiredIngredients (с количествами) — высший приоритет.
+  const reqIng = step.requiredIngredients ?? [];
+  const consumedByQty = new Set<string>();
+  for (const ri of reqIng) {
+    consumeIngredient(ri.id, ri.quantity);
+    consumedByQty.add(ri.id);
+  }
+
+  // 2) Старая схема: один-на-один по step.requires (если не покрыто quantity).
   for (const req of step.requires) {
     if (owned.has(req)) continue;
     if (preparedSet.has(req)) {
@@ -366,49 +429,8 @@ function completeStep(
       continue;
     }
     if (req === "water") continue;
-
-    // 1) Try table slot (any ingredient whose canonical matches req)
-    const slotIdx = game.table_slots.findIndex(
-      (s) => s.ingredient_id && canonicalIngredient(s.ingredient_id) === req,
-    );
-    if (slotIdx >= 0) {
-      const slot = game.table_slots[slotIdx];
-      if (slot.quality === "premium") consumed_premium += 1;
-      else consumed_basic += 1;
-      game.clearTableSlot(slotIdx);
-      continue;
-    }
-
-    // 2) Direct-consume from inventory: prefer the actively picked one if matches.
-    const pick = useActivePick.getState().pick;
-    let pickedFrom: { id: string; quality: IngredientQuality } | null = null;
-    if (pick) {
-      const [pId, pQ] = pick.split("|") as [string, IngredientQuality];
-      if (canonicalIngredient(pId) === req) pickedFrom = { id: pId, quality: pQ };
-    }
-    if (!pickedFrom) {
-      // Find any inventory entry whose canonical matches req (premium first to reward effort).
-      const sortedInv = [...game.inventory].sort((a, b) =>
-        a.quality === b.quality ? 0 : a.quality === "premium" ? -1 : 1,
-      );
-      const match = sortedInv.find(
-        (e) => canonicalIngredient(e.ingredient_id) === req && e.count > 0,
-      );
-      if (match) pickedFrom = { id: match.ingredient_id, quality: match.quality };
-    }
-    if (pickedFrom) {
-      game.removeFromInventory(pickedFrom.id, pickedFrom.quality, 1);
-      if (pickedFrom.quality === "premium") consumed_premium += 1;
-      else consumed_basic += 1;
-      // Clear pick if it was the one consumed
-      if (
-        pick &&
-        pick === `${pickedFrom.id}|${pickedFrom.quality}`
-      ) {
-        useActivePick.getState().setPick(null);
-      }
-    }
-    // If nothing found here — tryStep already verified availability, so this shouldn't happen.
+    if (consumedByQty.has(req)) continue;
+    consumeIngredient(req, 1);
   }
 
   if (step.output) newPrepared.push(step.output);
@@ -447,14 +469,16 @@ function completeStep(
 
 /** Per-step custom completion message (overrides generic "Шаг N выполнен"). */
 const STEP_COMPLETION_LOG: Record<string, string> = {
-  omelet_crack: "Яйцо добавлено в миску",
-  omelet_mix: "Яйцо взбито",
+  omelet_eggs_in_bowl: "2 яйца в миске. Теперь взбей их.",
+  omelet_mix: "Яйца взбиты. Вылей смесь на сковороду.",
+  omelet_pour_pan: "Смесь на сковороде. Поймай готовность.",
   omelet_cook: "Омлет готов. Переложи его на тарелку.",
   omelet_plate: "Омлет на тарелке. Позвони в звонок.",
-  tea_boil: "Вода закипела. Теперь добавь заварку в чашку.",
-  tea_brew: "Заварка в чашке. Налей кипяток из чайника.",
+  tea_leaves_in_cup: "Заварка в чашке. Вскипяти воду.",
+  tea_boil: "Вода закипела. Налей кипяток в чашку.",
   tea_pour: "Чай готов к подаче. Позвони в звонок.",
 };
+
 
 // ---------- Order generator ----------
 
