@@ -83,37 +83,58 @@ export function OrderPanel({ onOpenShop }: Props) {
         </div>
       </div>
 
-      {(missingIngredients.length > 0 || missingEquipment.length > 0) && (
-        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3">
-          <h4 className="mb-2 text-sm font-semibold text-foreground">Не хватает</h4>
-          {missingEquipment.length > 0 && (
-            <div className="mb-2">
-              <p className="mb-1 text-xs text-muted-foreground">Техника:</p>
-              <p className="text-sm text-foreground">
-                {missingEquipment.map((id) => EQUIPMENT_BY_ID.get(id)?.name ?? id).join(", ")}
-              </p>
-              {onOpenShop && (
-                <Button size="sm" className="mt-2" onClick={() => onOpenShop("equipment")}>
-                  Купить в магазине
-                </Button>
-              )}
-            </div>
-          )}
-          {missingIngredients.length > 0 && (
-            <div>
-              <p className="mb-1 text-xs text-muted-foreground">Продукты:</p>
-              <p className="text-sm text-foreground">
-                {missingIngredients.map((id) => INGREDIENTS_BY_ID.get(id)?.name ?? id).join(", ")}
-              </p>
-              {onOpenShop && (
-                <Button size="sm" className="mt-2" onClick={() => onOpenShop("products")}>
-                  Купить в магазине
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+      {(missingIngredients.length > 0 || missingEquipment.length > 0) && (() => {
+        const av = getRecipeAvailability(recipe.id, { money, equipment_owned: equipmentOwned, inventory });
+        const canAfford = av.status === "affordable" || av.status === "ready";
+        return (
+          <div
+            className={`rounded-xl border p-3 ${
+              canAfford
+                ? "border-amber-400/40 bg-amber-400/5"
+                : "border-destructive/40 bg-destructive/5"
+            }`}
+          >
+            <h4 className="mb-2 text-sm font-semibold text-foreground">
+              {canAfford ? "Нужно докупить" : "Не хватает"}
+            </h4>
+            {av.missingEquipment.length > 0 && (
+              <div className="mb-2">
+                <p className="mb-1 text-xs text-muted-foreground">Техника:</p>
+                <p className="text-sm text-foreground">
+                  {av.missingEquipment
+                    .map((id) => `${EQUIPMENT_BY_ID.get(id)?.name ?? id} (${EQUIPMENT_BY_ID.get(id)?.price ?? 0} ₽)`)
+                    .join(", ")}
+                </p>
+                {onOpenShop && canAfford && (
+                  <Button size="sm" className="mt-2" onClick={() => onOpenShop("equipment")}>
+                    Открыть Магазин → Техника
+                  </Button>
+                )}
+              </div>
+            )}
+            {av.missingIngredients.length > 0 && (
+              <div>
+                <p className="mb-1 text-xs text-muted-foreground">Продукты:</p>
+                <p className="text-sm text-foreground">
+                  {av.missingIngredients
+                    .map((m) => `${INGREDIENTS_BY_ID.get(m.id)?.name ?? m.id} ×${m.quantity}`)
+                    .join(", ")}
+                </p>
+                {onOpenShop && canAfford && (
+                  <Button size="sm" className="mt-2" onClick={() => onOpenShop("products")}>
+                    Открыть Магазин → Продукты
+                  </Button>
+                )}
+              </div>
+            )}
+            <p className={`mt-2 text-xs ${canAfford ? "text-amber-600 dark:text-amber-400" : "text-destructive"}`}>
+              {canAfford
+                ? `Стоимость: ${av.missingCost} ₽ — денег хватает (${money} ₽). Открой Магазин.`
+                : `Нужно ${av.missingCost} ₽, у тебя ${money} ₽.`}
+            </p>
+          </div>
+        );
+      })()}
 
       {finished && (
         <div className="rounded-xl border border-primary/40 bg-primary/10 p-3 text-sm font-medium text-primary">
