@@ -117,11 +117,42 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
         .map((s) => (s.ingredient_id ? canonicalIngredient(s.ingredient_id) : null))
         .filter((x): x is string => !!x),
     );
-    const inventoryCanonical = new Set(
-      game.inventory.filter((e) => e.count > 0).map((e) => canonicalIngredient(e.ingredient_id)),
-    );
+    const inventoryCanonicalCount = new Map<string, number>();
+    for (const e of game.inventory) {
+      if (e.count <= 0) continue;
+      const k = canonicalIngredient(e.ingredient_id);
+      inventoryCanonicalCount.set(k, (inventoryCanonicalCount.get(k) ?? 0) + e.count);
+    }
     const preparedSet = new Set(p.prepared);
-    const owned = new Set(game.equipment_owned);
+    const owned = new Set([...game.equipment_owned, ...IMPLICIT_EQUIPMENT]);
+
+    // 1) requiredIngredients (quantities) take precedence over plain `requires`
+    //    for ingredient checks. They may overlap with `requires`, but quantities
+    //    are validated against activePick + inventory totals.
+    const reqIng = step.requiredIngredients ?? [];
+    const pick = useActivePick.getState().pick;
+    for (const ri of reqIng) {
+      const haveInv = inventoryCanonicalCount.get(ri.id) ?? 0;
+      const haveTable = [...onTableCanonical].filter((c) => c === ri.id).length;
+      const have = haveInv + haveTable;
+      if (have < ri.quantity) {
+        bumpError(
+          set,
+          get,
+          `Не хватает ${INGREDIENTS_BY_ID.get(ri.id)?.name ?? ri.id}: нужно ${ri.quantity}, есть ${have}`,
+        );
+        return { ok: false, reason: "missing", missing: [ri.id] };
+      }
+      // If the player has a pick of this ingredient, demand quantity matches.
+      if (pick && canonicalIngredient(pick.ingredient_id) === ri.id && pick.quantity < ri.quantity) {
+        useGame
+          .getState()
+          .log(`Возьми ${ri.quantity} шт. ${INGREDIENTS_BY_ID.get(ri.id)?.name ?? ri.id} в Продуктах`);
+        return { ok: false, reason: "missing", missing: [ri.id] };
+      }
+    }
+
+    const reqIngIds = new Set(reqIng.map((r) => r.id));
 
     const missing: string[] = [];
     for (const req of step.requires) {
@@ -129,8 +160,9 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
       if (owned.has(req)) continue;
       if (preparedSet.has(req)) continue;
       if (onTableCanonical.has(req)) continue;
-      if (inventoryCanonical.has(req)) continue; // direct-consume from inventory
-      if (req === "water") continue; // implicit water for MVP
+      if ((inventoryCanonicalCount.get(req) ?? 0) > 0) continue;
+      if (req === "water") continue;
+      if (reqIngIds.has(req)) continue; // covered above
       missing.push(req);
     }
     if (missing.length > 0) {
