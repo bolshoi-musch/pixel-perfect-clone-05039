@@ -133,6 +133,7 @@ export function KitchenStage2D({
       >
         <SpriteImg src={STAGE_ASSETS.stove} alt="Плита" widthPx={STAGE_LAYOUT.stove.width} />
         {visual.stove === "active" && <FlameOverlay />}
+        {visual.pan !== "empty" && <PanOverlay state={visual.pan} />}
       </StageObject>
 
       {equipmentOwned.includes("toaster") && (
