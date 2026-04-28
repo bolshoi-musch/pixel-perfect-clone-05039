@@ -151,6 +151,7 @@ export function KitchenStage2D({
           onClick={() => handleObject("toaster", "Тостер")}
         >
           <SpriteImg src={STAGE_ASSETS.toaster} alt="Тостер" widthPx={STAGE_LAYOUT.toaster.width} />
+          {visual.toaster !== "empty" && <ToasterOverlay state={visual.toaster} />}
         </StageObject>
       )}
 
