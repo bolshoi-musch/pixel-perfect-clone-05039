@@ -10,7 +10,7 @@ import type {
 } from "./types";
 
 export const SAVE_KEY = "kitchen.save.v1";
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface SaveData {
   version: number;
