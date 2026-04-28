@@ -112,8 +112,13 @@ export function KitchenStage2D({
 
   return (
     <div className="absolute inset-0 select-none overflow-hidden">
-      {/* Layer 0: фон — стены, фартук, пол */}
+      {/* Фон стены/пола — на весь viewport. */}
       <Background />
+
+      {/* Кухонная сцена — единственный контейнер, внутри которого живут стол
+          и все предметы. Имеет фиксированный aspect-ratio, чтобы при ресайзе
+          предметы масштабировались вместе со сценой и не «расползались». */}
+      <KitchenStageFrame>
 
       {/* Layer 5: столешница (CSS) */}
       <Countertop />
