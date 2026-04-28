@@ -398,7 +398,10 @@ function PlayPage() {
         <ShopPanel defaultTab={shopTab} key={shopTab} />
       </PanelDialog>
       <PanelDialog open={panel === "inventory"} onClose={() => setPanel(null)} title="Продукты">
-        <InventoryPanel onOpenShop={() => openShop("products")} />
+        <InventoryPanel
+          onOpenShop={() => openShop("products")}
+          onPickComplete={() => setPanel(null)}
+        />
       </PanelDialog>
       <PanelDialog open={panel === "equipment"} onClose={() => setPanel(null)} title="Техника">
         <EquipmentPanel onOpenShop={() => openShop("equipment")} />
