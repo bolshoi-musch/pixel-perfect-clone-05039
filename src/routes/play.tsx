@@ -293,7 +293,7 @@ function PlayPage() {
         <div className="pointer-events-none mx-auto mt-2 flex max-w-6xl items-center justify-between gap-2">
           <div className="flex flex-col items-start gap-1">
             <span className="rounded-md bg-card/70 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground shadow-[var(--shadow-soft)] backdrop-blur">
-              Тестовый режим: Омлет и Чай
+              Тестовый режим: Омлет, Чай, Сырный тост
             </span>
             {hoverLabel && (
               <span className="rounded-md bg-card/85 px-3 py-1 text-xs font-medium text-foreground shadow-[var(--shadow-soft)] backdrop-blur">
