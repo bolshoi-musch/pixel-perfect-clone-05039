@@ -10,7 +10,7 @@ import type {
 } from "./types";
 
 export const SAVE_KEY = "kitchen.save.v1";
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface SaveData {
   version: number;
@@ -56,7 +56,7 @@ export function makeInitialSave(): SaveData {
     ],
     stove_level: 1,
     table_slots: Array.from({ length: 5 }, () => ({ ...EMPTY_SLOT })),
-    placed_equipment: { pan_on_stove: false },
+    placed_equipment: { pan_on_stove: false, knife_board_on_work_area: false },
     current_order_recipe_id: null,
     rating_history: [],
     reviews: [],
@@ -83,9 +83,21 @@ function migrate(raw: unknown): SaveData | null {
   }
   // v2 → v3: добавили placed_equipment.
   if (obj.version === 2) {
+    return migrate({
+      ...(obj as SaveData),
+      placed_equipment: { pan_on_stove: false, knife_board_on_work_area: false },
+      version: 3,
+    });
+  }
+  // v3 → v4: добавили knife_board_on_work_area.
+  if (obj.version === 3) {
+    const prev = (obj as SaveData).placed_equipment as Partial<{ pan_on_stove: boolean; knife_board_on_work_area: boolean }> | undefined;
     return {
       ...(obj as SaveData),
-      placed_equipment: { pan_on_stove: false },
+      placed_equipment: {
+        pan_on_stove: prev?.pan_on_stove ?? false,
+        knife_board_on_work_area: false,
+      },
       version: SAVE_VERSION,
     };
   }

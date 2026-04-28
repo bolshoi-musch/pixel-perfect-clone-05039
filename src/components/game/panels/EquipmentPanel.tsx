@@ -13,6 +13,8 @@ export function EquipmentPanel({ onOpenShop, onClose }: Props) {
   const stoveLevel = useGame((s) => s.stove_level);
   const panOnStove = useGame((s) => s.placed_equipment.pan_on_stove);
   const setPanOnStove = useGame((s) => s.setPanOnStove);
+  const knifeBoardOnWorkArea = useGame((s) => s.placed_equipment.knife_board_on_work_area);
+  const setKnifeBoardOnWorkArea = useGame((s) => s.setKnifeBoardOnWorkArea);
   const log = useGame((s) => s.log);
 
   const ownedEq = EQUIPMENT.filter((e) => owned.includes(e.id));
@@ -29,6 +31,17 @@ export function EquipmentPanel({ onOpenShop, onClose }: Props) {
   const handleRemovePan = () => {
     setPanOnStove(false);
     log("Сковорода убрана с плиты");
+  };
+
+  const handlePlaceKnifeBoard = () => {
+    setKnifeBoardOnWorkArea(true);
+    log("Нож и доска поставлены на рабочую зону");
+    onClose?.();
+  };
+
+  const handleRemoveKnifeBoard = () => {
+    setKnifeBoardOnWorkArea(false);
+    log("Нож и доска убраны с рабочей зоны");
   };
 
   return (
@@ -54,6 +67,31 @@ export function EquipmentPanel({ onOpenShop, onClose }: Props) {
             ) : (
               <Button size="sm" onClick={handlePlacePan}>
                 Поставить на плиту
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Knife & cutting board placement card */}
+      {owned.includes("knife") && (
+        <div className="rounded-xl border border-border bg-background/60 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <div className="font-medium text-foreground">Нож и доска</div>
+              <div className="text-xs text-muted-foreground">
+                {knifeBoardOnWorkArea
+                  ? "На рабочей зоне"
+                  : "Не на рабочей зоне — помидор нарезать нельзя"}
+              </div>
+            </div>
+            {knifeBoardOnWorkArea ? (
+              <Button size="sm" variant="outline" onClick={handleRemoveKnifeBoard}>
+                Убрать
+              </Button>
+            ) : (
+              <Button size="sm" onClick={handlePlaceKnifeBoard}>
+                Поставить на рабочую зону
               </Button>
             )}
           </div>

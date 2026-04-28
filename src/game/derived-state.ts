@@ -50,11 +50,11 @@ export function selectKitchenVisualState(
   else if (prepared.has("eggs_in_bowl")) bowl = "eggs";
   else if (prepared.has("egg_in_bowl")) bowl = "egg"; // legacy
 
-  // Plate — омлет, тост или собранный сырный тост.
+  // Plate — омлет, тост (переложенный) или собранный сырный тост.
   let plate: PlateVisualState = "empty";
   if (prepared.has("cheese_tomato_toast")) plate = "cheese_tomato_toast";
   else if (prepared.has("plated_omelet")) plate = "omelet";
-  else if (prepared.has("toast_ready") || prepared.has("toasted_bread")) plate = "toast";
+  else if (prepared.has("toast_on_plate")) plate = "toast";
 
   // Cup — заварка только после tea_leaves_in_cup, чай — после tea_pour.
   let cup: CupVisualState = "empty";

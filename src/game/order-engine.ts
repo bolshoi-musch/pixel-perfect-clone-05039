@@ -76,6 +76,23 @@ function canonicalIngredient(id: string): string {
  */
 const IMPLICIT_EQUIPMENT = new Set(["pan"]);
 
+import type { PlacedEquipment } from "./types";
+
+function isPlacementSatisfied(flag: string, placed: PlacedEquipment): boolean {
+  if (flag === "pan_on_stove") return placed.pan_on_stove;
+  if (flag === "knife_board_on_work_area") return placed.knife_board_on_work_area;
+  return false;
+}
+
+const PLACEMENT_ERROR: Record<string, string> = {
+  pan_on_stove: "Нужна сковорода на плите",
+  knife_board_on_work_area: "Нужны нож и доска на рабочей зоне",
+};
+
+const PLACEMENT_HINT: Record<string, string> = {
+  pan_on_stove: "Открой Техника → поставь сковороду на плиту",
+  knife_board_on_work_area: "Открой Техника → поставь Нож и доску на рабочую зону",
+};
 
 export const useOrderEngine = create<OrderEngineState>((set, get) => ({
   progress: null,
@@ -121,13 +138,13 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
     // Check requirements: ingredients/preparedness/equipment ownership.
     const game = useGame.getState();
 
-    // 0) Placed equipment check (сковорода на плите и т.п.)
+    // 0) Placed equipment check (сковорода на плите, нож+доска на рабочей зоне)
     const placedReq = step.requiresEquipmentPlaced ?? [];
     for (const flag of placedReq) {
-      if (flag === "pan_on_stove" && !game.placed_equipment.pan_on_stove) {
-        bumpError(set, get, "Нужна сковорода на плите");
-        useGame.getState().log("Открой Техника → поставь сковороду на плиту");
-        return { ok: false, reason: "missing", missing: ["pan_on_stove"] };
+      if (!isPlacementSatisfied(flag, game.placed_equipment)) {
+        bumpError(set, get, PLACEMENT_ERROR[flag] ?? `Не размещено: ${flag}`);
+        useGame.getState().log(PLACEMENT_HINT[flag] ?? "Открой Техника");
+        return { ok: false, reason: "missing", missing: [flag] };
       }
     }
 

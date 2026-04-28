@@ -57,6 +57,7 @@ export function KitchenStage2D({
   const slots = useGame((s) => s.table_slots);
   const equipmentOwned = useGame((s) => s.equipment_owned);
   const panOnStove = useGame((s) => s.placed_equipment.pan_on_stove);
+  const knifeBoardOnWorkArea = useGame((s) => s.placed_equipment.knife_board_on_work_area);
   const placeFromInventory = useGame((s) => s.placeFromInventory);
   const pickupToInventory = useGame((s) => s.pickupToInventory);
   const eatFromTable = useGame((s) => s.eatFromTable);
@@ -227,8 +228,21 @@ export function KitchenStage2D({
         <BellSprite pulse={activeTarget === "bell"} widthPx={STAGE_LAYOUT.bell.width} />
       </StageObject>
 
-      {/* ── Work area preview (показывает выбранный продукт или нарезку) ── */}
-      <WorkAreaPreview pick={activePick} prepared={visual.workAreaPrepared} />
+      {/* ── Work area: настоящий кликабельный объект сцены ── */}
+      <StageObject
+        layout={STAGE_LAYOUT.workArea}
+        label="Рабочая зона"
+        attention={activeTarget === "work_surface"}
+        showHereLabel={showHereLabel}
+        onHover={onHoverLabel}
+        onClick={() => handleObject("work_surface", "Рабочая зона")}
+      >
+        <WorkAreaSurface
+          pick={activePick}
+          prepared={visual.workAreaPrepared}
+          knifeBoardOnWorkArea={knifeBoardOnWorkArea}
+        />
+      </StageObject>
 
       {/* ── Table slots ── */}
       {TABLE_SLOT_IDS_2D.map((id, i) => {
@@ -258,18 +272,21 @@ export function KitchenStage2D({
 
 /**
  * Контейнер кухонной сцены: фиксированный aspect-ratio (STAGE_W:STAGE_H),
- * центрируется по горизонтали внутри родителя. Все предметы, столешница и
- * слоты позиционируются абсолютно внутри него и масштабируются вместе с ним
- * на любом размере экрана.
+ * центрируется внутри безопасной зоны, не залезая под нижнее меню.
  */
+const STAGE_SAFE_TOP = 132;
+const STAGE_SAFE_BOTTOM = 132;
+
 function KitchenStageFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="absolute inset-x-0 top-0 bottom-0 flex items-end justify-center">
+    <div
+      className="absolute inset-x-0 flex items-center justify-center"
+      style={{ top: STAGE_SAFE_TOP, bottom: STAGE_SAFE_BOTTOM }}
+    >
       <div
         className="kitchen-stage relative"
         style={{
-          width: "min(96vw, 1100px)",
-          maxHeight: "100%",
+          width: `min(96vw, 1100px, calc((100vh - ${STAGE_SAFE_TOP + STAGE_SAFE_BOTTOM}px) * ${STAGE_W / STAGE_H}))`,
           aspectRatio: `${STAGE_W} / ${STAGE_H}`,
         }}
       >
@@ -590,64 +607,55 @@ function PanOverlay({ state }: { state: PanVisualState }) {
 }
 
 /**
- * Превью рабочей области:
- *  - выбранный продукт (activePick) как объект на столе;
+ * Содержимое рабочей зоны (рендерится внутри StageObject — поэтому без
+ * абсолютных координат, занимает 100% ширины обёртки).
+ *  - доска и нож, если поставлены через «Техника»;
+ *  - выбранный продукт (activePick) как объект на доске;
  *  - либо нарезка (tomato_slices) после chop-шага.
  */
-function WorkAreaPreview({
+function WorkAreaSurface({
   pick,
   prepared,
+  knifeBoardOnWorkArea,
 }: {
   pick: ActivePick | null;
   prepared: WorkAreaPreparedState;
+  knifeBoardOnWorkArea: boolean;
 }) {
-  const layout = STAGE_LAYOUT.workArea;
-  const leftPct = (layout.x / STAGE_W) * 100;
-  const topPct = (layout.y / STAGE_H) * 100;
-
-  if (prepared === "tomato_slices") {
-    return (
-      <div
-        className="pointer-events-none absolute"
-        style={{
-          left: `${leftPct}%`,
-          top: `${topPct}%`,
-          zIndex: layout.zIndex,
-          transform: "translate(-50%, -100%)",
-        }}
-        aria-hidden
-      >
-        <div className="flex flex-col items-center gap-0.5">
+  const ing = pick ? INGREDIENTS_BY_ID.get(pick.ingredient_id) : null;
+  return (
+    <div className="relative flex w-full items-end justify-center" style={{ minHeight: 60 }}>
+      {knifeBoardOnWorkArea && <KnifeBoardVisual />}
+      {prepared === "tomato_slices" && (
+        <div className="absolute left-1/2 -top-2 -translate-x-1/2 flex flex-col items-center gap-0.5">
           <TomatoSlicesVisual />
           <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
             Помидор нарезан
           </span>
         </div>
-      </div>
-    );
-  }
-
-  if (!pick) return null;
-  const ing = INGREDIENTS_BY_ID.get(pick.ingredient_id);
-  if (!ing) return null;
-  return (
-    <div
-      className="pointer-events-none absolute"
-      style={{
-        left: `${leftPct}%`,
-        top: `${topPct}%`,
-        zIndex: layout.zIndex,
-        transform: "translate(-50%, -100%)",
-      }}
-      aria-hidden
-    >
-      <div className="flex flex-col items-center gap-0.5">
-        <IngredientVisual id={pick.ingredient_id} quantity={pick.quantity} />
-        <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
-          {ing.name} ×{pick.quantity}
-        </span>
-      </div>
+      )}
+      {pick && ing && prepared !== "tomato_slices" && (
+        <div className="absolute left-1/2 -top-6 -translate-x-1/2 flex flex-col items-center gap-0.5">
+          <IngredientVisual id={pick.ingredient_id} quantity={pick.quantity} />
+          <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
+            {ing.name} ×{pick.quantity}
+          </span>
+        </div>
+      )}
     </div>
+  );
+}
+
+function KnifeBoardVisual() {
+  return (
+    <svg width="100%" viewBox="0 0 150 80" preserveAspectRatio="xMidYMax meet" aria-hidden>
+      {/* доска */}
+      <rect x="22" y="28" width="92" height="34" rx="8" fill="#d9a96a" stroke="#8a5a25" strokeWidth="2" />
+      <rect x="32" y="36" width="70" height="18" rx="4" fill="#efc987" opacity="0.65" />
+      {/* нож */}
+      <path d="M100 26 L136 18 Q142 20 137 25 L104 38 Z" fill="#d9dee4" stroke="#6c737c" strokeWidth="1.4" />
+      <rect x="88" y="34" width="22" height="7" rx="3" fill="#5b3a1e" />
+    </svg>
   );
 }
 
