@@ -659,6 +659,46 @@ function KnifeBoardVisual() {
   );
 }
 
+function TomatoSlicesVisual() {
+  return (
+    <svg width="60" height="32" viewBox="0 0 60 32" aria-hidden>
+      <circle cx="14" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="14" cy="20" r="4" fill="#ffb3b3" />
+      <circle cx="30" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="30" cy="20" r="4" fill="#ffb3b3" />
+      <circle cx="46" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="46" cy="20" r="4" fill="#ffb3b3" />
+    </svg>
+  );
+}
+
+/**
+ * Маленький overlay поверх тостера: ломтик хлеба внутри (bread) или
+ * готовый тост, торчащий сверху (ready).
+ */
+function ToasterOverlay({ state }: { state: ToasterVisualState }) {
+  return (
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+      style={{ top: state === "ready" ? "-20%" : "10%" }}
+      width="40"
+      height="40"
+      viewBox="0 0 40 40"
+    >
+      {state === "bread" && (
+        <rect x="14" y="10" width="12" height="18" rx="2" fill="#e9b870" stroke="#8a5a25" strokeWidth="1.2" />
+      )}
+      {state === "ready" && (
+        <>
+          <rect x="13" y="2" width="14" height="22" rx="2" fill="#c08a3a" stroke="#5e3a10" strokeWidth="1.2" />
+          <rect x="16" y="6" width="8" height="14" rx="1" fill="#e0a460" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 
 /**
  * SVG-визуал продукта на рабочей области. Если PNG-ассета нет, рисуем
