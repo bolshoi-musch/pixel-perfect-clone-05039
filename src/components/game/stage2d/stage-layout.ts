@@ -104,7 +104,7 @@ export const STAGE_LAYOUT = {
 
   // ── work row ─────────────────────────────────────────────
   bowl: {
-    left: 38,
+    left: 35,
     top: 75,
     width: 125,
     zIndex: 20,
@@ -112,8 +112,21 @@ export const STAGE_LAYOUT = {
     shadowWidth: 0,
     visibleBottomOffsetRatio: 0.028,
   },
+  /**
+   * workArea — центральная рабочая зона ближе к игроку. Не интерактивный
+   * предмет, а место, куда «кладётся» выбранный продукт перед применением.
+   */
+  workArea: {
+    left: 50,
+    top: 76,
+    width: 140,
+    zIndex: 18,
+    anchor: "bottom-center",
+    shadowWidth: 0,
+    visibleBottomOffsetRatio: 0,
+  },
   plate: {
-    left: 51,
+    left: 60,
     top: 75,
     width: 135,
     zIndex: 20,
@@ -122,7 +135,7 @@ export const STAGE_LAYOUT = {
     visibleBottomOffsetRatio: 0.011,
   },
   cup: {
-    left: 63,
+    left: 70,
     top: 75,
     width: 82,
     zIndex: 20,
