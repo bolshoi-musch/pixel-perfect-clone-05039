@@ -261,16 +261,16 @@ export const useOrderEngine = create<OrderEngineState>((set, get) => ({
 const HEAT_EQUIPMENT = new Set(["stove", "oven", "toaster", "kettle", "rice_cooker"]);
 
 function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
-  // If a step has an explicit target override, only that exact equipment counts.
+  // 1) Authored target wins — самый надёжный сигнал из steps.json.
+  if (step.target) return equipment_id === step.target;
+  // 2) Per-step explicit override (legacy).
   const override = STEP_TARGET_OVERRIDE[step.id];
   if (override) return equipment_id === override;
   if (step.requires.includes(equipment_id)) return true;
   if (step.minigame === "mix" && equipment_id === "bowl") return true;
   if (step.minigame === "window" && HEAT_EQUIPMENT.has(equipment_id)) {
-    // The exact heat appliance from step.requires must be used (e.g. kettle for tea_boil).
     const heatInStep = step.requires.find((r) => HEAT_EQUIPMENT.has(r));
     if (heatInStep) return heatInStep === equipment_id;
-    // Fallback: stove if step has no specific heat appliance.
     return equipment_id === "stove";
   }
   if (
@@ -278,7 +278,6 @@ function equipmentMatchesStep(equipment_id: string, step: RecipeStep): boolean {
     equipment_id === "work_surface"
   )
     return true;
-  // Serve step → bell handles it (so clicking plate/cup is harmless), but no match here.
   return false;
 }
 
