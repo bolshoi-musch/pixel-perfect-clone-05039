@@ -16,7 +16,9 @@ export function EquipmentPanel({ onOpenShop, onClose }: Props) {
   const log = useGame((s) => s.log);
 
   const ownedEq = EQUIPMENT.filter((e) => owned.includes(e.id));
-  const notOwnedEq = EQUIPMENT.filter((e) => !owned.includes(e.id));
+  // Только реально продаваемые предметы (price > 0). Базовая посуда
+  // (owned_by_default true, price 0) не должна выглядеть как «докупить за 0 ₽».
+  const notOwnedEq = EQUIPMENT.filter((e) => !owned.includes(e.id) && e.price > 0);
 
   const handlePlacePan = () => {
     setPanOnStove(true);

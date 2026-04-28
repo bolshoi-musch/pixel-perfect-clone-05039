@@ -9,8 +9,7 @@
   { "id": "kettle", "name": "Чайник", "price": 40, "owned_by_default": false },
   { "id": "toaster", "name": "Тостер", "price": 60, "owned_by_default": false },
   { "id": "rice_cooker", "name": "Рисоварка", "price": 90, "owned_by_default": false },
-  { "id": "knife", "name": "Нож", "price": 0, "owned_by_default": true },
-  { "id": "cutting_board", "name": "Доска", "price": 0, "owned_by_default": true },
+  { "id": "knife", "name": "Нож и доска", "price": 35, "owned_by_default": false },
   { "id": "pot", "name": "Кастрюля", "price": 50, "owned_by_default": false },
   { "id": "blender", "name": "Блендер", "price": 110, "owned_by_default": false },
   { "id": "oven", "name": "Духовка", "price": 150, "owned_by_default": false }

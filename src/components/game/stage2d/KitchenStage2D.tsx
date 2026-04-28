@@ -27,13 +27,17 @@ import { STAGE_ASSETS } from "./stage-assets";
 import {
   STAGE_LAYOUT,
   TABLE_SLOT_IDS_2D,
-  COUNTERTOP_TOP_PCT,
-  COUNTERTOP_BOTTOM_PCT,
-  COUNTERTOP_WIDTH_PCT,
-  COUNTERTOP_MAX_WIDTH_PX,
+  STAGE_W,
+  STAGE_H,
+  COUNTERTOP_TOP,
+  COUNTERTOP_BOTTOM,
   type StageObjectLayout,
 } from "./stage-layout";
 import { useHintMode } from "@/game/hint-mode";
+
+/** В % от STAGE_H — для слоёв фона/стола, которые лежат внутри сцены. */
+const TOP_PCT = (COUNTERTOP_TOP / STAGE_H) * 100;
+const BOTTOM_PCT = (COUNTERTOP_BOTTOM / STAGE_H) * 100;
 
 interface KitchenStage2DProps {
   onHoverLabel: (label: string | null) => void;
@@ -108,8 +112,13 @@ export function KitchenStage2D({
 
   return (
     <div className="absolute inset-0 select-none overflow-hidden">
-      {/* Layer 0: фон — стены, фартук, пол */}
+      {/* Фон стены/пола — на весь viewport. */}
       <Background />
+
+      {/* Кухонная сцена — единственный контейнер, внутри которого живут стол
+          и все предметы. Имеет фиксированный aspect-ratio, чтобы при ресайзе
+          предметы масштабировались вместе со сценой и не «расползались». */}
+      <KitchenStageFrame>
 
       {/* Layer 5: столешница (CSS) */}
       <Countertop />
@@ -240,6 +249,32 @@ export function KitchenStage2D({
           </SlotAnchor>
         );
       })}
+      </KitchenStageFrame>
+    </div>
+  );
+}
+
+/* ──────────────────────────── Stage frame ─────────────────────────── */
+
+/**
+ * Контейнер кухонной сцены: фиксированный aspect-ratio (STAGE_W:STAGE_H),
+ * центрируется по горизонтали внутри родителя. Все предметы, столешница и
+ * слоты позиционируются абсолютно внутри него и масштабируются вместе с ним
+ * на любом размере экрана.
+ */
+function KitchenStageFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="absolute inset-x-0 top-0 bottom-0 flex items-end justify-center">
+      <div
+        className="kitchen-stage relative"
+        style={{
+          width: "min(96vw, 1100px)",
+          maxHeight: "100%",
+          aspectRatio: `${STAGE_W} / ${STAGE_H}`,
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -247,36 +282,16 @@ export function KitchenStage2D({
 /* ──────────────────────────── Background & Countertop ─────────────────────────── */
 
 function Background() {
+  // Background — стена и пол на весь viewport. Линия пола привязана к нижней
+  // кромке столешницы внутри сцены, поэтому стол визуально лежит на полу
+  // независимо от высоты окна.
   return (
     <div className="absolute inset-0 z-0">
-      {/* Стена */}
       <div
-        className="absolute inset-x-0 top-0"
+        className="absolute inset-0"
         style={{
-          height: `${COUNTERTOP_TOP_PCT + 4}%`,
           background:
-            "linear-gradient(180deg, #f6e9cf 0%, #ecd6ad 60%, #d6bd8c 100%)",
-        }}
-      />
-      {/* Фартук — еле заметная сетка */}
-      <div
-        className="absolute inset-x-0 opacity-20"
-        style={{
-          top: `${COUNTERTOP_TOP_PCT - 14}%`,
-          height: "14%",
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.55) 1px, transparent 1px)",
-          backgroundSize: "44px 24px",
-          backgroundPosition: "center",
-        }}
-      />
-      {/* Пол */}
-      <div
-        className="absolute inset-x-0 bottom-0"
-        style={{
-          top: `${COUNTERTOP_BOTTOM_PCT}%`,
-          background:
-            "linear-gradient(180deg, #b09372 0%, #8b6e4d 60%, #6e553a 100%)",
+            "linear-gradient(180deg, #f6e9cf 0%, #ecd6ad 50%, #d6bd8c 70%, #b09372 70.01%, #8b6e4d 88%, #6e553a 100%)",
         }}
       />
       <div
@@ -291,46 +306,42 @@ function Background() {
 }
 
 /**
- * Простая фронтальная рабочая поверхность — без перспективной трапеции.
- * Одна горизонтальная полка-прилавок: предметы стоят на ней по общей линии.
+ * Столешница — полностью внутри `.kitchen-stage`, координаты — проценты от
+ * виртуального размера сцены, поэтому она масштабируется вместе со всеми
+ * предметами на ней.
  */
 function Countertop() {
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 z-[5] flex justify-center"
+      className="pointer-events-none absolute"
       style={{
-        top: `${COUNTERTOP_TOP_PCT}%`,
-        height: `${COUNTERTOP_BOTTOM_PCT - COUNTERTOP_TOP_PCT}%`,
+        left: "5%",
+        right: "5%",
+        top: `${TOP_PCT}%`,
+        bottom: `${100 - BOTTOM_PCT}%`,
+        zIndex: 5,
+        borderRadius: "28px 28px 0 0",
+        overflow: "hidden",
+        background:
+          "linear-gradient(180deg, #c99762 0%, #b47f4d 72%, #8a5a32 100%)",
+        boxShadow:
+          "inset 0 8px 16px rgba(255,230,190,0.28), inset 0 -10px 20px rgba(0,0,0,0.20)",
       }}
     >
       <div
-        className="relative h-full overflow-hidden rounded-t-[28px]"
+        className="absolute inset-0 opacity-[0.16]"
         style={{
-          width: `${COUNTERTOP_WIDTH_PCT}%`,
-          maxWidth: `${COUNTERTOP_MAX_WIDTH_PX}px`,
-          background:
-            "linear-gradient(180deg, #c99762 0%, #b47f4d 72%, #8a5a32 100%)",
-          boxShadow:
-            "inset 0 8px 16px rgba(255,230,190,0.28), inset 0 -10px 20px rgba(0,0,0,0.20)",
+          backgroundImage:
+            "repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 18px)",
         }}
-      >
-        {/* Тонкая горизонтальная "слоистость" */}
-        <div
-          className="absolute inset-0 opacity-[0.16]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 18px)",
-          }}
-        />
-        {/* Передний край стола */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-5"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(95,55,25,0.55), rgba(55,32,18,0.7))",
-          }}
-        />
-      </div>
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-5"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(95,55,25,0.55), rgba(55,32,18,0.7))",
+        }}
+      />
     </div>
   );
 }
@@ -354,10 +365,10 @@ function ContactBase({
       aria-hidden
       className="pointer-events-none absolute"
       style={{
-        left: `${layout.left}%`,
-        top: `${layout.top}%`,
-        width,
-        height,
+        left: `${(layout.x / STAGE_W) * 100}%`,
+        top: `${(layout.y / STAGE_H) * 100}%`,
+        width: `${(width / STAGE_W) * 100}%`,
+        height: `${(height / STAGE_H) * 100}%`,
         zIndex: Math.max(1, layout.zIndex - 1),
         transform: "translate(-50%, -50%)",
         borderRadius: 999,
@@ -395,19 +406,20 @@ function StageObject({
   onClick: () => void;
   children: React.ReactNode;
 }) {
-  const offsetPx = (layout.visibleBottomOffsetRatio ?? 0) * layout.width;
+  const widthPct = (layout.width / STAGE_W) * 100;
+  const offsetPct = (layout.visibleBottomOffsetRatio ?? 0) * layout.width / STAGE_H * 100;
   return (
     <div
       className="pointer-events-none absolute"
       style={{
-        left: `${layout.left}%`,
-        top: `${layout.top}%`,
-        width: layout.width,
+        left: `${(layout.x / STAGE_W) * 100}%`,
+        top: `${(layout.y / STAGE_H) * 100}%`,
+        width: `${widthPct}%`,
         zIndex: layout.zIndex,
-        // anchor bottom-center с компенсацией прозрачного нижнего паддинга PNG:
-        // (left, top) = ВИДИМАЯ нижняя центральная точка предмета (где он
-        // касается стола), а не нижняя граница PNG-файла.
-        transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
+        // anchor bottom-center с компенсацией прозрачного нижнего паддинга PNG.
+        // Сдвиг по высоте задаём через margin-style transform: оба компонента
+        // — в процентах от размеров сцены, поэтому всё масштабируется.
+        transform: `translate(-50%, calc(-100% + ${offsetPct}%))`,
       }}
     >
       <button
@@ -454,16 +466,17 @@ function SlotAnchor({
   layout: StageObjectLayout;
   children: React.ReactNode;
 }) {
-  const offsetPx = (layout.visibleBottomOffsetRatio ?? 0) * layout.width;
+  const widthPct = (layout.width / STAGE_W) * 100;
+  const offsetPct = (layout.visibleBottomOffsetRatio ?? 0) * layout.width / STAGE_H * 100;
   return (
     <div
       className="pointer-events-none absolute"
       style={{
-        left: `${layout.left}%`,
-        top: `${layout.top}%`,
-        width: layout.width,
+        left: `${(layout.x / STAGE_W) * 100}%`,
+        top: `${(layout.y / STAGE_H) * 100}%`,
+        width: `${widthPct}%`,
         zIndex: layout.zIndex,
-        transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
+        transform: `translate(-50%, calc(-100% + ${offsetPct}%))`,
       }}
     >
       {children}
@@ -488,7 +501,7 @@ function SpriteImg({
       draggable={false}
       className="pointer-events-none block select-none object-contain"
       style={{
-        width: widthPx,
+        width: "100%",
         height: "auto",
         filter: "none",
       }}
@@ -589,14 +602,16 @@ function WorkAreaPreview({
   prepared: WorkAreaPreparedState;
 }) {
   const layout = STAGE_LAYOUT.workArea;
+  const leftPct = (layout.x / STAGE_W) * 100;
+  const topPct = (layout.y / STAGE_H) * 100;
 
   if (prepared === "tomato_slices") {
     return (
       <div
         className="pointer-events-none absolute"
         style={{
-          left: `${layout.left}%`,
-          top: `${layout.top}%`,
+          left: `${leftPct}%`,
+          top: `${topPct}%`,
           zIndex: layout.zIndex,
           transform: "translate(-50%, -100%)",
         }}
@@ -619,8 +634,8 @@ function WorkAreaPreview({
     <div
       className="pointer-events-none absolute"
       style={{
-        left: `${layout.left}%`,
-        top: `${layout.top}%`,
+        left: `${leftPct}%`,
+        top: `${topPct}%`,
         zIndex: layout.zIndex,
         transform: "translate(-50%, -100%)",
       }}
@@ -774,7 +789,7 @@ function SingleIngredient({ id }: { id: string }) {
 
 function BowlSprite({ state, widthPx }: { state: BowlVisualState; widthPx: number }) {
   return (
-    <div className="relative" style={{ width: widthPx }}>
+    <div className="relative" style={{ width: "100%" }}>
       <SpriteImg src={STAGE_ASSETS.bowl} alt="Миска" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
@@ -807,7 +822,7 @@ function BowlSprite({ state, widthPx }: { state: BowlVisualState; widthPx: numbe
 
 function PlateSprite({ state, widthPx }: { state: PlateVisualState; widthPx: number }) {
   return (
-    <div className="relative" style={{ width: widthPx }}>
+    <div className="relative" style={{ width: "100%" }}>
       <SpriteImg src={STAGE_ASSETS.plate} alt="Тарелка" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
@@ -856,7 +871,7 @@ function PlateSprite({ state, widthPx }: { state: PlateVisualState; widthPx: num
 
 function CupSprite({ state, widthPx }: { state: CupVisualState; widthPx: number }) {
   return (
-    <div className="relative" style={{ width: widthPx }}>
+    <div className="relative" style={{ width: "100%" }}>
       <SpriteImg src={STAGE_ASSETS.cup} alt="Чашка" widthPx={widthPx} />
       {state !== "empty" && (
         <svg
@@ -902,12 +917,12 @@ function CupSprite({ state, widthPx }: { state: CupVisualState; widthPx: number 
 
 /* ──────────────────────────── Bell (SVG) ─────────────────────────── */
 
-function BellSprite({ pulse, widthPx }: { pulse?: boolean; widthPx: number }) {
+function BellSprite({ pulse }: { pulse?: boolean; widthPx?: number }) {
   return (
     <svg
-      width={widthPx}
-      height={widthPx * 1.13}
+      width="100%"
       viewBox="0 0 64 74"
+      preserveAspectRatio="xMidYMax meet"
       aria-hidden
       className={pulse ? "animate-pulse" : ""}
     >
