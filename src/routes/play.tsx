@@ -113,7 +113,7 @@ function PlayPage() {
   }
 
   const order = currentOrderId ? RECIPES_BY_ID.get(currentOrderId) : null;
-  const activePickIng = pickValue ? INGREDIENTS_BY_ID.get(pickValue.split("|")[0]) : null;
+  const activePickIng = pickValue ? INGREDIENTS_BY_ID.get(pickValue.ingredient_id) : null;
 
   const unreadReviews = Math.max(0, reviewsCount - seenReviewsCount);
 
@@ -157,7 +157,7 @@ function PlayPage() {
     };
   })();
 
-  const pickedIngredientId = pickValue ? pickValue.split("|")[0] : null;
+  const pickedIngredientId = pickValue ? pickValue.ingredient_id : null;
   const pickedCanonical = pickedIngredientId
     ? (({ egg_premium: "egg", bread_premium: "bread" } as Record<string, string>)[
         pickedIngredientId
@@ -171,7 +171,7 @@ function PlayPage() {
   // Bell HUD button is enabled when current step is "serve" or order finished
   const bellEnabled = guidance.isServe;
 
-  const handlePickIngredient = () => pickConsume();
+  
 
   const handleBellRing = () => {
     if (!progress) {
