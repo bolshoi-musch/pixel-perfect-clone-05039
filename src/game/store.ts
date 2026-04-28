@@ -53,6 +53,8 @@ interface GameState extends SaveData {
   upgradeStove: (price: number) => boolean;
   /** Поставить сковороду на плиту / снять. */
   setPanOnStove: (placed: boolean) => void;
+  /** Поставить нож и доску на рабочую зону / снять. */
+  setKnifeBoardOnWorkArea: (placed: boolean) => void;
 
   setCurrentOrder: (recipe_id: string | null) => void;
   completeOrder: (recipe_id: string, stars: number, review: ReviewEntry, reward: number) => void;
