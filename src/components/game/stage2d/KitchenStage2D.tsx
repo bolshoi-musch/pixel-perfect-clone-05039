@@ -218,8 +218,8 @@ export function KitchenStage2D({
         <BellSprite pulse={activeTarget === "bell"} widthPx={STAGE_LAYOUT.bell.width} />
       </StageObject>
 
-      {/* ── Work area preview (показывает выбранный продукт) ── */}
-      <WorkAreaPreview pick={activePick} />
+      {/* ── Work area preview (показывает выбранный продукт или нарезку) ── */}
+      <WorkAreaPreview pick={activePick} prepared={visual.workAreaPrepared} />
 
       {/* ── Table slots ── */}
       {TABLE_SLOT_IDS_2D.map((id, i) => {
