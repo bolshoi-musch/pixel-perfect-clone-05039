@@ -182,17 +182,12 @@ function PlayPage() {
     const stepId = recipe?.step_ids[progress.step_index];
     const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
     if (step && step.type !== "serve" && !progress.finished) {
-      if (
-        step.id === "omelet_plate" ||
-        step.id === "omelet_cook" ||
-        step.id === "omelet_mix" ||
-        step.id === "omelet_crack"
-      ) {
-        log("Сначала переложи омлет на тарелку");
+      if (step.id.startsWith("omelet_") && step.id !== "omelet_serve") {
+        log("Сначала закончи готовку омлета");
+      } else if (step.id === "tea_leaves_in_cup") {
+        log("Сначала положи заварку в чашку");
       } else if (step.id === "tea_boil") {
-        log("Сначала добавь заварку в чашку");
-      } else if (step.id === "tea_brew") {
-        log("Сначала налей кипяток из чайника в чашку");
+        log("Сначала вскипяти воду");
       } else if (step.id === "tea_pour") {
         log("Сначала налей кипяток в чашку");
       } else {
