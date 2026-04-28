@@ -12,12 +12,14 @@ import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/game/store";
 import { useActivePick } from "@/game/active-pick";
 import { useOrderEngine, expectedEquipmentForStep } from "@/game/order-engine";
+import type { ActivePick } from "@/game/active-pick";
 import { STEPS_BY_ID, RECIPES_BY_ID, INGREDIENTS_BY_ID } from "@/game/data";
 import {
   selectKitchenVisualState,
   type BowlVisualState,
   type CupVisualState,
   type PlateVisualState,
+  type PanVisualState,
 } from "@/game/derived-state";
 import { STAGE_ASSETS } from "./stage-assets";
 import {
@@ -85,13 +87,11 @@ export function KitchenStage2D({
     if (slot.ingredient_id) {
       pickupToInventory(index);
     } else {
-      const pick = onPickIngredient();
-      if (!pick) {
+      if (!activePick) {
         log("Выберите ингредиент в «Продукты»");
         return;
       }
-      const [id, quality] = pick.split("|") as [string, "basic" | "premium"];
-      const placed = placeFromInventory(id, quality);
+      const placed = placeFromInventory(activePick.ingredient_id, activePick.quality);
       if (placed >= 0) setPick(null);
     }
   };
@@ -135,6 +135,7 @@ export function KitchenStage2D({
       >
         <SpriteImg src={STAGE_ASSETS.stove} alt="Плита" widthPx={STAGE_LAYOUT.stove.width} />
         {visual.stove === "active" && <FlameOverlay />}
+        {visual.pan !== "empty" && <PanOverlay state={visual.pan} />}
       </StageObject>
 
       {equipmentOwned.includes("toaster") && (
@@ -212,6 +213,9 @@ export function KitchenStage2D({
       >
         <BellSprite pulse={activeTarget === "bell"} widthPx={STAGE_LAYOUT.bell.width} />
       </StageObject>
+
+      {/* ── Work area preview (показывает выбранный продукт) ── */}
+      <WorkAreaPreview pick={activePick} />
 
       {/* ── Table slots ── */}
       {TABLE_SLOT_IDS_2D.map((id, i) => {
@@ -530,7 +534,114 @@ function FlameOverlay() {
   );
 }
 
-/* ──────────────────────────── Vessels ─────────────────────────── */
+/**
+ * Сковорода на плите: показывает сырую яичную смесь / готовый омлет.
+ * Простая SVG поверх плиты — не отдельный покупаемый предмет в MVP.
+ */
+function PanOverlay({ state }: { state: PanVisualState }) {
+  return (
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2"
+      width="86"
+      height="34"
+      viewBox="0 0 86 34"
+    >
+      {/* Ручка */}
+      <rect x="62" y="14" width="22" height="4" rx="2" fill="#3b2412" />
+      {/* Корпус */}
+      <ellipse cx="34" cy="18" rx="30" ry="11" fill="#1f1410" stroke="#0d0807" strokeWidth="1.4" />
+      <ellipse cx="34" cy="16" rx="26" ry="8" fill="#2a1a14" />
+      {/* Содержимое */}
+      {state === "raw" && (
+        <ellipse cx="34" cy="16" rx="22" ry="6" fill="#f7d970" opacity="0.95" />
+      )}
+      {state === "cooked" && (
+        <>
+          <path
+            d="M14 16 Q22 8 34 9 Q48 10 54 18 Q48 24 32 23 Q18 22 14 16 Z"
+            fill="#f5c84a"
+            stroke="#c89318"
+            strokeWidth="1.1"
+          />
+          <ellipse cx="28" cy="14" rx="3" ry="1.6" fill="#ffe27a" />
+          <ellipse cx="40" cy="18" rx="2.6" ry="1.4" fill="#ffe27a" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+/**
+ * Превью выбранного продукта в рабочей области стола.
+ * Появляется при activePick !== null. Это НЕ table slot — это «то, что
+ * игрок сейчас держит» перед применением к шагу рецепта.
+ */
+function WorkAreaPreview({ pick }: { pick: ActivePick | null }) {
+  if (!pick) return null;
+  const ing = INGREDIENTS_BY_ID.get(pick.ingredient_id);
+  if (!ing) return null;
+  const layout = STAGE_LAYOUT.workArea;
+  const icon = iconForIngredient(ing.id, ing.name);
+  const qualityBadge = pick.quality === "premium" ? "★ Премиум" : "Обычный";
+  return (
+    <div
+      className="pointer-events-none absolute"
+      style={{
+        left: `${layout.left}%`,
+        top: `${layout.top}%`,
+        zIndex: layout.zIndex,
+        transform: "translate(-50%, -100%)",
+      }}
+      aria-hidden
+    >
+      {/* Подложка-доска */}
+      <div
+        className="relative flex flex-col items-center gap-1 rounded-2xl border border-amber-900/30 bg-amber-100/85 px-3 py-2 shadow-md backdrop-blur"
+        style={{ minWidth: 110 }}
+      >
+        <div className="flex items-center gap-1.5">
+          <span className="text-2xl leading-none">{icon}</span>
+          <span className="text-base font-bold text-amber-900">×{pick.quantity}</span>
+        </div>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-900/80">
+          {ing.name}
+        </span>
+        <span
+          className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
+            pick.quality === "premium"
+              ? "bg-amber-500/80 text-white"
+              : "bg-amber-900/15 text-amber-900"
+          }`}
+        >
+          {qualityBadge}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function iconForIngredient(id: string, name: string): string {
+  if (id.startsWith("egg")) return "🥚";
+  if (id === "tea_leaves") return "🍃";
+  if (id.startsWith("bread")) return "🍞";
+  if (id === "milk") return "🥛";
+  if (id === "tomato") return "🍅";
+  if (id === "cheese") return "🧀";
+  if (id === "cucumber") return "🥒";
+  if (id === "lettuce") return "🥬";
+  if (id === "berries") return "🫐";
+  if (id === "rice") return "🍚";
+  if (id === "pasta") return "🍝";
+  if (id === "flour") return "🌾";
+  if (id === "sugar") return "🍬";
+  if (id === "butter") return "🧈";
+  const n = name.toLowerCase();
+  if (n.includes("яйц")) return "🥚";
+  return "•";
+}
+
+
 
 function BowlSprite({ state, widthPx }: { state: BowlVisualState; widthPx: number }) {
   return (
@@ -553,6 +664,12 @@ function BowlSprite({ state, widthPx }: { state: BowlVisualState; widthPx: numbe
             strokeWidth="1"
           />
           {state === "egg" && <ellipse cx="88" cy="60" rx="11" ry="5" fill="#f6c945" />}
+          {state === "eggs" && (
+            <>
+              <ellipse cx="78" cy="60" rx="10" ry="4.5" fill="#f6c945" />
+              <ellipse cx="98" cy="62" rx="10" ry="4.5" fill="#f6c945" />
+            </>
+          )}
         </svg>
       )}
     </div>

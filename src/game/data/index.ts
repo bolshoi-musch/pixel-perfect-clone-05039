@@ -52,6 +52,9 @@ const StepSchema = z
       .enum(["mix", "window", "roll_stub", "chop_stub", "hold"])
       .optional(),
     serveStep: z.boolean().optional(),
+    requiredIngredients: z
+      .array(z.object({ id: z.string(), quantity: z.number().int().positive() }))
+      .optional(),
   })
   .passthrough();
 

@@ -38,9 +38,14 @@ function PlayPage() {
   const reviewsCount = useGame((s) => s.reviews.length);
   const avgRating = useGame(selectAvgRating);
   const log = useGame((s) => s.log);
-  const pickConsume = useActivePick((s) => s.consume);
   const pickValue = useActivePick((s) => s.pick);
   const setPick = useActivePick((s) => s.setPick);
+  /**
+   * Для совместимости со старым 3D-сценой: возвращаем pick как "id|quality".
+   * 2.5D-сцена использует pickValue напрямую.
+   */
+  const handlePickIngredient = (): string | null =>
+    pickValue ? `${pickValue.ingredient_id}|${pickValue.quality}` : null;
   const hintMode = useHintMode((s) => s.mode);
 
   const startOrder = useOrderEngine((s) => s.startOrder);
@@ -108,7 +113,7 @@ function PlayPage() {
   }
 
   const order = currentOrderId ? RECIPES_BY_ID.get(currentOrderId) : null;
-  const activePickIng = pickValue ? INGREDIENTS_BY_ID.get(pickValue.split("|")[0]) : null;
+  const activePickIng = pickValue ? INGREDIENTS_BY_ID.get(pickValue.ingredient_id) : null;
 
   const unreadReviews = Math.max(0, reviewsCount - seenReviewsCount);
 
@@ -152,7 +157,7 @@ function PlayPage() {
     };
   })();
 
-  const pickedIngredientId = pickValue ? pickValue.split("|")[0] : null;
+  const pickedIngredientId = pickValue ? pickValue.ingredient_id : null;
   const pickedCanonical = pickedIngredientId
     ? (({ egg_premium: "egg", bread_premium: "bread" } as Record<string, string>)[
         pickedIngredientId
@@ -166,7 +171,7 @@ function PlayPage() {
   // Bell HUD button is enabled when current step is "serve" or order finished
   const bellEnabled = guidance.isServe;
 
-  const handlePickIngredient = () => pickConsume();
+  
 
   const handleBellRing = () => {
     if (!progress) {
@@ -177,17 +182,12 @@ function PlayPage() {
     const stepId = recipe?.step_ids[progress.step_index];
     const step = stepId ? STEPS_BY_ID.get(stepId) : undefined;
     if (step && step.type !== "serve" && !progress.finished) {
-      if (
-        step.id === "omelet_plate" ||
-        step.id === "omelet_cook" ||
-        step.id === "omelet_mix" ||
-        step.id === "omelet_crack"
-      ) {
-        log("Сначала переложи омлет на тарелку");
+      if (step.id.startsWith("omelet_") && step.id !== "omelet_serve") {
+        log("Сначала закончи готовку омлета");
+      } else if (step.id === "tea_leaves_in_cup") {
+        log("Сначала положи заварку в чашку");
       } else if (step.id === "tea_boil") {
-        log("Сначала добавь заварку в чашку");
-      } else if (step.id === "tea_brew") {
-        log("Сначала налей кипяток из чайника в чашку");
+        log("Сначала вскипяти воду");
       } else if (step.id === "tea_pour") {
         log("Сначала налей кипяток в чашку");
       } else {
@@ -398,7 +398,10 @@ function PlayPage() {
         <ShopPanel defaultTab={shopTab} key={shopTab} />
       </PanelDialog>
       <PanelDialog open={panel === "inventory"} onClose={() => setPanel(null)} title="Продукты">
-        <InventoryPanel onOpenShop={() => openShop("products")} />
+        <InventoryPanel
+          onOpenShop={() => openShop("products")}
+          onPickComplete={() => setPanel(null)}
+        />
       </PanelDialog>
       <PanelDialog open={panel === "equipment"} onClose={() => setPanel(null)} title="Техника">
         <EquipmentPanel onOpenShop={() => openShop("equipment")} />

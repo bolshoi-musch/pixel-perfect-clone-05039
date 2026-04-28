@@ -47,6 +47,14 @@ export interface RecipeStep {
   minigameType?: MinigameKind;
   /** True для финального шага подачи (звонок). */
   serveStep?: boolean;
+  /**
+   * Декларативный список ингредиентов с количеством, которое шаг потребляет
+   * из активного выбора игрока. Если задан, order-engine ожидает activePick
+   * c таким ingredient_id и quantity >= указанной.
+   * Если не задан — шаг работает по старой схеме (1 единица на ingredient
+   * из requires).
+   */
+  requiredIngredients?: { id: string; quantity: number }[];
 }
 
 export interface Recipe {
