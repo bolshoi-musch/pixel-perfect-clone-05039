@@ -20,6 +20,8 @@ import {
   type CupVisualState,
   type PlateVisualState,
   type PanVisualState,
+  type ToasterVisualState,
+  type WorkAreaPreparedState,
 } from "@/game/derived-state";
 import { STAGE_ASSETS } from "./stage-assets";
 import {
