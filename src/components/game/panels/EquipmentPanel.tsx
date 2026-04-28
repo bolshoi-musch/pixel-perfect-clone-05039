@@ -73,6 +73,31 @@ export function EquipmentPanel({ onOpenShop, onClose }: Props) {
         </div>
       )}
 
+      {/* Knife & cutting board placement card */}
+      {owned.includes("knife") && (
+        <div className="rounded-xl border border-border bg-background/60 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <div className="font-medium text-foreground">Нож и доска</div>
+              <div className="text-xs text-muted-foreground">
+                {knifeBoardOnWorkArea
+                  ? "На рабочей зоне"
+                  : "Не на рабочей зоне — помидор нарезать нельзя"}
+              </div>
+            </div>
+            {knifeBoardOnWorkArea ? (
+              <Button size="sm" variant="outline" onClick={handleRemoveKnifeBoard}>
+                Убрать
+              </Button>
+            ) : (
+              <Button size="sm" onClick={handlePlaceKnifeBoard}>
+                Поставить на рабочую зону
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="rounded-xl border border-border bg-background/60 p-3">
         <div className="flex items-center justify-between">
           <span className="font-medium text-foreground">Уровень плиты</span>
