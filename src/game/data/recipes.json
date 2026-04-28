@@ -15,7 +15,7 @@
     "t_fast": 60,
     "t_ok": 100,
     "required_equipment": ["toaster", "knife", "plate"],
-    "step_ids": ["ctt_bread_in_toaster", "ctt_toast", "ctt_toast_to_plate", "ctt_place_knife_board", "ctt_chop_tomato", "ctt_assemble", "ctt_serve"]
+    "step_ids": ["ctt_bread_in_toaster", "ctt_toast", "ctt_toast_to_plate", "ctt_place_knife_board", "ctt_chop_tomato", "ctt_tomato_to_toast", "ctt_assemble", "ctt_serve"]
   },
   {
     "id": "rice",

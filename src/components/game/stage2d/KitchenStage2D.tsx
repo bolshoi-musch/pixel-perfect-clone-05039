@@ -857,6 +857,20 @@ function PlateSprite({ state, widthPx }: { state: PlateVisualState; widthPx: num
               <rect x="62" y="56" width="52" height="16" rx="2" fill="#e9b870" />
             </>
           )}
+          {state === "toast_tomato" && (
+            <>
+              {/* Тост */}
+              <rect x="56" y="50" width="64" height="28" rx="4" fill="#d09e58" stroke="#8a5a25" strokeWidth="1.2" />
+              <rect x="62" y="56" width="52" height="16" rx="2" fill="#e9b870" />
+              {/* Кружочки помидора поверх тоста */}
+              <circle cx="74" cy="64" r="6" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="0.8" />
+              <circle cx="74" cy="64" r="2.5" fill="#ffb3b3" />
+              <circle cx="92" cy="64" r="6" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="0.8" />
+              <circle cx="92" cy="64" r="2.5" fill="#ffb3b3" />
+              <circle cx="110" cy="64" r="6" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="0.8" />
+              <circle cx="110" cy="64" r="2.5" fill="#ffb3b3" />
+            </>
+          )}
           {state === "cheese_tomato_toast" && (
             <>
               {/* Тост */}
