@@ -14,7 +14,7 @@
     "base_price": 60,
     "t_fast": 60,
     "t_ok": 100,
-    "required_equipment": ["toaster", "knife", "cutting_board", "plate"],
+    "required_equipment": ["toaster", "knife", "plate"],
     "step_ids": ["ctt_bread_in_toaster", "ctt_toast", "ctt_chop_tomato", "ctt_assemble", "ctt_serve"]
   },
   {
