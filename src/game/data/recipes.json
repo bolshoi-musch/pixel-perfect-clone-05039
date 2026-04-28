@@ -6,7 +6,7 @@
     "t_fast": 35,
     "t_ok": 60,
     "required_equipment": ["kettle", "cup"],
-    "step_ids": ["tea_boil", "tea_brew", "tea_pour", "tea_serve"]
+    "step_ids": ["tea_leaves_in_cup", "tea_boil", "tea_pour", "tea_serve"]
   },
   {
     "id": "toast",
@@ -33,7 +33,14 @@
     "t_fast": 70,
     "t_ok": 110,
     "required_equipment": ["bowl", "pan", "stove", "plate"],
-    "step_ids": ["omelet_crack", "omelet_mix", "omelet_cook", "omelet_plate", "omelet_serve"]
+    "step_ids": [
+      "omelet_eggs_in_bowl",
+      "omelet_mix",
+      "omelet_pour_pan",
+      "omelet_cook",
+      "omelet_plate",
+      "omelet_serve"
+    ]
   },
   {
     "id": "salad",
