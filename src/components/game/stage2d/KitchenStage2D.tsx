@@ -50,6 +50,7 @@ export function KitchenStage2D({
 }: KitchenStage2DProps) {
   const slots = useGame((s) => s.table_slots);
   const equipmentOwned = useGame((s) => s.equipment_owned);
+  const panOnStove = useGame((s) => s.placed_equipment.pan_on_stove);
   const placeFromInventory = useGame((s) => s.placeFromInventory);
   const pickupToInventory = useGame((s) => s.pickupToInventory);
   const eatFromTable = useGame((s) => s.eatFromTable);
