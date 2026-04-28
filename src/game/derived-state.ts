@@ -50,10 +50,11 @@ export function selectKitchenVisualState(
   else if (prepared.has("eggs_in_bowl")) bowl = "eggs";
   else if (prepared.has("egg_in_bowl")) bowl = "egg"; // legacy
 
-  // Plate — омлет только после явного шага plate.
+  // Plate — омлет, тост или собранный сырный тост.
   let plate: PlateVisualState = "empty";
-  if (prepared.has("plated_omelet")) plate = "omelet";
-  else if (prepared.has("toast_ready")) plate = "toast";
+  if (prepared.has("cheese_tomato_toast")) plate = "cheese_tomato_toast";
+  else if (prepared.has("plated_omelet")) plate = "omelet";
+  else if (prepared.has("toast_ready") || prepared.has("toasted_bread")) plate = "toast";
 
   // Cup — заварка только после tea_leaves_in_cup, чай — после tea_pour.
   let cup: CupVisualState = "empty";
@@ -74,7 +75,16 @@ export function selectKitchenVisualState(
   if (prepared.has("omelet_cooked")) pan = "cooked";
   else if (prepared.has("omelet_in_pan")) pan = "raw";
 
-  return { bowl, plate, cup, kettle, stove, pan };
+  // Toaster
+  let toaster: ToasterVisualState = "empty";
+  if (prepared.has("toasted_bread")) toaster = "ready";
+  else if (prepared.has("bread_in_toaster")) toaster = "bread";
+
+  // Work area — нарезанные продукты лежат на доске.
+  let workAreaPrepared: WorkAreaPreparedState = "empty";
+  if (prepared.has("tomato_slices")) workAreaPrepared = "tomato_slices";
+
+  return { bowl, plate, cup, kettle, stove, pan, toaster, workAreaPrepared };
 }
 
 /**
