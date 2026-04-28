@@ -288,7 +288,12 @@ export const useGame = create<GameState>((set, get) => ({
     return true;
   },
 
-  setCurrentOrder: (recipe_id) => {
+  setPanOnStove: (placed) => {
+    set({ placed_equipment: { ...get().placed_equipment, pan_on_stove: placed } });
+    get().persist();
+  },
+
+
     set({ current_order_recipe_id: recipe_id });
     get().persist();
   },
@@ -330,6 +335,7 @@ function extractSave(s: SaveData): SaveData {
     equipment_owned: s.equipment_owned,
     stove_level: s.stove_level,
     table_slots: s.table_slots,
+    placed_equipment: s.placed_equipment,
     current_order_recipe_id: s.current_order_recipe_id,
     rating_history: s.rating_history,
     reviews: s.reviews,
