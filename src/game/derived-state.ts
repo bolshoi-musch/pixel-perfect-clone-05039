@@ -4,11 +4,13 @@
 import type { OrderProgress } from "./order-engine";
 
 export type BowlVisualState = "empty" | "egg" | "eggs" | "mix";
-export type PlateVisualState = "empty" | "omelet" | "toast";
+export type PlateVisualState = "empty" | "omelet" | "toast" | "cheese_tomato_toast";
 export type CupVisualState = "empty" | "leaves" | "water" | "tea";
 export type KettleVisualState = "idle" | "boiling" | "ready";
 export type StoveVisualState = "idle" | "active";
 export type PanVisualState = "empty" | "raw" | "cooked";
+export type ToasterVisualState = "empty" | "bread" | "ready";
+export type WorkAreaPreparedState = "empty" | "tomato_slices";
 
 export interface KitchenVisualState {
   bowl: BowlVisualState;
@@ -16,8 +18,9 @@ export interface KitchenVisualState {
   cup: CupVisualState;
   kettle: KettleVisualState;
   stove: StoveVisualState;
-  /** Сковорода на плите: сырая смесь / готовый омлет / пусто. */
   pan: PanVisualState;
+  toaster: ToasterVisualState;
+  workAreaPrepared: WorkAreaPreparedState;
 }
 
 const EMPTY: KitchenVisualState = {
@@ -27,6 +30,8 @@ const EMPTY: KitchenVisualState = {
   kettle: "idle",
   stove: "idle",
   pan: "empty",
+  toaster: "empty",
+  workAreaPrepared: "empty",
 };
 
 /**
