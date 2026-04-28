@@ -272,18 +272,21 @@ export function KitchenStage2D({
 
 /**
  * Контейнер кухонной сцены: фиксированный aspect-ratio (STAGE_W:STAGE_H),
- * центрируется по горизонтали внутри родителя. Все предметы, столешница и
- * слоты позиционируются абсолютно внутри него и масштабируются вместе с ним
- * на любом размере экрана.
+ * центрируется внутри безопасной зоны, не залезая под нижнее меню.
  */
+const STAGE_SAFE_TOP = 132;
+const STAGE_SAFE_BOTTOM = 132;
+
 function KitchenStageFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="absolute inset-x-0 top-0 bottom-0 flex items-end justify-center">
+    <div
+      className="absolute inset-x-0 flex items-center justify-center"
+      style={{ top: STAGE_SAFE_TOP, bottom: STAGE_SAFE_BOTTOM }}
+    >
       <div
         className="kitchen-stage relative"
         style={{
-          width: "min(96vw, 1100px)",
-          maxHeight: "100%",
+          width: `min(96vw, 1100px, calc((100vh - ${STAGE_SAFE_TOP + STAGE_SAFE_BOTTOM}px) * ${STAGE_W / STAGE_H}))`,
           aspectRatio: `${STAGE_W} / ${STAGE_H}`,
         }}
       >
