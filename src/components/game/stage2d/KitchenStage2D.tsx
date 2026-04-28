@@ -365,10 +365,10 @@ function ContactBase({
       aria-hidden
       className="pointer-events-none absolute"
       style={{
-        left: `${layout.left}%`,
-        top: `${layout.top}%`,
-        width,
-        height,
+        left: `${(layout.x / STAGE_W) * 100}%`,
+        top: `${(layout.y / STAGE_H) * 100}%`,
+        width: `${(width / STAGE_W) * 100}%`,
+        height: `${(height / STAGE_H) * 100}%`,
         zIndex: Math.max(1, layout.zIndex - 1),
         transform: "translate(-50%, -50%)",
         borderRadius: 999,
@@ -406,19 +406,20 @@ function StageObject({
   onClick: () => void;
   children: React.ReactNode;
 }) {
-  const offsetPx = (layout.visibleBottomOffsetRatio ?? 0) * layout.width;
+  const widthPct = (layout.width / STAGE_W) * 100;
+  const offsetPct = (layout.visibleBottomOffsetRatio ?? 0) * layout.width / STAGE_H * 100;
   return (
     <div
       className="pointer-events-none absolute"
       style={{
-        left: `${layout.left}%`,
-        top: `${layout.top}%`,
-        width: layout.width,
+        left: `${(layout.x / STAGE_W) * 100}%`,
+        top: `${(layout.y / STAGE_H) * 100}%`,
+        width: `${widthPct}%`,
         zIndex: layout.zIndex,
-        // anchor bottom-center с компенсацией прозрачного нижнего паддинга PNG:
-        // (left, top) = ВИДИМАЯ нижняя центральная точка предмета (где он
-        // касается стола), а не нижняя граница PNG-файла.
-        transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
+        // anchor bottom-center с компенсацией прозрачного нижнего паддинга PNG.
+        // Сдвиг по высоте задаём через margin-style transform: оба компонента
+        // — в процентах от размеров сцены, поэтому всё масштабируется.
+        transform: `translate(-50%, calc(-100% + ${offsetPct}%))`,
       }}
     >
       <button
@@ -465,16 +466,17 @@ function SlotAnchor({
   layout: StageObjectLayout;
   children: React.ReactNode;
 }) {
-  const offsetPx = (layout.visibleBottomOffsetRatio ?? 0) * layout.width;
+  const widthPct = (layout.width / STAGE_W) * 100;
+  const offsetPct = (layout.visibleBottomOffsetRatio ?? 0) * layout.width / STAGE_H * 100;
   return (
     <div
       className="pointer-events-none absolute"
       style={{
-        left: `${layout.left}%`,
-        top: `${layout.top}%`,
-        width: layout.width,
+        left: `${(layout.x / STAGE_W) * 100}%`,
+        top: `${(layout.y / STAGE_H) * 100}%`,
+        width: `${widthPct}%`,
         zIndex: layout.zIndex,
-        transform: `translate(-50%, calc(-100% + ${offsetPx}px))`,
+        transform: `translate(-50%, calc(-100% + ${offsetPct}%))`,
       }}
     >
       {children}
