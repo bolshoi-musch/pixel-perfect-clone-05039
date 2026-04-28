@@ -282,36 +282,16 @@ function KitchenStageFrame({ children }: { children: React.ReactNode }) {
 /* ──────────────────────────── Background & Countertop ─────────────────────────── */
 
 function Background() {
+  // Background — стена и пол на весь viewport. Линия пола привязана к нижней
+  // кромке столешницы внутри сцены, поэтому стол визуально лежит на полу
+  // независимо от высоты окна.
   return (
     <div className="absolute inset-0 z-0">
-      {/* Стена */}
       <div
-        className="absolute inset-x-0 top-0"
+        className="absolute inset-0"
         style={{
-          height: `${COUNTERTOP_TOP_PCT + 4}%`,
           background:
-            "linear-gradient(180deg, #f6e9cf 0%, #ecd6ad 60%, #d6bd8c 100%)",
-        }}
-      />
-      {/* Фартук — еле заметная сетка */}
-      <div
-        className="absolute inset-x-0 opacity-20"
-        style={{
-          top: `${COUNTERTOP_TOP_PCT - 14}%`,
-          height: "14%",
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.55) 1px, transparent 1px)",
-          backgroundSize: "44px 24px",
-          backgroundPosition: "center",
-        }}
-      />
-      {/* Пол */}
-      <div
-        className="absolute inset-x-0 bottom-0"
-        style={{
-          top: `${COUNTERTOP_BOTTOM_PCT}%`,
-          background:
-            "linear-gradient(180deg, #b09372 0%, #8b6e4d 60%, #6e553a 100%)",
+            "linear-gradient(180deg, #f6e9cf 0%, #ecd6ad 50%, #d6bd8c 70%, #b09372 70.01%, #8b6e4d 88%, #6e553a 100%)",
         }}
       />
       <div
@@ -326,46 +306,42 @@ function Background() {
 }
 
 /**
- * Простая фронтальная рабочая поверхность — без перспективной трапеции.
- * Одна горизонтальная полка-прилавок: предметы стоят на ней по общей линии.
+ * Столешница — полностью внутри `.kitchen-stage`, координаты — проценты от
+ * виртуального размера сцены, поэтому она масштабируется вместе со всеми
+ * предметами на ней.
  */
 function Countertop() {
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 z-[5] flex justify-center"
+      className="pointer-events-none absolute"
       style={{
-        top: `${COUNTERTOP_TOP_PCT}%`,
-        height: `${COUNTERTOP_BOTTOM_PCT - COUNTERTOP_TOP_PCT}%`,
+        left: "5%",
+        right: "5%",
+        top: `${TOP_PCT}%`,
+        bottom: `${100 - BOTTOM_PCT}%`,
+        zIndex: 5,
+        borderRadius: "28px 28px 0 0",
+        overflow: "hidden",
+        background:
+          "linear-gradient(180deg, #c99762 0%, #b47f4d 72%, #8a5a32 100%)",
+        boxShadow:
+          "inset 0 8px 16px rgba(255,230,190,0.28), inset 0 -10px 20px rgba(0,0,0,0.20)",
       }}
     >
       <div
-        className="relative h-full overflow-hidden rounded-t-[28px]"
+        className="absolute inset-0 opacity-[0.16]"
         style={{
-          width: `${COUNTERTOP_WIDTH_PCT}%`,
-          maxWidth: `${COUNTERTOP_MAX_WIDTH_PX}px`,
-          background:
-            "linear-gradient(180deg, #c99762 0%, #b47f4d 72%, #8a5a32 100%)",
-          boxShadow:
-            "inset 0 8px 16px rgba(255,230,190,0.28), inset 0 -10px 20px rgba(0,0,0,0.20)",
+          backgroundImage:
+            "repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 18px)",
         }}
-      >
-        {/* Тонкая горизонтальная "слоистость" */}
-        <div
-          className="absolute inset-0 opacity-[0.16]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 18px)",
-          }}
-        />
-        {/* Передний край стола */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-5"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(95,55,25,0.55), rgba(55,32,18,0.7))",
-          }}
-        />
-      </div>
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-5"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(95,55,25,0.55), rgba(55,32,18,0.7))",
+        }}
+      />
     </div>
   );
 }
