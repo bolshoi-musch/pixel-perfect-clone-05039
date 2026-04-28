@@ -85,13 +85,11 @@ export function KitchenStage2D({
     if (slot.ingredient_id) {
       pickupToInventory(index);
     } else {
-      const pick = onPickIngredient();
-      if (!pick) {
+      if (!activePick) {
         log("Выберите ингредиент в «Продукты»");
         return;
       }
-      const [id, quality] = pick.split("|") as [string, "basic" | "premium"];
-      const placed = placeFromInventory(id, quality);
+      const placed = placeFromInventory(activePick.ingredient_id, activePick.quality);
       if (placed >= 0) setPick(null);
     }
   };
