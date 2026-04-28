@@ -4,20 +4,59 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
   onOpenShop?: () => void;
+  /** Закрыть панель — вызывается после «Поставить на плиту». */
+  onClose?: () => void;
 }
 
-export function EquipmentPanel({ onOpenShop }: Props) {
+export function EquipmentPanel({ onOpenShop, onClose }: Props) {
   const owned = useGame((s) => s.equipment_owned);
   const stoveLevel = useGame((s) => s.stove_level);
+  const panOnStove = useGame((s) => s.placed_equipment.pan_on_stove);
+  const setPanOnStove = useGame((s) => s.setPanOnStove);
+  const log = useGame((s) => s.log);
 
   const ownedEq = EQUIPMENT.filter((e) => owned.includes(e.id));
   const notOwnedEq = EQUIPMENT.filter((e) => !owned.includes(e.id));
 
+  const handlePlacePan = () => {
+    setPanOnStove(true);
+    log("Сковорода поставлена на плиту");
+    onClose?.();
+  };
+
+  const handleRemovePan = () => {
+    setPanOnStove(false);
+    log("Сковорода убрана с плиты");
+  };
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Это обзор кухни: что куплено и какой уровень плиты. Покупка — в Магазине.
+        Это обзор кухни: что куплено, какой уровень плиты и что стоит на местах.
       </p>
+
+      {/* Pan placement card */}
+      {owned.includes("pan") && (
+        <div className="rounded-xl border border-border bg-background/60 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <div className="font-medium text-foreground">Сковорода</div>
+              <div className="text-xs text-muted-foreground">
+                {panOnStove ? "Стоит на плите" : "Не на плите — омлет жарить нельзя"}
+              </div>
+            </div>
+            {panOnStove ? (
+              <Button size="sm" variant="outline" onClick={handleRemovePan}>
+                Убрать
+              </Button>
+            ) : (
+              <Button size="sm" onClick={handlePlacePan}>
+                Поставить на плиту
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="rounded-xl border border-border bg-background/60 p-3">
         <div className="flex items-center justify-between">
