@@ -664,6 +664,12 @@ function BowlSprite({ state, widthPx }: { state: BowlVisualState; widthPx: numbe
             strokeWidth="1"
           />
           {state === "egg" && <ellipse cx="88" cy="60" rx="11" ry="5" fill="#f6c945" />}
+          {state === "eggs" && (
+            <>
+              <ellipse cx="78" cy="60" rx="10" ry="4.5" fill="#f6c945" />
+              <ellipse cx="98" cy="62" rx="10" ry="4.5" fill="#f6c945" />
+            </>
+          )}
         </svg>
       )}
     </div>
