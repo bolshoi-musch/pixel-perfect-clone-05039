@@ -4,6 +4,7 @@ import { useGame, selectAvgRating } from "@/game/store";
 import { useActivePick } from "@/game/active-pick";
 import { useOrderEngine, pickNextRecipe, expectedEquipmentForStep } from "@/game/order-engine";
 import { RECIPES_BY_ID, INGREDIENTS_BY_ID, STEPS_BY_ID } from "@/game/data";
+import { getRecipeAvailability } from "@/game/recipe-availability";
 import { PanelDialog } from "@/components/game/PanelDialog";
 import { ShopPanel } from "@/components/game/panels/ShopPanel";
 import { InventoryPanel } from "@/components/game/panels/InventoryPanel";
