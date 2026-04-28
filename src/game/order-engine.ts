@@ -69,6 +69,13 @@ function canonicalIngredient(id: string): string {
   return INGREDIENT_ALIAS[id] ?? id;
 }
 
+/**
+ * Equipment that игрок «всегда имеет», даже без покупки. Сюда входит сковорода:
+ * для MVP она считается частью плиты и не покупается отдельно.
+ */
+const IMPLICIT_EQUIPMENT = new Set(["pan"]);
+
+
 export const useOrderEngine = create<OrderEngineState>((set, get) => ({
   progress: null,
   active_minigame: null,
