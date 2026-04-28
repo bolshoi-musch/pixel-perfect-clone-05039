@@ -53,6 +53,8 @@ export function makeInitialSave(): SaveData {
       "pan",
       "bowl",
       "kettle",
+      "knife",
+      "cutting_board",
     ],
     stove_level: 1,
     table_slots: Array.from({ length: 5 }, () => ({ ...EMPTY_SLOT })),
