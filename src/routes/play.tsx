@@ -404,7 +404,7 @@ function PlayPage() {
         />
       </PanelDialog>
       <PanelDialog open={panel === "equipment"} onClose={() => setPanel(null)} title="Техника">
-        <EquipmentPanel onOpenShop={() => openShop("equipment")} />
+        <EquipmentPanel onOpenShop={() => openShop("equipment")} onClose={() => setPanel(null)} />
       </PanelDialog>
       <PanelDialog open={panel === "reviews"} onClose={() => setPanel(null)} title="Отзывы гостей">
         <ReviewsPanel />
