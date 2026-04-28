@@ -56,7 +56,7 @@ export function makeInitialSave(): SaveData {
     ],
     stove_level: 1,
     table_slots: Array.from({ length: 5 }, () => ({ ...EMPTY_SLOT })),
-    placed_equipment: { pan_on_stove: false },
+    placed_equipment: { pan_on_stove: false, knife_board_on_work_area: false },
     current_order_recipe_id: null,
     rating_history: [],
     reviews: [],
