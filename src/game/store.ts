@@ -295,6 +295,13 @@ export const useGame = create<GameState>((set, get) => ({
     get().persist();
   },
 
+  setKnifeBoardOnWorkArea: (placed) => {
+    set({
+      placed_equipment: { ...get().placed_equipment, knife_board_on_work_area: placed },
+    });
+    get().persist();
+  },
+
   setCurrentOrder: (recipe_id) => {
     set({ current_order_recipe_id: recipe_id });
     get().persist();
