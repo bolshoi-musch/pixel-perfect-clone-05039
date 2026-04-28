@@ -694,11 +694,13 @@ function IngredientVisual({ id, quantity }: { id: string; quantity: number }) {
 
 function SingleIngredient({ id }: { id: string }) {
   if (id.startsWith("egg")) {
-    const yolk = id === "egg_premium" ? "#f5a623" : "#f6c945";
+    // Целое яйцо в скорлупе. Желток появляется только после "разбить в миску".
+    const shell = id === "egg_premium" ? "#f4e4b8" : "#fff8e8";
+    const stroke = id === "egg_premium" ? "#b89a4a" : "#d8c79a";
     return (
       <svg width="32" height="40" viewBox="0 0 32 40" aria-hidden>
-        <ellipse cx="16" cy="22" rx="13" ry="17" fill="#fff8e8" stroke="#d8c79a" strokeWidth="1" />
-        <ellipse cx="16" cy="22" rx="5" ry="5" fill={yolk} opacity="0.35" />
+        <ellipse cx="16" cy="22" rx="13" ry="17" fill={shell} stroke={stroke} strokeWidth="1.2" />
+        <ellipse cx="11" cy="14" rx="3" ry="5" fill="#ffffff" opacity="0.45" />
       </svg>
     );
   }
