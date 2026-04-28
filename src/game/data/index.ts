@@ -32,14 +32,28 @@ const RecipeSchema = z.object({
   step_ids: z.array(z.string()),
 });
 
-const StepSchema = z.object({
-  id: z.string(),
-  type: z.string(),
-  requires: z.array(z.string()),
-  minigame: z.enum(["mix", "window", "roll_stub", "chop_stub", "hold"]).nullable(),
-  output: z.string().nullable(),
-  hints: z.array(z.string()),
-});
+const StepSchema = z
+  .object({
+    id: z.string(),
+    type: z.string(),
+    requires: z.array(z.string()),
+    minigame: z.enum(["mix", "window", "roll_stub", "chop_stub", "hold"]).nullable(),
+    output: z.string().nullable(),
+    hints: z.array(z.string()),
+    // Optional declarative fields (preserved so order-engine can use them).
+    label: z.string().optional(),
+    hint: z.string().optional(),
+    actionType: z
+      .enum(["combine", "heat", "mix", "cut", "form", "serve", "pour"])
+      .optional(),
+    target: z.string().optional(),
+    result: z.string().optional(),
+    minigameType: z
+      .enum(["mix", "window", "roll_stub", "chop_stub", "hold"])
+      .optional(),
+    serveStep: z.boolean().optional(),
+  })
+  .passthrough();
 
 const ReviewTemplateSchema = z.object({
   id: z.string(),
