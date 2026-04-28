@@ -501,7 +501,7 @@ function SpriteImg({
       draggable={false}
       className="pointer-events-none block select-none object-contain"
       style={{
-        width: widthPx,
+        width: "100%",
         height: "auto",
         filter: "none",
       }}
