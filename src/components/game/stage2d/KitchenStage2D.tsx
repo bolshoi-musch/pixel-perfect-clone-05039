@@ -577,15 +577,44 @@ function PanOverlay({ state }: { state: PanVisualState }) {
 }
 
 /**
- * Превью выбранного продукта в рабочей области стола.
- * Это сам продукт как объект на столе (SVG-визуал), а не UI-карточка.
- * Появляется при activePick !== null. Исчезает после применения шагом.
+ * Превью рабочей области:
+ *  - выбранный продукт (activePick) как объект на столе;
+ *  - либо нарезка (tomato_slices) после chop-шага.
  */
-function WorkAreaPreview({ pick }: { pick: ActivePick | null }) {
+function WorkAreaPreview({
+  pick,
+  prepared,
+}: {
+  pick: ActivePick | null;
+  prepared: WorkAreaPreparedState;
+}) {
+  const layout = STAGE_LAYOUT.workArea;
+
+  if (prepared === "tomato_slices") {
+    return (
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          left: `${layout.left}%`,
+          top: `${layout.top}%`,
+          zIndex: layout.zIndex,
+          transform: "translate(-50%, -100%)",
+        }}
+        aria-hidden
+      >
+        <div className="flex flex-col items-center gap-0.5">
+          <TomatoSlicesVisual />
+          <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
+            Помидор нарезан
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   if (!pick) return null;
   const ing = INGREDIENTS_BY_ID.get(pick.ingredient_id);
   if (!ing) return null;
-  const layout = STAGE_LAYOUT.workArea;
   return (
     <div
       className="pointer-events-none absolute"
@@ -606,6 +635,47 @@ function WorkAreaPreview({ pick }: { pick: ActivePick | null }) {
     </div>
   );
 }
+
+function TomatoSlicesVisual() {
+  return (
+    <svg width="60" height="32" viewBox="0 0 60 32" aria-hidden>
+      <circle cx="14" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="14" cy="20" r="4" fill="#ffb3b3" />
+      <circle cx="30" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="30" cy="20" r="4" fill="#ffb3b3" />
+      <circle cx="46" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
+      <circle cx="46" cy="20" r="4" fill="#ffb3b3" />
+    </svg>
+  );
+}
+
+/**
+ * Маленький overlay поверх тостера: ломтик хлеба внутри (bread) или
+ * готовый тост, торчащий сверху (ready).
+ */
+function ToasterOverlay({ state }: { state: ToasterVisualState }) {
+  return (
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+      style={{ top: state === "ready" ? "-20%" : "10%" }}
+      width="40"
+      height="40"
+      viewBox="0 0 40 40"
+    >
+      {state === "bread" && (
+        <rect x="14" y="10" width="12" height="18" rx="2" fill="#e9b870" stroke="#8a5a25" strokeWidth="1.2" />
+      )}
+      {state === "ready" && (
+        <>
+          <rect x="13" y="2" width="14" height="22" rx="2" fill="#c08a3a" stroke="#5e3a10" strokeWidth="1.2" />
+          <rect x="16" y="6" width="8" height="14" rx="1" fill="#e0a460" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 
 /**
  * SVG-визуал продукта на рабочей области. Если PNG-ассета нет, рисуем
