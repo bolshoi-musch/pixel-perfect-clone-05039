@@ -293,7 +293,7 @@ export const useGame = create<GameState>((set, get) => ({
     get().persist();
   },
 
-
+  setCurrentOrder: (recipe_id) => {
     set({ current_order_recipe_id: recipe_id });
     get().persist();
   },
