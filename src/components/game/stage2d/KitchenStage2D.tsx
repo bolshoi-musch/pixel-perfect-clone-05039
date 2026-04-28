@@ -607,103 +607,54 @@ function PanOverlay({ state }: { state: PanVisualState }) {
 }
 
 /**
- * Превью рабочей области:
- *  - выбранный продукт (activePick) как объект на столе;
+ * Содержимое рабочей зоны (рендерится внутри StageObject — поэтому без
+ * абсолютных координат, занимает 100% ширины обёртки).
+ *  - доска и нож, если поставлены через «Техника»;
+ *  - выбранный продукт (activePick) как объект на доске;
  *  - либо нарезка (tomato_slices) после chop-шага.
  */
-function WorkAreaPreview({
+function WorkAreaSurface({
   pick,
   prepared,
+  knifeBoardOnWorkArea,
 }: {
   pick: ActivePick | null;
   prepared: WorkAreaPreparedState;
+  knifeBoardOnWorkArea: boolean;
 }) {
-  const layout = STAGE_LAYOUT.workArea;
-  const leftPct = (layout.x / STAGE_W) * 100;
-  const topPct = (layout.y / STAGE_H) * 100;
-
-  if (prepared === "tomato_slices") {
-    return (
-      <div
-        className="pointer-events-none absolute"
-        style={{
-          left: `${leftPct}%`,
-          top: `${topPct}%`,
-          zIndex: layout.zIndex,
-          transform: "translate(-50%, -100%)",
-        }}
-        aria-hidden
-      >
-        <div className="flex flex-col items-center gap-0.5">
+  const ing = pick ? INGREDIENTS_BY_ID.get(pick.ingredient_id) : null;
+  return (
+    <div className="relative flex w-full items-end justify-center" style={{ minHeight: 60 }}>
+      {knifeBoardOnWorkArea && <KnifeBoardVisual />}
+      {prepared === "tomato_slices" && (
+        <div className="absolute left-1/2 -top-2 -translate-x-1/2 flex flex-col items-center gap-0.5">
           <TomatoSlicesVisual />
           <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
             Помидор нарезан
           </span>
         </div>
-      </div>
-    );
-  }
-
-  if (!pick) return null;
-  const ing = INGREDIENTS_BY_ID.get(pick.ingredient_id);
-  if (!ing) return null;
-  return (
-    <div
-      className="pointer-events-none absolute"
-      style={{
-        left: `${leftPct}%`,
-        top: `${topPct}%`,
-        zIndex: layout.zIndex,
-        transform: "translate(-50%, -100%)",
-      }}
-      aria-hidden
-    >
-      <div className="flex flex-col items-center gap-0.5">
-        <IngredientVisual id={pick.ingredient_id} quantity={pick.quantity} />
-        <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
-          {ing.name} ×{pick.quantity}
-        </span>
-      </div>
+      )}
+      {pick && ing && prepared !== "tomato_slices" && (
+        <div className="absolute left-1/2 -top-6 -translate-x-1/2 flex flex-col items-center gap-0.5">
+          <IngredientVisual id={pick.ingredient_id} quantity={pick.quantity} />
+          <span className="rounded bg-card/70 px-1.5 py-px text-[10px] font-medium text-foreground/80 shadow-sm backdrop-blur">
+            {ing.name} ×{pick.quantity}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
 
-function TomatoSlicesVisual() {
+function KnifeBoardVisual() {
   return (
-    <svg width="60" height="32" viewBox="0 0 60 32" aria-hidden>
-      <circle cx="14" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
-      <circle cx="14" cy="20" r="4" fill="#ffb3b3" />
-      <circle cx="30" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
-      <circle cx="30" cy="20" r="4" fill="#ffb3b3" />
-      <circle cx="46" cy="20" r="9" fill="#ff6b6b" stroke="#8a1d1d" strokeWidth="1" />
-      <circle cx="46" cy="20" r="4" fill="#ffb3b3" />
-    </svg>
-  );
-}
-
-/**
- * Маленький overlay поверх тостера: ломтик хлеба внутри (bread) или
- * готовый тост, торчащий сверху (ready).
- */
-function ToasterOverlay({ state }: { state: ToasterVisualState }) {
-  return (
-    <svg
-      aria-hidden
-      className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-      style={{ top: state === "ready" ? "-20%" : "10%" }}
-      width="40"
-      height="40"
-      viewBox="0 0 40 40"
-    >
-      {state === "bread" && (
-        <rect x="14" y="10" width="12" height="18" rx="2" fill="#e9b870" stroke="#8a5a25" strokeWidth="1.2" />
-      )}
-      {state === "ready" && (
-        <>
-          <rect x="13" y="2" width="14" height="22" rx="2" fill="#c08a3a" stroke="#5e3a10" strokeWidth="1.2" />
-          <rect x="16" y="6" width="8" height="14" rx="1" fill="#e0a460" />
-        </>
-      )}
+    <svg width="100%" viewBox="0 0 150 80" preserveAspectRatio="xMidYMax meet" aria-hidden>
+      {/* доска */}
+      <rect x="22" y="28" width="92" height="34" rx="8" fill="#d9a96a" stroke="#8a5a25" strokeWidth="2" />
+      <rect x="32" y="36" width="70" height="18" rx="4" fill="#efc987" opacity="0.65" />
+      {/* нож */}
+      <path d="M100 26 L136 18 Q142 20 137 25 L104 38 Z" fill="#d9dee4" stroke="#6c737c" strokeWidth="1.4" />
+      <rect x="88" y="34" width="22" height="7" rx="3" fill="#5b3a1e" />
     </svg>
   );
 }
