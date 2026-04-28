@@ -19,7 +19,7 @@ export function SettingsPanel() {
   const setHintMode = useHintMode((s) => s.setMode);
 
   const lastAction = actionLog[0]?.text ?? "—";
-  const pickIng = pick ? INGREDIENTS_BY_ID.get(pick.split("|")[0]) : null;
+  const pickIng = pick ? INGREDIENTS_BY_ID.get(pick.ingredient_id) : null;
 
   const recipe = progress ? RECIPES_BY_ID.get(progress.recipe_id) : null;
   const stepId = recipe?.step_ids[progress?.step_index ?? -1];
